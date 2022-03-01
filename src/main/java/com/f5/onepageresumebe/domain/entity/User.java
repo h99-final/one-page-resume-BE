@@ -44,6 +44,30 @@ public class User {
 
     @Column(nullable = false, columnDefinition = "varchar(20)") //왜 안먹냐?
     @Enumerated(value = EnumType.STRING)
-    private UserRoleEnum role = UserRoleEnum.USER;
+    private UserRoleEnum role;
 
+    @Builder(access = AccessLevel.PRIVATE)
+    public User(String email, String password, String name, String githubUrl, String blogUrl) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.githubUrl = githubUrl;
+        this.blogUrl = blogUrl;
+        this.role  = UserRoleEnum.USER;
+    }
+
+    public static User create(String email, String password, String name, String githubUrl, String blogUrl){
+
+        return User.builder()
+                .email(email)
+                .password(password)
+                .name(name)
+                .githubUrl(githubUrl)
+                .blogUrl(blogUrl)
+                .build();
+    }
+
+    void setPortfolio(Portfolio portfolio){
+        this.portfolio = portfolio;
+    }
 }

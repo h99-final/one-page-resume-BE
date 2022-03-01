@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -24,4 +21,22 @@ public class ProjectStack {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "stack_id")
     private Stack stack;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public ProjectStack(Project project, Stack stack) {
+        this.project = project;
+        this.stack = stack;
+    }
+
+    public static ProjectStack create(Project project, Stack stack){
+        ProjectStack projectStack = ProjectStack.builder()
+                .project(project)
+                .stack(stack)
+                .build();
+
+        project.getProjectStackList().add(projectStack);
+        stack.getProjectStackList().add(projectStack);
+
+        return projectStack;
+    }
 }

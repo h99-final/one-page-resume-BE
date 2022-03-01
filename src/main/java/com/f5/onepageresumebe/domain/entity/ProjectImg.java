@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -23,4 +20,21 @@ public class ProjectImg {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "project_id")
     private Project project;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public ProjectImg(String imageUrl, Project project) {
+        this.imageUrl = imageUrl;
+        this.project = project;
+    }
+
+    public static ProjectImg create(Project project, String imageUrl){
+        ProjectImg projectImg = ProjectImg.builder()
+                .project(project)
+                .imageUrl(imageUrl)
+                .build();
+
+        project.getProjectImgList().add(projectImg);
+
+        return projectImg;
+    }
 }
