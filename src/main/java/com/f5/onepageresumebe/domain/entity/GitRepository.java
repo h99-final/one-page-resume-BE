@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -36,4 +33,24 @@ public class GitRepository {
     @OneToMany(mappedBy = "repository")
     private List<GitCommit> gitCommitList = new ArrayList<>();
 
+    @Builder(access = AccessLevel.PRIVATE)
+    public GitRepository(String name, String url, String readme, Project project) {
+        this.name = name;
+        this.url = url;
+        this.readme = readme;
+        this.project = project;
+    }
+
+    public static GitRepository create(String name, String url, String readme, Project project){
+        GitRepository gitRepository = GitRepository.builder()
+                .name(name)
+                .readme(readme)
+                .project(project)
+                .url(url)
+                .build();
+
+        project.setRepository(gitRepository);
+
+        return gitRepository;
+    }
 }

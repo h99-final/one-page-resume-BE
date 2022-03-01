@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -31,4 +28,14 @@ public class Stack {
     @OneToMany(mappedBy = "stack")
     private List<PortfolioStack> portfolioStackList = new ArrayList<>();
 
+    @Builder(access = AccessLevel.PRIVATE)
+    public Stack(String name) {
+        this.name = name;
+    }
+
+    public static Stack create(String name){
+        return Stack.builder()
+                .name(name)
+                .build();
+    }
 }

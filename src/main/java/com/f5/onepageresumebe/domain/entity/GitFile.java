@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -22,7 +19,7 @@ public class GitFile {
     private String name;
 
     @Column(name = "file_patch_code", nullable = false, columnDefinition = "varchar(10000)")
-    private String patch_code;
+    private String patchCode;
 
     @Column(name = "file_trouble_contents", nullable = false, columnDefinition = "varchar(5000)")
     private String troubleContents;
@@ -30,4 +27,28 @@ public class GitFile {
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinColumn(name = "commit_id")
     private GitCommit commit;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public GitFile(String name, String patchCode, String troubleContents, GitCommit commit) {
+        this.name = name;
+        this.patchCode = patchCode;
+        this.troubleContents = troubleContents;
+        this.commit = commit;
+    }
+
+    public static GitFile create(String name, String patchCode, String troubleContents, GitCommit commit){
+
+        GitFile gitFile = GitFile.builder()
+                .name(name)
+                .patchCode(patchCode)
+                .troubleContents(troubleContents)
+                .commit(commit)
+                .build();
+
+        commit.getFileList().add(gitFile);
+
+        return gitFile;
+    }
+
+
 }

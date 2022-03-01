@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -36,4 +33,30 @@ public class Career {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public Career(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime, Portfolio portfolio) {
+        this.title = title;
+        this.subTitle = subTitle;
+        this.contents = contents;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.portfolio = portfolio;
+    }
+
+    public static Career create(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime, Portfolio portfolio){
+
+        Career career = Career.builder()
+                .title(title)
+                .subTitle(subTitle)
+                .contents(contents)
+                .startTime(startTime)
+                .endTime(endTime)
+                .portfolio(portfolio)
+                .build();
+
+        portfolio.getCareerList().add(career);
+
+        return career;
+    }
 }

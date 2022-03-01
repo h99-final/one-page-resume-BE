@@ -1,9 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -33,4 +30,32 @@ public class Project {
 
     @OneToOne(mappedBy = "project")
     private GitRepository repository;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "portfolio_id")
+    private Portfolio portfolio;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public Project(String title, String introduce, Portfolio portfolio) {
+        this.title = title;
+        this.introduce = introduce;
+        this.portfolio = portfolio;
+    }
+
+    public static Project create(String title, String introduce,Portfolio portfolio) {
+
+        Project project = Project.builder()
+                .introduce(introduce)
+                .title(title)
+                .portfolio(portfolio)
+                .build();
+
+        portfolio.getProjectList().add(project);
+
+        return project;
+    }
+
+    void setRepository(GitRepository gitRepository){
+        this.repository = gitRepository;
+    }
 }
