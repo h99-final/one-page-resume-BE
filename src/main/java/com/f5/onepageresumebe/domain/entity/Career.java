@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Career {
+public class Career  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
