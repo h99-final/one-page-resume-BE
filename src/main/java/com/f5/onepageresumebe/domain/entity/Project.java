@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Project {
+public class Project extends TimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

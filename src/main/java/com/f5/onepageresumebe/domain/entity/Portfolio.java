@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Portfolio {
+public class Portfolio extends TimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,10 +65,10 @@ public class Portfolio {
     public static Portfolio create(User user){
 
         Portfolio portfolio = Portfolio.builder()
+                .user(user)
                 .build();
 
         user.setPortfolio(portfolio);
-
         return portfolio;
     }
 }
