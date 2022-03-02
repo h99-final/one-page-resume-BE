@@ -23,9 +23,6 @@ public class GitRepository {
     @Column(name = "repository_url",nullable = false, columnDefinition = "varchar(100)")
     private String url;
 
-    @Column(name = "repository_readme", nullable =false, columnDefinition = "varchar(10000)")
-    private String readme;
-
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "project_id")
     private Project project;
@@ -34,17 +31,15 @@ public class GitRepository {
     private List<GitCommit> gitCommitList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public GitRepository(String name, String url, String readme, Project project) {
+    public GitRepository(String name, String url, Project project) {
         this.name = name;
         this.url = url;
-        this.readme = readme;
         this.project = project;
     }
 
-    public static GitRepository create(String name, String url, String readme, Project project){
+    public static GitRepository create(String name, String url, Project project){
         GitRepository gitRepository = GitRepository.builder()
                 .name(name)
-                .readme(readme)
                 .project(project)
                 .url(url)
                 .build();
