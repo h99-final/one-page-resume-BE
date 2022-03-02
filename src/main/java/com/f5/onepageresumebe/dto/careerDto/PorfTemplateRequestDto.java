@@ -2,14 +2,13 @@ package com.f5.onepageresumebe.dto.careerDto;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-public class PorfIntroResponseDto {
+public class PorfTemplateRequestDto {
 
-    private Integer id;  //포트폴리오 id
-
+    private Integer templateIdx;
 }

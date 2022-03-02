@@ -10,10 +10,11 @@ import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
+
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
-public class TimeEntity {
+public abstract class TimeEntity {
 
     @Column(name="created_at",columnDefinition = "timestamp", updatable = false)
     @CreatedDate

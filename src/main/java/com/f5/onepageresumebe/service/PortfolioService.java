@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.domain.entity.Portfolio;
 import com.f5.onepageresumebe.domain.entity.User;
 import com.f5.onepageresumebe.dto.careerDto.PorfIntroRequestDto;
 import com.f5.onepageresumebe.dto.careerDto.PorfIntroResponseDto;
+import com.f5.onepageresumebe.dto.careerDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.repository.PortfolioRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -38,5 +39,14 @@ public class PortfolioService {
 
 
 
+    }
+
+    @Transactional
+    public   void  createTemplate(PorfTemplateRequestDto porfTemplateRequestDto, Integer id) {
+        Portfolio portfolio = portfolioRepository.findById(id).orElseThrow(
+                ()-> new NullPointerException("없습니다")
+        );
+
+        portfolio.updateTemplate(porfTemplateRequestDto.getTemplateIdx());
     }
 }

@@ -92,6 +92,10 @@ public class Portfolio {
         this.user = user;
     }
 
+    public void updateTemplate(Integer templateIdx){
+        this.templateIdx = templateIdx;
+    }
+
 
 
    /* public Portfolio(PorfIntroRequestDto requestDto, User user) {
