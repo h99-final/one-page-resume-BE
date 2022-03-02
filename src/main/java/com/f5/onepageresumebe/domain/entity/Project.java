@@ -35,27 +35,36 @@ public class Project extends TimeEntity{
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Builder(access = AccessLevel.PRIVATE)
-    public Project(String title, String introduce, Portfolio portfolio) {
+    public Project(String title, String introduce, Portfolio portfolio,User user) {
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
     }
 
-    public static Project create(String title, String introduce,Portfolio portfolio) {
+    public static Project create(String title, String introduce, User user) {
 
         Project project = Project.builder()
                 .introduce(introduce)
                 .title(title)
-                .portfolio(portfolio)
+                .user(user)
                 .build();
 
-        portfolio.getProjectList().add(project);
+        user.getProjectList().add(project);
 
         return project;
     }
 
     void setRepository(GitRepository gitRepository){
         this.repository = gitRepository;
+    }
+
+    void setPortfolio(Portfolio portfolio){
+        this.portfolio = portfolio;
+        portfolio.getProjectList().add(this);
     }
 }

@@ -42,6 +42,9 @@ public class User extends TimeEntity{
     @OneToOne(mappedBy = "user")
     private Portfolio portfolio;
 
+    @OneToMany(mappedBy = "user")
+    private List<Project> projectList = new ArrayList<>();
+
     @Column(nullable = false, columnDefinition = "varchar(20)") //왜 안먹냐?
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
