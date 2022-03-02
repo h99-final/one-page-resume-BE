@@ -15,5 +15,5 @@ public class SignupRequestDto {
 
     private String password;
 
-    private String check_password;
+    private String passwordCheck;
 }

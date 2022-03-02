@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.security;
+package com.f5.onepageresumebe.security.filter;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -44,3 +44,4 @@ public class CustomCorsFilter implements Filter {
 
     }
 }
+

@@ -1,24 +1,23 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.domain.entity.User;
-import com.f5.onepageresumebe.security.UserDetailsImpl;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
 import com.f5.onepageresumebe.domain.service.UserService;
+import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -45,7 +44,7 @@ public class UserController {
     // 로그인
 //    private static final int COOKIE_TIME = 60 * 5;
     @PostMapping("/user/login")
-    public ResDto login(@RequestBody LoginRequestDto request, HttpServletResponse response) {
+    public ResponseEntity login(@RequestBody LoginRequestDto requestDto) {
 
 //        Cookie token = new Cookie("Authorization",userService.createToken(loginDto.getEmail()));
 //
@@ -53,30 +52,36 @@ public class UserController {
 //        token.setDomain("localhost");
 //        response.addCookie(token);
 
-        response.setHeader("Authorization",userService.createToken(request.getEmail()));
-        return ResDto.builder()
-                .result(true)
-                .data(userService.login(request))
-                .build();
+        LoginResultDto loginResultDto = userService.login(requestDto);
+        HttpHeaders headers = userService.tokenToHeader(loginResultDto.getTokenDto());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(ResDto.builder()
+                        .result(true)
+                        .data(loginResultDto.getResponseDto())
+                        .build());
+
+
     }
 
     //추가 기입
+    @Secured("ROLE_USER")
     @PostMapping("/user/info")
-    public ResDto addInfo(@RequestBody AddInfoRequestDto reuqest, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userDetails.getUser();
+    public ResDto addInfo(@RequestBody AddInfoRequestDto requestDto) {
 
         return ResDto.builder()
                 .result(true)
-                .data(userService.addInfo(reuqest, user))
+                .data(userService.addInfo(requestDto))
                 .build();
     }
 
     //개인 정보 수정
+    @Secured("ROLE_USER")
     @PutMapping("/user/info")
-    public ResDto updateInfo(@RequestBody AddInfoRequestDto request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userDetails.getUser();
+    public ResDto updateInfo(@RequestBody AddInfoRequestDto request) {
 
-        userService.updateInfo(request, user);
+        userService.updateInfo(request);
 
         return ResDto.builder()
                 .result(true)

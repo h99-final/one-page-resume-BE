@@ -42,9 +42,8 @@ public class User extends TimeEntity{
     @OneToOne(mappedBy = "user")
     private Portfolio portfolio;
 
-    @Column(nullable = false, columnDefinition = "varchar(20)") //왜 안먹냐?
-    @Enumerated(value = EnumType.STRING)
-    private UserRoleEnum role;
+    @Column(name="user_role", columnDefinition = "varchar(10)")
+    private String role = "ROLE_USER";
 
     @Builder(access = AccessLevel.PRIVATE)
     public User(String email, String password, String name, String githubUrl, String blogUrl) {
@@ -53,7 +52,7 @@ public class User extends TimeEntity{
         this.name = name;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
-        this.role  = UserRoleEnum.USER;
+        this.role = "ROLE_USER";
     }
 
     public static User create(String email, String password, String name, String githubUrl, String blogUrl){
