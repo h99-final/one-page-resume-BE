@@ -10,5 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PorfTemplateRequestDto {
 
+    private Integer id;
     private Integer templateIdx;
 }

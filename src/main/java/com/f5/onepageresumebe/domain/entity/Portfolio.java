@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.domain.entity;
 
 import com.f5.onepageresumebe.dto.careerDto.PorfIntroRequestDto;
+import com.f5.onepageresumebe.dto.careerDto.PorfStackRequestDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -40,6 +41,7 @@ public class Portfolio {
 
     @Column(columnDefinition = "varchar(100)")
     private String introBgImgUrl;
+
 
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
@@ -92,10 +94,19 @@ public class Portfolio {
         this.user = user;
     }
 
+
+    //포트폴리오 템플릿 업데이트에 대한 생성자 생성
     public void updateTemplate(Integer templateIdx){
+
         this.templateIdx = templateIdx;
     }
 
+
+    //포트폴리오 스텍 업데이트에 대한 생성
+   /* public void updateStack(List<String> stackContents){
+
+        this.portfolioStackList = stackContents;
+    }*/
 
 
    /* public Portfolio(PorfIntroRequestDto requestDto, User user) {

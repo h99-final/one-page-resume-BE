@@ -41,6 +41,13 @@ public class S3Uploader {
         return uploadImageUrl;
     }
 
+    /*private String uploads(MultipartFile[] uploadFile, String dirName) {
+        String fileName = dirName + "/" + UUID.randomUUID() + uploadFile.getName();   // S3에 저장된 파일 이름
+        String uploadImageUrl = putS3(uploadFile, fileName); // s3로 업로드
+        removeNewFile(uploadFile, fileName);
+        return uploadImageUrl;
+    }*/
+
 
     // S3로 업로드
     private String putS3(File uploadFile, String fileName) {

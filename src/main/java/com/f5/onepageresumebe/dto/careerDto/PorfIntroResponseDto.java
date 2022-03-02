@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PorfIntroResponseDto {
 
-    private Integer id;  //포트폴리오 id
+    private Integer porfId;  //포트폴리오 id
 
 }

@@ -59,4 +59,11 @@ public class Career  {
 
         return career;
     }
+
+    public void updateCareer(String title, String subTitle, String contents){
+        this.title=title;
+        this.subTitle = subTitle;
+        this.contents= contents;
+
+    }
 }
