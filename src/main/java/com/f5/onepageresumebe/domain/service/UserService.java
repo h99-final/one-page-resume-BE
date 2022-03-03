@@ -1,9 +1,7 @@
 package com.f5.onepageresumebe.domain.service;
 
 import com.f5.onepageresumebe.domain.entity.*;
-import com.f5.onepageresumebe.domain.repository.PortfolioRespository;
-import com.f5.onepageresumebe.domain.repository.UserRepository;
-import com.f5.onepageresumebe.domain.repository.UserStackRepository;
+import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
@@ -11,9 +9,9 @@ import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.AddInfoResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,9 +32,11 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
     private final PortfolioRespository portfolioRespository;
     private final TokenProvider tokenProvider;
     private final StackService stackService;
+    private final StackRepository stackRepository;
     private final UserStackRepository userstackRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
@@ -96,10 +96,6 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
         Boolean isFirstLogin;
-        Integer portfolioId = user.getPortfolio().getId();
-        Integer userId = user.getId();
-        String email = user.getEmail();
-        List<String> stack = new ArrayList<>();
 
         //첫 로그인 유저 O
         if(user.getCreatedAt().equals(user.getUpdatedAt()) == true) {
@@ -107,25 +103,21 @@ public class UserService {
         }
         else { // 첫 로그인 유저 X (유저의 스텍 까지 넣어주기)
             isFirstLogin = false;
-            //유저가 가지고 있는 UserStack 가져오기
-            List<UserStack> userStackList = user.getUserStackList();
-            //UserStack에 매칭되어있는 stack의 이름 가져오기
-            for(UserStack u : userStackList) {
-                stack.add(u.getStack().getName());
-            }
+
         }
-        LoginResponseDto loginResponseDto = new LoginResponseDto(isFirstLogin, portfolioId, userId, email, stack);
 
         return LoginResultDto.builder()
-                .responseDto(loginResponseDto)
                 .tokenDto(tokenDto)
+                .loginResponseDto(LoginResponseDto.builder()
+                        .isFirstLogin(isFirstLogin)
+                        .build())
                 .build();
     }
 
 
     // 추가기입
     @Transactional
-    public AddInfoResponseDto addInfo(AddInfoRequestDto requestDto) {
+    public void addInfo(AddInfoRequestDto requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(userEmail)
@@ -155,8 +147,6 @@ public class UserService {
         user.addInfo(name, gitUrl, blogUrl, phoneNum);
         userRepository.save(user);
 
-        AddInfoResponseDto response = new AddInfoResponseDto(stacks);
-        return response;
     }
 
     public void updateInfo(AddInfoRequestDto request) {
@@ -164,10 +154,62 @@ public class UserService {
         User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
-        //Todo : stack관련
+        List<String> stackNames = request.getStack();
+
+        //존재하는 스택인지 판별
+        List<String> existsStackId = stackRepository.findNamesByNamesIfExists(stackNames);
+
+        stackNames.stream().forEach(name->{
+            //이미 존재하는 스택이라면
+            if(existsStackId.contains(name)){
+                Stack stack = stackRepository.findFirstByName(name).get();
+                UserStack userStack = userstackRepository.findFirstByUserAndStack(curUser, stack).orElse(null);
+
+                //연결되있지 않은 스택일때만 연결
+                if(userStack==null){
+                    UserStack createdUserStack = UserStack.create(curUser, stack);
+                    userstackRepository.save(createdUserStack);
+                }
+            }else{
+                //존재하지 않는 스택이라면
+                Stack stack = Stack.create(name);
+                stackRepository.save(stack);
+                UserStack userStack = UserStack.create(curUser, stack);
+                userstackRepository.save(userStack);
+            }
+        });
+
         curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl());
         userRepository.save(curUser);
     }
+
+    public UserInfoResponseDto getUserInfo(){
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+
+        //프로젝트 아이디 불러오기
+        List<Integer> projectIds = projectRepository.findProjectIdByUserId(user.getId());
+
+        //스택 내용 불러오기
+        List<String> stackNames = userstackRepository.findStackNamesByUserId(user.getId());
+
+        return UserInfoResponseDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .projectId(projectIds)
+                .stack(stackNames)
+                .porfId(user.getPortfolio().getId())
+                .email(user.getEmail())
+                .phoneNum(user.getPhoneNum())
+                .gitUrl(user.getGithubUrl())
+                .blogUrl(user.getBlogUrl())
+                .porfId(user.getPortfolio().getId())
+                .build();
+    }
+
+
 
     public HttpHeaders tokenToHeader(TokenDto tokenDto) {
         HttpHeaders headers = new HttpHeaders();
