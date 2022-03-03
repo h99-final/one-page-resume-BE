@@ -42,6 +42,9 @@ public class User extends TimeEntity{
     @OneToOne(mappedBy = "user")
     private Portfolio portfolio;
 
+    @OneToMany(mappedBy = "user")
+    private List<Project> projectList = new ArrayList<>();
+
     @Column(name="user_role", columnDefinition = "varchar(10)")
     private String role = "ROLE_USER";
 
