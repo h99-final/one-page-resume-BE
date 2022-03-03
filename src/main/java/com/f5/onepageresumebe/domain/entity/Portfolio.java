@@ -38,9 +38,6 @@ public class Portfolio extends TimeEntity{
     @Column(nullable = false,columnDefinition = "TINYINT")
     private Boolean isTemp;
 
-    @Column(columnDefinition = "varchar(100)")
-    private String introBgImgUrl;
-
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
@@ -55,16 +52,15 @@ public class Portfolio extends TimeEntity{
     private List<PortfolioStack> portfolioStackList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Portfolio(String title, String introContents, String githubUrl, String introBgImgUrl, String blogUrl, User user) {
+    public Portfolio(String title, String introContents, String githubUrl, String blogUrl, User user) {
 
         this.title = title;
         this.viewCount = 0;
-        this.templateIdx = 1;
+        this.templateIdx = 0;
         this.introContents = introContents;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
         this.isTemp = true;
-        this.introBgImgUrl = introBgImgUrl;
         this.user = user;
     }
   
@@ -80,12 +76,11 @@ public class Portfolio extends TimeEntity{
 
 
     //소개글 업데이트에 대한 생성자 생성
-    public void updateIntro(String title, String githubUrl, String introBgImgUrl, String introContents, String blogUrl){
+    public void updateIntro(String title, String githubUrl, String introContents, String blogUrl){
 
         this.title= title;
         this.githubUrl= githubUrl;
         this.blogUrl =blogUrl;
-        this.introBgImgUrl= introBgImgUrl;
         this.introContents= introContents;
     }
 
