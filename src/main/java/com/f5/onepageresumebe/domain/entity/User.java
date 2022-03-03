@@ -68,15 +68,14 @@ public class User extends TimeEntity{
                 .blogUrl(blogUrl)
                 .build();
     }
-    public void addStack(UserStack userStack) {
-        this.userStackList.add(userStack);
-    }
+  
     public void addInfo(String name, String githubUrl, String blogUrl, String phoneNum) {
         this.name = name;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
         this.phoneNum = phoneNum;
     }
+  
     public void updateInfo(String name, String phoneNum, String githubUrl, String blogUrl) {
         this.name = name;
         this.phoneNum = phoneNum;

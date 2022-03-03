@@ -55,6 +55,7 @@ public class Project extends TimeEntity{
                 .user(user)
                 .build();
 
+
         user.getProjectList().add(project);
 
         return project;
@@ -68,4 +69,5 @@ public class Project extends TimeEntity{
         this.portfolio = portfolio;
         portfolio.getProjectList().add(this);
     }
+
 }

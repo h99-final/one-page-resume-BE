@@ -3,7 +3,7 @@ package com.f5.onepageresumebe.domain.entity;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
+
 
 @Entity
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
