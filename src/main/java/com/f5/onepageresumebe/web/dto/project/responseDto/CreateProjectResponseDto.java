@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class ProjectSaveResponseDto {
+public class CreateProjectResponseDto {
 
 
     private Integer projectId;

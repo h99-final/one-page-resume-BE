@@ -1,8 +1,6 @@
 package com.f5.onepageresumebe.web.dto.porf.requestDto;
 
 
-import com.f5.onepageresumebe.domain.entity.Stack;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.StringStack;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +14,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PorfStackRequestDto {
-
-    private Integer id;
 
     List<String> stackContents;
 

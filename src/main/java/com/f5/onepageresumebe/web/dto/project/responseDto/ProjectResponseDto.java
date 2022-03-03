@@ -8,5 +8,5 @@ import lombok.Data;
 public class ProjectResponseDto {
 
     private boolean result;
-    private ProjectSaveResponseDto data;
+    private CreateProjectResponseDto data;
 }

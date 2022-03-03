@@ -8,6 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 public class PorfTemplateRequestDto {
 
-    private Integer id;
     private Integer templateIdx;
 }
