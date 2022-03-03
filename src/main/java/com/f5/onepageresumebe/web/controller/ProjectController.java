@@ -1,17 +1,16 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectSaveResponseDto;
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.domain.service.ProjectService;
+import com.f5.onepageresumebe.web.dto.project.requestDto.CreateProjectRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.CreateProjectResponseDto;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,16 +19,16 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
-    @PostMapping("/porf/{porfId}/project") //포트폴리오 소개 작성
-    public ProjectResponseDto createIntro(@RequestPart(value = "images") List<MultipartFile> multipartFiles
-            , @RequestPart(value = "data") ProjectRequestDto projectRequestDto,
-                                          @PathVariable("porfId") Integer porfId) throws IOException {
+    @Secured("ROLE_USER")
+    @PostMapping("/project")
+    public ResDto createProject(@RequestPart("images") List<MultipartFile> multipartFileList,
+                                @RequestPart("data") CreateProjectRequestDto requestDto) {
 
-        ProjectSaveResponseDto response = projectService.createProject(projectRequestDto, multipartFiles);
+        CreateProjectResponseDto responseDto = projectService.createProject(requestDto, multipartFileList);
 
-        return ProjectResponseDto.builder()
+        return ResDto.builder()
                 .result(true)
-                .data(response)
+                .data(responseDto)
                 .build();
     }
 }
