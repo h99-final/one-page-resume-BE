@@ -75,9 +75,9 @@ public class S3Uploader {
         return Optional.empty();
     }
 
-    public void deleteProfile(String imageURL){
+    public void deleteProfile(String imageURL,Integer prefixLength){
 
-        String fileName = imageURL.substring(53); //todo: 도메인 길이 변경시 확인
+        String fileName = imageURL.substring(prefixLength);
 
         amazonS3Client.deleteObject(new DeleteObjectRequest(bucket,fileName));
     }
