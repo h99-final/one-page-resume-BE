@@ -39,7 +39,7 @@ public class User extends TimeEntity{
     @Column(columnDefinition = "varchar(20)")
     private String job;
 
-    @Column(columnDefinition = "varchar(100)")
+    @Column(columnDefinition = "varchar(300)")
     private String profileImgUrl;
 
     @OneToMany(mappedBy = "user")
