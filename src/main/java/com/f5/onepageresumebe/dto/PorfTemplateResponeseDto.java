@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.dto.careerDto;
+package com.f5.onepageresumebe.dto;
 
 public class PorfTemplateResponeseDto {
 

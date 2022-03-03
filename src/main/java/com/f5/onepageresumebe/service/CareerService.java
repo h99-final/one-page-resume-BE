@@ -1,13 +1,10 @@
 package com.f5.onepageresumebe.service;
 
-import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.Career;
 import com.f5.onepageresumebe.domain.entity.Portfolio;
-import com.f5.onepageresumebe.dto.careerDto.PorfCareerRequestDto;
+import com.f5.onepageresumebe.dto.PorfCareerRequestDto;
 import com.f5.onepageresumebe.repository.CareerRepository;
 import com.f5.onepageresumebe.repository.PortfolioRepository;
-import com.f5.onepageresumebe.repository.PortfolioStackRepository;
-import com.f5.onepageresumebe.repository.StackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

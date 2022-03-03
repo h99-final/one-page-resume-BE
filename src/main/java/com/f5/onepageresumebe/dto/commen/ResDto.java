@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.dto.careerDto.commen;
+package com.f5.onepageresumebe.dto.commen;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

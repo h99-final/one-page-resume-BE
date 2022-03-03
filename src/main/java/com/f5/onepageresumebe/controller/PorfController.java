@@ -2,10 +2,10 @@ package com.f5.onepageresumebe.controller;
 
 
 import com.f5.onepageresumebe.config.S3Uploader;
-import com.f5.onepageresumebe.dto.careerDto.PorfIntroRequestDto;
-import com.f5.onepageresumebe.dto.careerDto.PorfStackRequestDto;
-import com.f5.onepageresumebe.dto.careerDto.PorfTemplateRequestDto;
-import com.f5.onepageresumebe.dto.careerDto.commen.ResDto;
+import com.f5.onepageresumebe.dto.PorfIntroRequestDto;
+import com.f5.onepageresumebe.dto.PorfStackRequestDto;
+import com.f5.onepageresumebe.dto.PorfTemplateRequestDto;
+import com.f5.onepageresumebe.dto.commen.ResDto;
 import com.f5.onepageresumebe.service.PortfolioService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

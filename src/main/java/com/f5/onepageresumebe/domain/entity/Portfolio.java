@@ -1,7 +1,5 @@
 package com.f5.onepageresumebe.domain.entity;
 
-import com.f5.onepageresumebe.dto.careerDto.PorfIntroRequestDto;
-import com.f5.onepageresumebe.dto.careerDto.PorfStackRequestDto;
 import lombok.*;
 
 import javax.persistence.*;

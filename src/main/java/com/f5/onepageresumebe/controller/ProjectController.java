@@ -1,8 +1,8 @@
 package com.f5.onepageresumebe.controller;
 
-import com.f5.onepageresumebe.dto.careerDto.ProjectSaveResponseDto;
-import com.f5.onepageresumebe.dto.careerDto.ProjectRequestDto;
-import com.f5.onepageresumebe.dto.careerDto.ProjectResponseDto;
+import com.f5.onepageresumebe.dto.ProjectSaveResponseDto;
+import com.f5.onepageresumebe.dto.ProjectRequestDto;
+import com.f5.onepageresumebe.dto.ProjectResponseDto;
 import com.f5.onepageresumebe.service.ProjectService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;

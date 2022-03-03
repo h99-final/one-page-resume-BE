@@ -1,11 +1,9 @@
 package com.f5.onepageresumebe.controller;
 
 
-import com.f5.onepageresumebe.dto.careerDto.PorfCareerRequestDto;
-import com.f5.onepageresumebe.dto.careerDto.commen.ResDto;
-import com.f5.onepageresumebe.repository.CareerRepository;
+import com.f5.onepageresumebe.dto.PorfCareerRequestDto;
+import com.f5.onepageresumebe.dto.commen.ResDto;
 import com.f5.onepageresumebe.service.CareerService;
-import com.f5.onepageresumebe.service.PortfolioService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
