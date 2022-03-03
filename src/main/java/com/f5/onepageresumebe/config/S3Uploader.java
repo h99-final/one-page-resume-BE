@@ -33,11 +33,13 @@ public class S3Uploader {
 
         return upload(uploadFile, dirName);
     }
-    public String uploads(List<MultipartFile> multipartFile, String dirName) throws IOException{
+
+
+    public String uploads (List<MultipartFile> multipartFile, String dirName) throws IOException{
         File uploadFile = convert((MultipartFile) multipartFile)
                 .orElseThrow(() -> new IllegalArgumentException("파일 전환 실패"));
 
-        return upload(uploadFile, dirName);
+        return uploads(uploadFile, dirName);
     }
 
 
@@ -50,12 +52,14 @@ public class S3Uploader {
         return uploadImageUrl;
     }
 
-    /*private String uploads(MultipartFile[] uploadFile, String dirName) {
+    private String uploads(File uploadFile, String dirName) {
         String fileName = dirName + "/" + UUID.randomUUID() + uploadFile.getName();   // S3에 저장된 파일 이름
         String uploadImageUrl = putS3(uploadFile, fileName); // s3로 업로드
-        removeNewFile(uploadFile, fileName);
+        removeNewFile(uploadFile);
         return uploadImageUrl;
-    }*/
+    }
+
+
 
 
     // S3로 업로드
@@ -86,4 +90,9 @@ public class S3Uploader {
         return Optional.empty();
 
     }
+
+
+
+
+
 }
