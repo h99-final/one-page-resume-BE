@@ -8,6 +8,7 @@ import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
 import com.f5.onepageresumebe.domain.service.UserService;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -59,7 +60,7 @@ public class UserController {
                 .headers(headers)
                 .body(ResDto.builder()
                         .result(true)
-                        .data(loginResultDto.getResponseDto())
+                        .data(loginResultDto.getLoginResponseDto())
                         .build());
 
 
@@ -72,19 +73,30 @@ public class UserController {
 
         return ResDto.builder()
                 .result(true)
-                .data(userService.addInfo(requestDto))
                 .build();
     }
 
     //개인 정보 수정
     @Secured("ROLE_USER")
     @PutMapping("/user/info")
-    public ResDto updateInfo(@RequestBody AddInfoRequestDto request) {
+    public ResDto updateInfo(@RequestBody AddInfoRequestDto requestDto) {
 
-        userService.updateInfo(request);
+        userService.updateInfo(requestDto);
 
         return ResDto.builder()
                 .result(true)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @GetMapping("/user/info")
+    public ResDto getInfo(){
+
+        UserInfoResponseDto userInfo = userService.getUserInfo();
+
+        return ResDto.builder()
+                .result(true)
+                .data(userInfo)
                 .build();
     }
 }
