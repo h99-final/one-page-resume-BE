@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Project {
+public class Project extends TimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,22 +35,28 @@ public class Project {
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Builder(access = AccessLevel.PRIVATE)
-    public Project(String title, String introduce, Portfolio portfolio) {
+    public Project(String title, String introduce, Portfolio portfolio,User user) {
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
+        this.user = user;
     }
 
-    public static Project create(String title, String introduce,Portfolio portfolio) {
+    public static Project create(String title, String introduce,User user) {
 
         Project project = Project.builder()
                 .introduce(introduce)
                 .title(title)
-                .portfolio(portfolio)
+                .user(user)
                 .build();
 
-        portfolio.getProjectList().add(project);
+
+        user.getProjectList().add(project);
 
         return project;
     }
@@ -58,4 +64,10 @@ public class Project {
     void setRepository(GitRepository gitRepository){
         this.repository = gitRepository;
     }
+
+    void setPortfolio(Portfolio portfolio){
+        this.portfolio = portfolio;
+        portfolio.getProjectList().add(this);
+    }
+
 }

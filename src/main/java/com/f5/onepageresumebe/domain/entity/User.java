@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class User {
+public class User extends TimeEntity{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -42,9 +42,11 @@ public class User {
     @OneToOne(mappedBy = "user")
     private Portfolio portfolio;
 
-    @Column(nullable = false, columnDefinition = "varchar(20)") //왜 안먹냐?
-    @Enumerated(value = EnumType.STRING)
-    private UserRoleEnum role;
+    @OneToMany(mappedBy = "user")
+    private List<Project> projectList = new ArrayList<>();
+
+    @Column(name="user_role", columnDefinition = "varchar(10)")
+    private String role = "ROLE_USER";
 
     @Builder(access = AccessLevel.PRIVATE)
     public User(String email, String password, String name, String githubUrl, String blogUrl) {
@@ -53,7 +55,7 @@ public class User {
         this.name = name;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
-        this.role  = UserRoleEnum.USER;
+        this.role = "ROLE_USER";
     }
 
     public static User create(String email, String password, String name, String githubUrl, String blogUrl){
@@ -66,8 +68,22 @@ public class User {
                 .blogUrl(blogUrl)
                 .build();
     }
+  
+    public void addInfo(String name, String githubUrl, String blogUrl, String phoneNum) {
+        this.name = name;
+        this.githubUrl = githubUrl;
+        this.blogUrl = blogUrl;
+        this.phoneNum = phoneNum;
+    }
+  
+    public void updateInfo(String name, String phoneNum, String githubUrl, String blogUrl) {
+        this.name = name;
+        this.phoneNum = phoneNum;
+        this.githubUrl = githubUrl;
+        this.blogUrl = blogUrl;
+    }
 
-    void setPortfolio(Portfolio portfolio){
+    public void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
     }
 }

@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
@@ -23,5 +22,5 @@ public abstract class TimeEntity {
     @Column(name="updated_at",columnDefinition = "timestamp")
     @LastModifiedDate
     LocalDateTime updatedAt;
-
 }
+

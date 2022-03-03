@@ -10,7 +10,8 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Portfolio {
+
+public class Portfolio extends TimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +41,6 @@ public class Portfolio {
     @Column(columnDefinition = "varchar(100)")
     private String introBgImgUrl;
 
-
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
@@ -56,6 +56,7 @@ public class Portfolio {
 
     @Builder(access = AccessLevel.PRIVATE)
     public Portfolio(String title, String introContents, String githubUrl, String introBgImgUrl, String blogUrl, User user) {
+
         this.title = title;
         this.viewCount = 0;
         this.templateIdx = 1;
@@ -66,30 +67,26 @@ public class Portfolio {
         this.introBgImgUrl = introBgImgUrl;
         this.user = user;
     }
-
-
-
-
+  
     public static Portfolio create(User user){
 
         Portfolio portfolio = Portfolio.builder()
+                .user(user)
                 .build();
 
         user.setPortfolio(portfolio);
-
         return portfolio;
     }
 
 
     //소개글 업데이트에 대한 생성자 생성
-    public void updateInrtro(String title, String githubUrl, String introBgImgUrl, String introContents, String blogUrl, User user){
+    public void updateIntro(String title, String githubUrl, String introBgImgUrl, String introContents, String blogUrl){
 
         this.title= title;
         this.githubUrl= githubUrl;
         this.blogUrl =blogUrl;
         this.introBgImgUrl= introBgImgUrl;
         this.introContents= introContents;
-        this.user = user;
     }
 
 
@@ -100,17 +97,5 @@ public class Portfolio {
     }
 
 
-    //포트폴리오 스텍 업데이트에 대한 생성
-   /* public void updateStack(List<String> stackContents){
-
-        this.portfolioStackList = stackContents;
-    }*/
-
-
-   /* public Portfolio(PorfIntroRequestDto requestDto, User user) {
-        this.title = requestDto.getTitle();
-        this.githubUrl = requestDto.getGithubUrl();
-        this.introBgImgUrl = requestDto.getIntroBgImgUrl();
-        this.introContents = requestDto.getIntroContents();
-    }*/
+    
 }
