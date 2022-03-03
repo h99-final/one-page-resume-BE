@@ -22,14 +22,20 @@ public class Project extends TimeEntity{
     @Column(nullable = false, columnDefinition = "varchar(5000)")
     private String introduce;
 
+    @Column(columnDefinition = "varchar(30)")
+    private String gitRepoName;
+
+    @Column(columnDefinition = "varchar(100)")
+    private String gitRepoUrl;
+
     @OneToMany(mappedBy = "project")
     private List<ProjectStack> projectStackList = new ArrayList<>();
 
     @OneToMany(mappedBy = "project")
     private List<ProjectImg> projectImgList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "project")
-    private GitRepository repository;
+    @OneToMany(mappedBy = "project")
+    private List<GitCommit> gitCommitList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "portfolio_id")
@@ -40,18 +46,22 @@ public class Project extends TimeEntity{
     private User user;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Project(String title, String introduce, Portfolio portfolio,User user) {
+    public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user) {
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
         this.user = user;
+        this.gitRepoName = gitRepoName;
+        this.gitRepoUrl = gitRepoUrl;
     }
 
-    public static Project create(String title, String introduce,User user) {
+    public static Project create(String title, String introduce,String gitRepoName,String gitRepoUrl,User user) {
 
         Project project = Project.builder()
                 .introduce(introduce)
                 .title(title)
+                .gitRepoName(gitRepoName)
+                .gitRepoUrl(gitRepoUrl)
                 .user(user)
                 .build();
 
@@ -61,9 +71,6 @@ public class Project extends TimeEntity{
         return project;
     }
 
-    void setRepository(GitRepository gitRepository){
-        this.repository = gitRepository;
-    }
 
     void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
