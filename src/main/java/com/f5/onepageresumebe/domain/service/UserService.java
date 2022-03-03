@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.service;
 
+import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
@@ -13,13 +14,17 @@ import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +32,8 @@ import static com.f5.onepageresumebe.security.jwt.TokenProvider.AUTHORIZATION_HE
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
+@Slf4j
 public class UserService {
 
     private final PasswordEncoder passwordEncoder;
@@ -38,13 +45,14 @@ public class UserService {
     private final StackRepository stackRepository;
     private final UserStackRepository userstackRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final S3Uploader s3Uploader;
 
     @Transactional
     public Boolean registerUser(SignupRequestDto requestDto) {
 
         String email = requestDto.getEmail();
         //비밀번호, 비밀번호 확인 체크
-        if(!requestDto.getPassword().equals(requestDto.getPasswordCheck())){
+        if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
             throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 다릅니다");
         }
 
@@ -54,7 +62,7 @@ public class UserService {
 
         Boolean res;
 
-        if(user == null) res = false;
+        if (user == null) res = false;
         else {
             Portfolio portfolio = Portfolio.create(user);
             user.setPortfolio(portfolio);
@@ -70,7 +78,7 @@ public class UserService {
         boolean res = false;
 
         Optional<User> found = userRepository.findByEmail(request.getEmail());
-        if(found.isPresent()) res = true;
+        if (found.isPresent()) res = true;
 
         return res;
     }
@@ -97,10 +105,9 @@ public class UserService {
         Boolean isFirstLogin;
 
         //첫 로그인 유저 O
-        if(user.getCreatedAt().equals(user.getUpdatedAt()) == true) {
+        if (user.getCreatedAt().equals(user.getUpdatedAt()) == true) {
             isFirstLogin = true;
-        }
-        else { // 첫 로그인 유저 X (유저의 스텍 까지 넣어주기)
+        } else { // 첫 로그인 유저 X (유저의 스텍 까지 넣어주기)
             isFirstLogin = false;
 
         }
@@ -128,7 +135,7 @@ public class UserService {
 
         //사용자가 추가기입 시, 입력한 stack이 기존 stack테이블에 있으면 stack을 가져옴
         // 기존 stack 테이블이 없으면 새로 생성해 가져옴
-        for(String curStackName : stacks) {
+        for (String curStackName : stacks) {
             Stack stack = stackService.registerStack(curStackName);
             UserStack userStack = UserStack.create(curUser, stack);
 
@@ -141,11 +148,13 @@ public class UserService {
         String gitUrl = requestDto.getGitUrl();
         String blogUrl = requestDto.getBlogUrl();
         String phoneNum = requestDto.getPhoneNum();
-        user.addInfo(name, gitUrl, blogUrl, phoneNum);
+        String job = requestDto.getJob();
+        user.addInfo(name, gitUrl, blogUrl, phoneNum, job);
         userRepository.save(user);
 
     }
 
+    @Transactional
     public void updateInfo(AddInfoRequestDto request) {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userRepository.findByEmail(userEmail)
@@ -156,18 +165,18 @@ public class UserService {
         //존재하는 스택인지 판별
         List<String> existsStackId = stackRepository.findNamesByNamesIfExists(stackNames);
 
-        stackNames.stream().forEach(name->{
+        stackNames.stream().forEach(name -> {
             //이미 존재하는 스택이라면
-            if(existsStackId.contains(name)){
+            if (existsStackId.contains(name)) {
                 Stack stack = stackRepository.findFirstByName(name).get();
                 UserStack userStack = userstackRepository.findFirstByUserAndStack(curUser, stack).orElse(null);
 
                 //연결되있지 않은 스택일때만 연결
-                if(userStack==null){
+                if (userStack == null) {
                     UserStack createdUserStack = UserStack.create(curUser, stack);
                     userstackRepository.save(createdUserStack);
                 }
-            }else{
+            } else {
                 //존재하지 않는 스택이라면
                 Stack stack = Stack.create(name);
                 stackRepository.save(stack);
@@ -176,11 +185,11 @@ public class UserService {
             }
         });
 
-        curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl());
+        curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
         userRepository.save(curUser);
     }
 
-    public UserInfoResponseDto getUserInfo(){
+    public UserInfoResponseDto getUserInfo() {
 
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(() ->
@@ -202,10 +211,38 @@ public class UserService {
                 .phoneNum(user.getPhoneNum())
                 .gitUrl(user.getGithubUrl())
                 .blogUrl(user.getBlogUrl())
-                .porfId(user.getPortfolio().getId())
+                .profileImage(user.getProfileImgUrl())
+                .job(user.getJob())
                 .build();
     }
 
+    @Transactional
+    public void updateProfile(MultipartFile multipartFile) {
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+        User user = userRepository.findByEmail(email).get();
+
+        //현재 기본 이미지가 아니면 s3에서 삭제
+        if(!user.getProfileImgUrl().equals("https://myclone.s3.ap-northeast-2.amazonaws.com/profile/%EA%B2%80%EC%A0%95+%EC%82%AC%EC%A7%84.png")){
+            s3Uploader.deleteProfile(user.getProfileImgUrl(),48);
+        }
+        try {
+            String profileImgUrl = s3Uploader.upload(multipartFile, "profile");
+            user.updateProfile(profileImgUrl);
+        } catch (IOException e) {
+            log.error("updateProfile -> s3upload : {}", e.getMessage());
+            throw new IllegalArgumentException("사진 업로드에 실패하였습니다");
+        }
+
+    }
+
+    @Transactional
+    public void deleteProfile(){
+        String email = SecurityUtil.getCurrentLoginUserId();
+        User user = userRepository.findByEmail(email).get();
+
+        user.deleteProfile();
+    }
 
 
     public HttpHeaders tokenToHeader(TokenDto tokenDto) {

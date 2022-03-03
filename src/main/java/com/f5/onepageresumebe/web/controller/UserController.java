@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -90,6 +91,7 @@ public class UserController {
                 .build();
     }
 
+    //유저 정보
     @Secured("ROLE_USER")
     @GetMapping("/user/info")
     public ResDto getInfo(){
@@ -99,6 +101,30 @@ public class UserController {
         return ResDto.builder()
                 .result(true)
                 .data(userInfo)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PutMapping("/user/profile")
+    public ResDto updateProfile(@RequestPart("profileImage") MultipartFile multipartFile){
+
+        userService.updateProfile(multipartFile);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/user/profile")
+    public ResDto deleteProfile(){
+
+        userService.deleteProfile();
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
                 .build();
     }
 }
