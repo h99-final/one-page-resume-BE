@@ -1,12 +1,21 @@
 package com.f5.onepageresumebe.web.dto.user.responseDto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Setter
-@Getter
+import java.util.List;
+
+@AllArgsConstructor
+@Data
+@Builder
 public class UserInfoResponseDto {
-    private int id;
-    private String email;
-    private Boolean is_login;
+
+    Integer userId;
+    Integer porfId;
+    List<Integer> projectId;
+    String email;
+    String name;
+    String phoneNum;
+    String gitUrl;
+    String blogUrl;
+    List<String> stack;
 }

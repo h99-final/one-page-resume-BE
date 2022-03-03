@@ -10,6 +10,6 @@ import lombok.Data;
 @Builder
 public class LoginResultDto {
 
-    private LoginResponseDto responseDto;
     private TokenDto tokenDto;
+    private LoginResponseDto loginResponseDto;
 }
