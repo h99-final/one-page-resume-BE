@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.git.response;
+package com.f5.onepageresumebe.web.dto.git.responseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
-public class GetFileResponseDto {
+public class GetCommitResponseDto {
 
-    private List<FileResponseDto> files;
+    List<CommitResponseDto> commits;
 }

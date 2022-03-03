@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.lang.Nullable;
-
 @AllArgsConstructor
 @Data
 @Builder

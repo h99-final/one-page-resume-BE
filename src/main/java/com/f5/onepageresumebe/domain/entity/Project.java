@@ -44,9 +44,11 @@ public class Project extends TimeEntity{
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
+        this.user = user;
     }
 
-    public static Project create(String title, String introduce, User user) {
+
+    public static Project create(String title, String introduce,User user) {
 
         Project project = Project.builder()
                 .introduce(introduce)

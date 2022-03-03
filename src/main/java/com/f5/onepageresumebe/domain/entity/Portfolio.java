@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+
 public class Portfolio extends TimeEntity{
 
     @Id
@@ -29,7 +30,10 @@ public class Portfolio extends TimeEntity{
     private String introContents;
 
     @Column(columnDefinition = "varchar(100)")
-    private String url;
+    private String githubUrl;
+
+    @Column(columnDefinition = "varchar(100)")
+    private String blogUrl;
 
     @Column(nullable = false,columnDefinition = "TINYINT")
     private Boolean isTemp;
@@ -51,24 +55,48 @@ public class Portfolio extends TimeEntity{
     private List<PortfolioStack> portfolioStackList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Portfolio(String title, String introContents, String url, String introBgImgUrl, User user) {
+    public Portfolio(String title, String introContents, String githubUrl, String introBgImgUrl, String blogUrl, User user) {
+
         this.title = title;
         this.viewCount = 0;
         this.templateIdx = 1;
         this.introContents = introContents;
-        this.url = url;
+        this.githubUrl = githubUrl;
+        this.blogUrl = blogUrl;
         this.isTemp = true;
         this.introBgImgUrl = introBgImgUrl;
         this.user = user;
     }
-
+  
     public static Portfolio create(User user){
 
         Portfolio portfolio = Portfolio.builder()
+                .user(user)
                 .build();
 
         user.setPortfolio(portfolio);
-
         return portfolio;
     }
+
+
+    //소개글 업데이트에 대한 생성자 생성
+    public void updateIntro(String title, String githubUrl, String introBgImgUrl, String introContents, String blogUrl, User user){
+
+        this.title= title;
+        this.githubUrl= githubUrl;
+        this.blogUrl =blogUrl;
+        this.introBgImgUrl= introBgImgUrl;
+        this.introContents= introContents;
+        this.user = user;
+    }
+
+
+    //포트폴리오 템플릿 업데이트에 대한 생성자 생성
+    public void updateTemplate(Integer templateIdx){
+
+        this.templateIdx = templateIdx;
+    }
+
+
+    
 }

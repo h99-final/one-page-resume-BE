@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Career {
+public class Career  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,4 +59,13 @@ public class Career {
 
         return career;
     }
+
+
+    public void updateCareer(String title, String subTitle, String contents){
+        this.title=title;
+        this.subTitle = subTitle;
+        this.contents= contents;
+
+    }
+
 }

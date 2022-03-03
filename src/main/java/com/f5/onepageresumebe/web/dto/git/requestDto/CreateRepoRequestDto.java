@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.git.request;
+package com.f5.onepageresumebe.web.dto.git.requestDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
