@@ -65,10 +65,10 @@ public class Portfolio extends TimeEntity{
     public static Portfolio create(User user){
 
         Portfolio portfolio = Portfolio.builder()
+                .user(user)
                 .build();
 
         user.setPortfolio(portfolio);
-
         return portfolio;
     }
 }
