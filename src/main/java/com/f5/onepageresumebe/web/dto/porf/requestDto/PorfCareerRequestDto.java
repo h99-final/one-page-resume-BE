@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.dto;
+package com.f5.onepageresumebe.web.dto.porf.requestDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
