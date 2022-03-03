@@ -15,7 +15,7 @@ public class StackService {
     public Stack registerStack(String stackName) {
 
         //기존에 같은 이름의 스텍이 있는지
-        Stack stack = stackRepository.findStackByName(stackName);
+        Stack stack = stackRepository.findFirstByName(stackName).orElse(null);
 
         //기존에 같은 이름의 스텍이 없으면
         if(stack == null) {
