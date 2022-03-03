@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.repository;
+package com.f5.onepageresumebe.domain.repository;
 
 import com.f5.onepageresumebe.domain.entity.Career;
 import com.f5.onepageresumebe.domain.entity.Portfolio;

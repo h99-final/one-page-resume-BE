@@ -1,10 +1,10 @@
-package com.f5.onepageresumebe.service;
+package com.f5.onepageresumebe.domain.service;
 
 import com.f5.onepageresumebe.domain.entity.Career;
 import com.f5.onepageresumebe.domain.entity.Portfolio;
-import com.f5.onepageresumebe.dto.PorfCareerRequestDto;
-import com.f5.onepageresumebe.repository.CareerRepository;
-import com.f5.onepageresumebe.repository.PortfolioRepository;
+import com.f5.onepageresumebe.domain.repository.PortfolioRepository;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfCareerRequestDto;
+import com.f5.onepageresumebe.domain.repository.CareerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +22,11 @@ public class CareerService {
 
 
     @Transactional//커리어 작성
-    public void creatCarrer(PorfCareerRequestDto porfCareerRequestDto) {
+    public void creatCareer(PorfCareerRequestDto porfCareerRequestDto) {
 
 
         Portfolio portfolio = portfolioRepository.findById(porfCareerRequestDto.getId()).orElseThrow(
-                () -> new NullPointerException("없습니다")
+                () -> new IllegalArgumentException("없습니다")
         );
 
 
@@ -44,7 +44,6 @@ public class CareerService {
                 porfCareerRequestDto.getStartTime(), porfCareerRequestDto.getEndTime(), portfolio);
         careerRepository.save(career);
 
-        //Optional<Stack> found = stackRepository.findByName(stackContents);
 
     }
 }

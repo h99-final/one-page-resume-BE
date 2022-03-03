@@ -1,9 +1,9 @@
-package com.f5.onepageresumebe.controller;
+package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.dto.ProjectSaveResponseDto;
-import com.f5.onepageresumebe.dto.ProjectRequestDto;
-import com.f5.onepageresumebe.dto.ProjectResponseDto;
-import com.f5.onepageresumebe.service.ProjectService;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectSaveResponseDto;
+import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import com.f5.onepageresumebe.domain.service.ProjectService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +25,7 @@ public class ProjectController {
             , @RequestPart(value = "data") ProjectRequestDto projectRequestDto,
                                           @PathVariable("porfId") Integer porfId) throws IOException {
 
-        ProjectSaveResponseDto response = projectService.createProject(porfId, projectRequestDto, multipartFiles);
+        ProjectSaveResponseDto response = projectService.createProject(projectRequestDto, multipartFiles);
 
         return ProjectResponseDto.builder()
                 .result(true)

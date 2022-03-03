@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +32,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
-    private final PortfolioRespository portfolioRespository;
+    private final PortfolioRepository portfolioRepository;
     private final TokenProvider tokenProvider;
     private final StackService stackService;
     private final StackRepository stackRepository;
@@ -60,7 +59,7 @@ public class UserService {
             Portfolio portfolio = Portfolio.create(user);
             user.setPortfolio(portfolio);
             userRepository.save(user);
-            portfolioRespository.save(portfolio);
+            portfolioRepository.save(portfolio);
             res = true;
         }
 
@@ -135,8 +134,6 @@ public class UserService {
 
             userstackRepository.save(userStack);
 
-            //유저 정보의 userstackList에 userstack 추가
-            curUser.addStack(userStack);
         }
 
         // 추가 기입한 정보 유저에 넣기

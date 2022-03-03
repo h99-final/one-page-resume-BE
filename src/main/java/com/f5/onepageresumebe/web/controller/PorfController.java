@@ -1,12 +1,12 @@
-package com.f5.onepageresumebe.controller;
+package com.f5.onepageresumebe.web.controller;
 
 
 import com.f5.onepageresumebe.config.S3Uploader;
-import com.f5.onepageresumebe.dto.PorfIntroRequestDto;
-import com.f5.onepageresumebe.dto.PorfStackRequestDto;
-import com.f5.onepageresumebe.dto.PorfTemplateRequestDto;
-import com.f5.onepageresumebe.dto.commen.ResDto;
-import com.f5.onepageresumebe.service.PortfolioService;
+import com.f5.onepageresumebe.web.dto.common.ResDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfStackRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
+import com.f5.onepageresumebe.domain.service.PortfolioService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

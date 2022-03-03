@@ -71,6 +71,8 @@ public class UserController {
     @PostMapping("/user/info")
     public ResDto addInfo(@RequestBody AddInfoRequestDto requestDto) {
 
+        userService.addInfo(requestDto);
+
         return ResDto.builder()
                 .result(true)
                 .build();

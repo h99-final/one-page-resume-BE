@@ -1,16 +1,18 @@
-package com.f5.onepageresumebe.service;
+package com.f5.onepageresumebe.domain.service;
 
 import com.f5.onepageresumebe.config.S3Uploader;
-import com.f5.onepageresumebe.domain.entity.Career;
 import com.f5.onepageresumebe.domain.entity.Portfolio;
 import com.f5.onepageresumebe.domain.entity.PortfolioStack;
 import com.f5.onepageresumebe.domain.entity.Stack;
-import com.f5.onepageresumebe.dto.*;
-import com.f5.onepageresumebe.repository.CareerRepository;
-import com.f5.onepageresumebe.repository.PortfolioRepository;
+import com.f5.onepageresumebe.domain.repository.CareerRepository;
 
-import com.f5.onepageresumebe.repository.PortfolioStackRepository;
-import com.f5.onepageresumebe.repository.StackRepository;
+import com.f5.onepageresumebe.domain.repository.PortfolioRepository;
+import com.f5.onepageresumebe.domain.repository.PortfolioStackRepository;
+import com.f5.onepageresumebe.domain.repository.StackRepository;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfStackRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,13 +47,12 @@ public class PortfolioService {
        String imageUrl = s3Uploader.upload(multipartFile,"introImage");//사진 업로드
 
 
-       portfolio.updateInrtro(porfIntroRequestDto.getTitle(), porfIntroRequestDto.getGithubUrl(),
+       portfolio.updateIntro(porfIntroRequestDto.getTitle(), porfIntroRequestDto.getGithubUrl(),
                 porfIntroRequestDto.getBlogUrl(), imageUrl,
-                porfIntroRequestDto.getIntroContents(), portfolio.getUser());
+                porfIntroRequestDto.getIntroContents());
 
        portfolioRepository.save(portfolio);
 
-       //portfolioStackRepository.save();
        return new PorfIntroResponseDto(portfolio.getId());
    }
 
@@ -85,7 +86,7 @@ public class PortfolioService {
         //Optional<Stack> found = stackRepository.findByName(stackContents);
 
         for(String content: stackContents){
-            Stack stack = stackRepository.findStackByName(content);
+            Stack stack = stackRepository.findFirstByName(content).orElse(null);
 
 
             //기존에 같은 이름의 스텍이 없으면
