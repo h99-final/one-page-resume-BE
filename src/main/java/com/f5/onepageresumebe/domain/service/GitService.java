@@ -38,16 +38,16 @@ public class GitService {
 
         //깃허브에서 이름으로 리포지토리 가져오기 - 존재하는지 확인 용도
         try {
-            GHRepository repository = github.getRepository(repoName);
-        } catch (IOException e) {
-            log.error("addRepository -> getRepository : {}", e.getMessage());
-            throw new IllegalArgumentException("깃허브에 해당 리포지토리가 존재하지 않습니다");
-        }
+        GHRepository repository = github.getRepository(repoName);
+    } catch (IOException e) {
+        log.error("addRepository -> getRepository : {}", e.getMessage());
+        throw new IllegalArgumentException("깃허브에 해당 리포지토리가 존재하지 않습니다");
+    }
 
-        Project project = projectRepository.findById(projectId).orElseThrow(() ->
-                new IllegalArgumentException("해당 프로젝트가 존재하지 않습니다"));
+    Project project = projectRepository.findById(projectId).orElseThrow(() ->
+            new IllegalArgumentException("해당 프로젝트가 존재하지 않습니다"));
 
-        GitRepository gitRepository = GitRepository.create(repoName, url, project);
+    GitRepository gitRepository = GitRepository.create(repoName, url, project);
 
         gitRepoRepository.save(gitRepository);
 
@@ -117,22 +117,5 @@ public class GitService {
         gitCommitRepository.deleteById(commitId);
     }
 
-    public GetFileResponseDto getFiles(String repoName,String sha){
-
-        //깃허브에서 이름으로 리포지토리 가져오기
-        try {
-            GHRepository repository = github.getRepository(repoName);
-            GHCommit commit = repository.getCommit(sha);
-            List<FileResponseDto> fileResponseDtos = new ArrayList<>();
-            commit.getFiles().stream().forEach(file -> {
-                FileResponseDto.builder()
-                        .fileName(file.getFileName())
-                        .fileId(f)
-            });
-        } catch (IOException e) {
-            log.error("addRepository -> getRepository : {}", e.getMessage());
-            throw new IllegalArgumentException("깃허브에 해당 리포지토리가 존재하지 않습니다");
-        }
-    }
 
 }
