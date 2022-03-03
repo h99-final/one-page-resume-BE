@@ -32,8 +32,8 @@ public class PorfController {
 
 
     @PostMapping("/porf/intro") //포트폴리오 소개 작성
-    public ResDto createIntro(@RequestPart(value = "img", required = false) MultipartFile multipartFile
-                             , @RequestPart(value = "intro", required = false)PorfIntroRequestDto porfIntroRequestDto)
+    public ResDto createIntro(@RequestPart(value = "img") MultipartFile multipartFile
+                             , @RequestPart(value = "intro") PorfIntroRequestDto porfIntroRequestDto)
             throws IOException {
 
        portfolioService.createIntro(multipartFile,porfIntroRequestDto);

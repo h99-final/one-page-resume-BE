@@ -1,13 +1,11 @@
 package com.f5.onepageresumebe.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class PorfTemplateRequestDto {
 
     private Integer id;
