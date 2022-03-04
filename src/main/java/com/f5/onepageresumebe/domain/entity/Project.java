@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -72,9 +73,21 @@ public class Project extends TimeEntity{
     }
 
 
-    void setPortfolio(Portfolio portfolio){
+    public void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
         portfolio.getProjectList().add(this);
+    }
+
+    public void removePortfolio(Portfolio portfolio){
+        this.portfolio = null;
+        portfolio.getProjectList().remove(this);
+    }
+
+    public ProjectResponseDto toShortInfo(){
+        return ProjectResponseDto.builder()
+                .projectId(this.id)
+                .projectTitle(this.title)
+                .build();
     }
 
 }
