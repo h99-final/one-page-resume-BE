@@ -8,5 +8,5 @@ import lombok.Data;
 @Data
 @Builder
 public class LoginResponseDto {
-    private boolean isFirstLogin;
+    private Boolean isFirstLogin;
 }
