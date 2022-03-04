@@ -12,7 +12,7 @@ public class SecurityUtil {
     public static String getCurrentLoginUserId(){
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if(authentication==null || authentication.getName() == null){
+        if(authentication==null || authentication.getName() == null || authentication.getName() == "anonymousUser"){
             throw new CustomAuthenticationException("로그인이 필요합니다");
         }
 
