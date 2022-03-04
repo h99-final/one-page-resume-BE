@@ -102,5 +102,9 @@ public class Portfolio extends TimeEntity{
 
         return status;
     }
+
+    public void increaseViewCount(){
+        this.viewCount++;
+    }
     
 }
