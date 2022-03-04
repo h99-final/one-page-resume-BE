@@ -6,6 +6,7 @@ import com.f5.onepageresumebe.domain.entity.GitFile;
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
+import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
@@ -33,8 +34,19 @@ public class GitService {
     private final GitApiConfig gitApiConfig;
 
     @Transactional
-    public void createTroubleShooting(Integer projectId, CommitRequestDto request) {
+    public boolean createTroubleShooting(Integer projectId, CommitRequestDto request) {
+
         Project project = projectService.getProject(projectId);
+
+        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+
+        //이미 등록한 커밋이랑 중복되는지 체크
+        GitCommit tempCommit = gitCommitRepository.findBySha(request.getSha());
+
+        //이미 등록된 커밋
+        if(tempCommit != null) {
+            return false;
+        }
 
         GitCommit gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
 
@@ -44,11 +56,15 @@ public class GitService {
             GitFile gitFile = GitFile.create(curFile.getFileName(), curFile.getPatchCode(), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }
+
+        return true;
     }
 
     public List<CommitMessageResponseDto> getCommitMessages(Integer projectId) {
 
         Project project = projectService.getProject(projectId);
+
+        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
 
         String gitUrl = project.getGitRepoUrl(); //github.com/skekq123
         String repo = project.getGitRepoName(); // ourWiki
@@ -78,7 +94,11 @@ public class GitService {
     }
 
     public List<FilesResponseDto> getFiles(Integer projectId, String sha) {
+
+
         Project project = projectService.getProject(projectId);
+        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+
         String gitUrl = project.getGitRepoUrl();
         String repo = project.getGitRepoName();
 

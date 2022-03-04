@@ -8,6 +8,7 @@ import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.CreateProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
+import javafx.beans.property.ListProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,15 @@ public class ProjectService {
     }
 
     public Project getProject(Integer projectId) {
-        return projectRepository.getById(projectId);
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+        List<Project> projects = projectRepository.findAllByUserEmail(email);
+        Project project = null;
+
+        for(Project curProject : projects) {
+            if(curProject.getId() == projectId) project = curProject;
+        }
+
+        return project;
     }
 }

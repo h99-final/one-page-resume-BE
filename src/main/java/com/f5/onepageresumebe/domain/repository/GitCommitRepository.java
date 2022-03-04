@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GitCommitRepository extends JpaRepository<GitCommit, Integer> {
-
+    GitCommit findBySha(String sha);
 //    @Query("select gc.id from GitCommit gc join fetch gc.repository r where r.id = :repoId")
 //    List<Integer> findByRepoId(@Param("repoId") Integer repoId);
 //
