@@ -115,7 +115,8 @@ public class GitService {
 
             List<GHCommit.File> files = commit.getFiles();
             for (GHCommit.File curFile : files) {
-                FilesResponseDto curDto = new FilesResponseDto(curFile.getFileName(), curFile.getPatch());
+                List<String> patchCodeList = parsePatchCode(curFile.getPatch());
+                FilesResponseDto curDto = new FilesResponseDto(curFile.getFileName(), patchCodeList);
                 filesResponseDtoList.add(curDto);
             }
         } catch (IOException e) {
@@ -128,6 +129,16 @@ public class GitService {
     public String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");
         return gitUrl.substring(idx+5, gitUrl.length()) + "/" +  reName;
+    }
+
+    public List<String> parsePatchCode(String patchCode) {
+        List<String> res = new ArrayList<>();
+        String[] temp = patchCode.split("\n");
+
+        for(int i = 0; i < temp.length; ++i) {
+            res.add(temp[i]);
+        }
+        return res;
     }
 }
 
