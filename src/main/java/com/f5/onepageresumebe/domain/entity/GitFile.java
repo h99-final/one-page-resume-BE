@@ -36,11 +36,12 @@ public class GitFile {
         this.commit = commit;
     }
 
-    public static GitFile create(String name, String patchCode, GitCommit commit){
+    public static GitFile create(String name, String patchCode, String troubleContents, GitCommit commit){
 
         GitFile gitFile = GitFile.builder()
                 .name(name)
                 .patchCode(patchCode)
+                .troubleContents(troubleContents)
                 .commit(commit)
                 .build();
 

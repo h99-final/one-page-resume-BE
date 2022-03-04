@@ -40,11 +40,11 @@ public class ProjectService {
 
         String imageUrl = s3Uploader.uploads(multipartFiles,"ProjectImage");//사진 업로드
 
-        Project project = Project.create(projectRequestDto.getProjectTitle(), projectRequestDto.getProjectContent(), user);
+        Project project = Project.create(projectRequestDto.getProjectTitle(), projectRequestDto.getProjectContent(), projectRequestDto.getGitRepoName(), projectRequestDto.getGitRepoUrl(), user);
         project = projectRepository.save(project);
 
         ProjectImg projectImg = ProjectImg.create(project,imageUrl);
-        
+
         projectImgRepository.save(projectImg);
 
 
@@ -52,5 +52,9 @@ public class ProjectService {
                 .projectId(project.getId())
                 .projectTitle(project.getTitle())
                 .build();
+    }
+
+    public Project getProject(Integer projectId) {
+        return projectRepository.getById(projectId);
     }
 }
