@@ -5,20 +5,23 @@ import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
-import com.f5.onepageresumebe.web.dto.project.responseDto.CreateProjectResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.CreateProjectRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
 @Service
 @Slf4j
+@Transactional(readOnly = true)
 public class ProjectService {
 
 
@@ -32,13 +35,15 @@ public class ProjectService {
 
 
     @Transactional//프로젝트 생성
-    public CreateProjectResponseDto createProject(CreateProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
+    public ProjectResponseDto createProject(CreateProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(userEmail).get();
 
         Project project = Project.create(requestDto.getProjectTitle(), requestDto.getProjectContent(),
                 requestDto.getGitRepoName(), requestDto.getGitRepoUrl(), user);
+
+        projectRepository.save(project);
 
         List<String> stackNames = requestDto.getProjectStack();
 
@@ -77,9 +82,24 @@ public class ProjectService {
 
         projectRepository.save(project);
 
-        return CreateProjectResponseDto.builder()
+        return ProjectResponseDto.builder()
                 .projectId(project.getId())
                 .projectTitle(project.getTitle())
                 .build();
     }
+
+    public ProjectShortInfoResponseDto getShortInfos(){
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+
+        List<Project> projects = projectRepository.findAllByUserEmail(email);
+
+        List<ProjectResponseDto> responseDtos = projects.stream().map(project -> project.toShortInfo())
+                .collect(Collectors.toList());
+
+        return ProjectShortInfoResponseDto.builder()
+                .projects(responseDtos)
+                .build();
+    }
+
 }
