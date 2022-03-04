@@ -70,7 +70,6 @@ public class PortfolioService {
 
     @Transactional//기술 스택 작성
     public void createStack(PorfStackRequestDto porfStackRequestDto) {
-
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(
@@ -179,6 +178,3 @@ public class PortfolioService {
     }
 
 }
-
-
-

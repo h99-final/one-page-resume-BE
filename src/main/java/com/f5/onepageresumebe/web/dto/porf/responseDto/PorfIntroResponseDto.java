@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.porf.requestDto;
+package com.f5.onepageresumebe.web.dto.porf.responseDto;
 
 
 import lombok.AllArgsConstructor;
@@ -6,14 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PorfStackRequestDto {
+public class PorfIntroResponseDto {
 
-    List<String> stackContents;
+    private Integer porfId;  //포트폴리오 id
+
 }

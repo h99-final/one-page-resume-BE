@@ -1,6 +1,5 @@
 package com.f5.onepageresumebe.web.controller;
 
-
 import com.f5.onepageresumebe.web.dto.career.requestDto.CreateCareerRequestDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
@@ -38,7 +37,7 @@ public class PorfController {
     @Secured("ROLE_USER")
     @PostMapping("/porf/template") //포트폴리오 템플릿 작성
     public ResDto createTemplate(@RequestBody PorfTemplateRequestDto porfTemplateRequestDto) {
-
+      
         portfolioService.createTemplate(porfTemplateRequestDto);
 
         return ResDto.builder()

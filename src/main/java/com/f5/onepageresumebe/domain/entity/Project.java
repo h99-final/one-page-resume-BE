@@ -37,7 +37,6 @@ public class Project extends TimeEntity{
 
     @OneToMany(mappedBy = "project")
     private List<GitCommit> gitCommitList = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
@@ -66,12 +65,10 @@ public class Project extends TimeEntity{
                 .user(user)
                 .build();
 
-
         user.getProjectList().add(project);
 
         return project;
     }
-
 
     public void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
@@ -89,5 +86,4 @@ public class Project extends TimeEntity{
                 .projectTitle(this.title)
                 .build();
     }
-
 }

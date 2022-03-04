@@ -21,7 +21,7 @@ public class GitFile {
     @Column(name = "file_patch_code", nullable = false, columnDefinition = "varchar(10000)")
     private String patchCode;
 
-    @Column(name = "file_trouble_contents", nullable = false, columnDefinition = "varchar(5000)")
+    @Column(name = "file_trouble_contents", columnDefinition = "varchar(5000)")
     private String troubleContents;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)

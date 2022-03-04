@@ -1,11 +1,11 @@
 package com.f5.onepageresumebe.web.dto.porf.requestDto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -13,7 +13,15 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PorfStackRequestDto {
+public class PorfCareerRequestDto {
 
-    List<String> stackContents;
+
+    private Integer id;
+    private String title;
+    private String subTitle;
+    List<String> contents;
+    private LocalDate startTime;
+    private LocalDate endTime;
+
+
 }
