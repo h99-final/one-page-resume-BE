@@ -3,18 +3,16 @@ package com.f5.onepageresumebe.web.controller;
 import com.f5.onepageresumebe.domain.service.GitService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
-import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 public class GitController {
 
     private final GitService gitService;
 
+    @Secured("ROLE_USER")
     @GetMapping("/git/project/{projectId}/commit")
     public ResDto getCommitMessages(@PathVariable("projectId") Integer projectId) {
 
@@ -24,6 +22,7 @@ public class GitController {
                 .build();
     }
 
+    @Secured("ROLE_USER")
     @GetMapping("/git/project/{projectId}/commit/{sha}/file")
     public ResDto getFiles(@PathVariable("projectId") Integer projectId, @PathVariable("sha") String sha) {
 
@@ -33,13 +32,12 @@ public class GitController {
                 .build();
     }
 
+    @Secured("ROLE_USER")
     @PostMapping("/project/{projectId}/troubleShooting")
     public ResDto createTroubleShooting(@RequestBody CommitRequestDto request, @PathVariable("projectId") Integer projectId) {
 
-        gitService.createTroubleShooting(projectId, request);
-
         return ResDto.builder()
-                .result(true)
+                .result(gitService.createTroubleShooting(projectId, request))
                 .build();
     }
 }
