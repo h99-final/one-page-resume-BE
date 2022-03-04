@@ -3,14 +3,13 @@ package com.f5.onepageresumebe.web.controller;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.domain.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.project.requestDto.CreateProjectRequestDto;
+import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectStackRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -43,6 +42,17 @@ public class ProjectController {
         return ResDto.builder()
                 .result(true)
                 .data(responseDto)
+                .build();
+    }
+
+    @PostMapping("/project/stack")
+    public ResDto getProjectsByStack(@RequestBody ProjectStackRequestDto requestDto){
+
+        ProjectDetailListResponseDto responseDtos = projectService.getAllByStacks(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(responseDtos)
                 .build();
     }
 }

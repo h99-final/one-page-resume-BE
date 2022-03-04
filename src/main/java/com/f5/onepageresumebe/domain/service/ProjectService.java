@@ -5,6 +5,9 @@ import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectStackRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.CreateProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
@@ -15,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -99,6 +104,32 @@ public class ProjectService {
 
         return ProjectShortInfoResponseDto.builder()
                 .projects(responseDtos)
+                .build();
+    }
+
+    public ProjectDetailListResponseDto getAllByStacks(ProjectStackRequestDto requestDto){
+
+        List<String> stackNames = requestDto.getStack();
+
+        List<Project> projects = projectRepository.findAllByStackNames(stackNames);
+
+        Collections.shuffle(projects);
+
+        List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
+        projects.stream().forEach(project -> {
+            ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
+                    .projectTitle(project.getTitle())
+                    .projectContent(project.getIntroduce())
+                    .projectImgUrl(projectImgRepository.findFirstByProjectId(project.getId()).orElse(null).getImageUrl())
+                    .projectStack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                    .build();
+
+            projectDetailResponseDtos.add(projectDetailResponseDto);
+
+        });
+
+        return ProjectDetailListResponseDto.builder()
+                .projectList(projectDetailResponseDtos)
                 .build();
     }
 
