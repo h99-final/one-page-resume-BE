@@ -3,10 +3,11 @@ package com.f5.onepageresumebe.web.dto.project.responseDto;
 import lombok.Builder;
 import lombok.Data;
 
-@Data
 @Builder
+@Data
 public class ProjectResponseDto {
 
-    private boolean result;
-    private CreateProjectResponseDto data;
+
+    private Integer projectId;
+    private String projectTitle;
 }
