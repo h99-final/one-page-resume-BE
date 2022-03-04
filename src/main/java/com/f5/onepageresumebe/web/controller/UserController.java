@@ -48,12 +48,6 @@ public class UserController {
     @PostMapping("/user/login")
     public ResponseEntity login(@RequestBody LoginRequestDto requestDto) {
 
-//        Cookie token = new Cookie("Authorization",userService.createToken(loginDto.getEmail()));
-//
-//        token.setMaxAge(COOKIE_TIME);
-//        token.setDomain("localhost");
-//        response.addCookie(token);
-
         LoginResultDto loginResultDto = userService.login(requestDto);
         HttpHeaders headers = userService.tokenToHeader(loginResultDto.getTokenDto());
 

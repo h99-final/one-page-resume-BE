@@ -16,5 +16,4 @@ public interface StackRepository extends JpaRepository<Stack, Integer> {
     @Query("select s.name from Stack s where s.name in :names")
     List<String> findNamesByNamesIfExists(@Param("names") List<String> names);
 
-
 }

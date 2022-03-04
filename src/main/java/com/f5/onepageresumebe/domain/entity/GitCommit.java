@@ -34,6 +34,7 @@ public class GitCommit {
     private List<GitFile> fileList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
+
     public GitCommit(String message, String sha,String tsName, Project project) {
         this.message = message;
         this.sha = sha;

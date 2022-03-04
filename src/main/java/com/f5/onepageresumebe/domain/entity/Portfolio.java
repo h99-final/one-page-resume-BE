@@ -77,7 +77,6 @@ public class Portfolio extends TimeEntity{
 
     //소개글 업데이트에 대한 생성자 생성
     public void updateIntro(String title, String githubUrl, String introContents, String blogUrl){
-
         this.title= title;
         this.githubUrl= githubUrl;
         this.blogUrl =blogUrl;

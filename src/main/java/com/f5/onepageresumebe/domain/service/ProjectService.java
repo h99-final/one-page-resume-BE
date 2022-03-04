@@ -133,4 +133,16 @@ public class ProjectService {
                 .build();
     }
 
+    public Project getProject(Integer projectId) {
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+        List<Project> projects = projectRepository.findAllByUserEmail(email);
+        Project project = null;
+
+        for(Project curProject : projects) {
+            if(curProject.getId() == projectId) project = curProject;
+        }
+
+        return project;
+    }
 }
