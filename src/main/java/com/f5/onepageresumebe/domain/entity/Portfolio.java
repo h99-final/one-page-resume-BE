@@ -24,7 +24,7 @@ public class Portfolio extends TimeEntity{
     private Integer viewCount = 0;
 
     @Column(nullable = false ,columnDefinition = "TINYINT")
-    private Integer templateIdx; //todo: 기본 템플릿 확인
+    private Integer templateIdx;
 
     @Column(columnDefinition = "varchar(500)")
     private String introContents;
@@ -37,9 +37,6 @@ public class Portfolio extends TimeEntity{
 
     @Column(nullable = false,columnDefinition = "TINYINT")
     private Boolean isTemp;
-
-    @Column(columnDefinition = "varchar(100)")
-    private String introBgImgUrl;
 
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
@@ -55,16 +52,15 @@ public class Portfolio extends TimeEntity{
     private List<PortfolioStack> portfolioStackList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Portfolio(String title, String introContents, String githubUrl, String introBgImgUrl, String blogUrl, User user) {
+    public Portfolio(String title, String introContents, String githubUrl, String blogUrl, User user) {
 
         this.title = title;
         this.viewCount = 0;
-        this.templateIdx = 1;
+        this.templateIdx = 0;
         this.introContents = introContents;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
         this.isTemp = true;
-        this.introBgImgUrl = introBgImgUrl;
         this.user = user;
     }
   
@@ -80,14 +76,11 @@ public class Portfolio extends TimeEntity{
 
 
     //소개글 업데이트에 대한 생성자 생성
-    public void updateIntro(String title, String githubUrl, String introBgImgUrl, String introContents, String blogUrl, User user){
-
+    public void updateIntro(String title, String githubUrl, String introContents, String blogUrl){
         this.title= title;
         this.githubUrl= githubUrl;
         this.blogUrl =blogUrl;
-        this.introBgImgUrl= introBgImgUrl;
         this.introContents= introContents;
-        this.user = user;
     }
 
 
@@ -97,6 +90,16 @@ public class Portfolio extends TimeEntity{
         this.templateIdx = templateIdx;
     }
 
+    public String changeStatus(String status){
+        if (status.equals("public")){
+            this.isTemp = false;
+        }else if(status.equals("private")){
+            this.isTemp = true;
+        }else{
+            throw new IllegalArgumentException("상태값은 public, private만 넣을 수 있습니다");
+        }
 
+        return status;
+    }
     
 }

@@ -18,4 +18,5 @@ public class AddInfoRequestDto {
     private String phoneNum;
     private String gitUrl;
     private String blogUrl;
+    private String job;
 }

@@ -36,9 +36,7 @@ dependencies {
     implementation group: 'org.kohsuke', name: 'github-api', version: '1.301'
 
     // aws-s3
-    compileOnly 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-    implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.228')
-    implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
 
     //jwt

@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -34,9 +35,8 @@ public class Project extends TimeEntity{
     @OneToMany(mappedBy = "project")
     private List<ProjectImg> projectImgList = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "project")
-//    private List<GitCommit> gitCommitList = new ArrayList<>();
-
+    @OneToMany(mappedBy = "project")
+    private List<GitCommit> gitCommitList = new ArrayList<>();
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
@@ -46,7 +46,7 @@ public class Project extends TimeEntity{
     private User user;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Project(String title, String introduce, Portfolio portfolio, String gitRepoName, String gitRepoUrl, User user) {
+    public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user) {
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
@@ -54,7 +54,8 @@ public class Project extends TimeEntity{
         this.gitRepoName = gitRepoName;
         this.gitRepoUrl = gitRepoUrl;
     }
-    public static Project create(String title, String introduce, String gitRepoName, String gitRepoUrl, User user) {
+
+    public static Project create(String title, String introduce,String gitRepoName,String gitRepoUrl,User user) {
 
         Project project = Project.builder()
                 .introduce(introduce)
@@ -69,8 +70,20 @@ public class Project extends TimeEntity{
         return project;
     }
 
-    void setPortfolio(Portfolio portfolio){
+    public void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
         portfolio.getProjectList().add(this);
+    }
+
+    public void removePortfolio(Portfolio portfolio){
+        this.portfolio = null;
+        portfolio.getProjectList().remove(this);
+    }
+
+    public ProjectResponseDto toShortInfo(){
+        return ProjectResponseDto.builder()
+                .projectId(this.id)
+                .projectTitle(this.title)
+                .build();
     }
 }

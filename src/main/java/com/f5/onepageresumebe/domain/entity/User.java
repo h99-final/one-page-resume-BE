@@ -36,6 +36,12 @@ public class User extends TimeEntity{
     @Column(columnDefinition = "varchar(20)")
     private String phoneNum;
 
+    @Column(columnDefinition = "varchar(20)")
+    private String job;
+
+    @Column(columnDefinition = "varchar(300)")
+    private String profileImgUrl;
+
     @OneToMany(mappedBy = "user")
     private List<UserStack> userStackList = new ArrayList<>();
 
@@ -56,6 +62,7 @@ public class User extends TimeEntity{
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
         this.role = "ROLE_USER";
+        this.profileImgUrl = "https://myclone.s3.ap-northeast-2.amazonaws.com/profile/%EA%B2%80%EC%A0%95+%EC%82%AC%EC%A7%84.png";
     }
 
     public static User create(String email, String password, String name, String githubUrl, String blogUrl){
@@ -69,18 +76,28 @@ public class User extends TimeEntity{
                 .build();
     }
   
-    public void addInfo(String name, String githubUrl, String blogUrl, String phoneNum) {
+    public void addInfo(String name, String githubUrl, String blogUrl, String phoneNum,String job) {
         this.name = name;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
         this.phoneNum = phoneNum;
+        this.job = job;
     }
   
-    public void updateInfo(String name, String phoneNum, String githubUrl, String blogUrl) {
+    public void updateInfo(String name, String phoneNum, String githubUrl, String blogUrl,String job) {
         this.name = name;
         this.phoneNum = phoneNum;
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
+        this.job = job;
+    }
+
+    public void updateProfile(String profileImgUrl){
+        this.profileImgUrl = profileImgUrl;
+    }
+
+    public void deleteProfile(){
+        this.profileImgUrl = "https://myclone.s3.ap-northeast-2.amazonaws.com/profile/%EA%B2%80%EC%A0%95+%EC%82%AC%EC%A7%84.png";
     }
 
     public void setPortfolio(Portfolio portfolio){

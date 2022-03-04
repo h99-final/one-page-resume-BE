@@ -18,4 +18,6 @@ public class UserInfoResponseDto {
     String gitUrl;
     String blogUrl;
     List<String> stack;
+    String job;
+    String profileImage;
 }

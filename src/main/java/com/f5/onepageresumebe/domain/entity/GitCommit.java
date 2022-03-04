@@ -26,31 +26,32 @@ public class GitCommit {
     @Column(name = "commit_ts_name", nullable = false, columnDefinition = "varchar(50)")
     private String tsName;
 
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-//    @JoinColumn(name = "project_id")
-//    private Project project;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
     @OneToMany(mappedBy = "commit")
     private List<GitFile> fileList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public GitCommit(String message, String sha, String tsName, Project project) {
+
+    public GitCommit(String message, String sha,String tsName, Project project) {
         this.message = message;
         this.sha = sha;
-       //this.project = project;
         this.tsName = tsName;
+        this.project = project;
     }
 
-    public static GitCommit create(String message, String sha, String tsName, Project project){
+    public static GitCommit create(String message, String sha,String tsName, Project project){
 
         GitCommit commit = GitCommit.builder()
                 .message(message)
                 .sha(sha)
                 .tsName(tsName)
-//                .project(project)
+                .project(project)
                 .build();
 
-        //project.getGitCommitList().add(commit);
+        project.getGitCommitList().add(commit);
 
         return commit;
     }
