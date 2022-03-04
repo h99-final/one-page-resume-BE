@@ -48,13 +48,10 @@ public class GitService {
 
     public List<CommitMessageResponseDto> getCommitMessages(Integer projectId) {
 
-//        Project project = projectService.getProject(projectId);
-//
-//        String gitUrl = project.getGitRepoUrl();
-//        String repo = project.getGitRepoName();
+        Project project = projectService.getProject(projectId);
 
-        String gitUrl = "https://github.com/skekq123";
-        String repo = "OurWiki";
+        String gitUrl = project.getGitRepoUrl(); //github.com/skekq123
+        String repo = project.getGitRepoName(); // ourWiki
 
         //repoName을 위의 형태로 받을지? 그게아니라면 git의 정보에서 사용자 id를 빼와 repoName앞에 붙여주기
         String repoName = makeRepoName(gitUrl, repo);
@@ -81,12 +78,9 @@ public class GitService {
     }
 
     public List<FilesResponseDto> getFiles(Integer projectId, String sha) {
-//        Project project = projectService.getProject(projectId);
-//        String gitUrl = project.getGitRepoUrl();
-//        String repoName = project.getGitRepoName();
-
-        String gitUrl = "https://github.com/skekq123";
-        String repo = "OurWiki";
+        Project project = projectService.getProject(projectId);
+        String gitUrl = project.getGitRepoUrl();
+        String repo = project.getGitRepoName();
 
         //repoName을 위의 형태로 받을지? 그게아니라면 git의 정보에서 사용자 id를 빼와 repoName앞에 붙여주기
         String repoName = makeRepoName(gitUrl, repo);

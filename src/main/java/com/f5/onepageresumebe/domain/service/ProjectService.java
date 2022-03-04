@@ -101,4 +101,8 @@ public class ProjectService {
                 .projects(responseDtos)
                 .build();
     }
+
+    public Project getProject(Integer projectId) {
+        return projectRepository.getById(projectId);
+    }
 }
