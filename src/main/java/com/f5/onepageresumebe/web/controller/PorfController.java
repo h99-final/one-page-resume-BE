@@ -1,10 +1,11 @@
 package com.f5.onepageresumebe.web.controller;
 
 
-import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CreateCareerRequestDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
+import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfStackRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.domain.service.PortfolioService;
@@ -64,6 +65,42 @@ public class PorfController {
     public ResDto createCareer(@RequestBody CreateCareerRequestDto dto) {
 
         portfolioService.createCareer(dto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping("/porf/status")
+    public ResDto changeStatus(@RequestBody ChangeStatusDto requestDto){
+
+        ChangeStatusDto changeStatusDto = portfolioService.changeStatus(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(changeStatusDto)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping("/porf/project")
+    public ResDto inputProjectInPortfolio(@RequestBody PorfProjectRequestDto requestDto){
+
+        portfolioService.inputProjectInPorf(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/porf/project")
+    public ResDto deleteProjectInPortfolio(@RequestBody PorfProjectRequestDto requestDto){
+
+        portfolioService.deleteProjectInPorf(requestDto);
 
         return ResDto.builder()
                 .result(true)

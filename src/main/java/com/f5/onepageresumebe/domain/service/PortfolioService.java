@@ -6,7 +6,9 @@ import com.f5.onepageresumebe.domain.repository.*;
 
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CreateCareerRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
+import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfStackRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class PortfolioService {
     private final PortfolioStackRepository portfolioStackRepository;
     private final UserRepository userRepository;
     private final CareerRepository careerRepository;
+    private final ProjectRepository projectRepository;
     private final S3Uploader s3Uploader;
 
 
@@ -127,6 +130,52 @@ public class PortfolioService {
             careerRepository.save(career);
 
         });
+    }
+
+    @Transactional
+    public ChangeStatusDto changeStatus(ChangeStatusDto dto){
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(() ->
+                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+
+        String changedStatus = portfolio.changeStatus(dto.getStatus());
+
+        return ChangeStatusDto.builder()
+                .status(changedStatus)
+                .build();
+    }
+
+    @Transactional
+    public void inputProjectInPorf(PorfProjectRequestDto requestDto){
+        String email = SecurityUtil.getCurrentLoginUserId();
+        Portfolio portfolio = portfolioRepository.findByUserEmail(email).orElseThrow(() ->
+                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+
+        List<Integer> projectIds = requestDto.getProjectId();
+
+        List<Project> projects = projectRepository.findAllByIds(projectIds);
+
+        projects.stream().forEach(project -> {
+            if (project.getUser().getId()!=portfolio.getUser().getId()){
+                throw new IllegalArgumentException("내가 작성한 프로젝트만 가져올 수 있습니다");
+            }
+            project.setPortfolio(portfolio);
+        });
+    }
+
+    @Transactional
+    public void deleteProjectInPorf(PorfProjectRequestDto requestDto){
+        String email = SecurityUtil.getCurrentLoginUserId();
+        Portfolio portfolio = portfolioRepository.findByUserEmail(email).orElseThrow(() ->
+                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+
+        List<Integer> projectIds = requestDto.getProjectId();
+
+        List<Project> projects = projectRepository.findAllByIds(projectIds);
+
+        projects.stream().forEach(project -> project.removePortfolio(portfolio));
     }
 
 }
