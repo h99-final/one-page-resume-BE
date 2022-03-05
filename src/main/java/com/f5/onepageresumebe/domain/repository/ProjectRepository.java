@@ -22,4 +22,7 @@ public interface ProjectRepository extends JpaRepository<Project,Integer> {
 
     @Query("select distinct ps.project from ProjectStack ps left join ps.project left join ps.stack s where s.name in :stackNames")
     List<Project> findAllByStackNames(@Param("stackNames") List<String> stackNames);
+
+    @Query("select p from Project p where p.portfolio.id = :porfId")
+    List<Project> findAllByPorfId(@Param("porfId") Integer porfId);
 }
