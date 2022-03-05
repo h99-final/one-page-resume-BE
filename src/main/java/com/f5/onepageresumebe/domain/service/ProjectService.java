@@ -5,9 +5,12 @@ import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.GitPatchCodeUtil;
+import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.CreateProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
 import javafx.beans.property.ListProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,10 +33,10 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final StackRepository stackRepository;
     private final ProjectStackRepository projectStackRepository;
-    private final PortfolioRepository portfolioRepository;
     private  final S3Uploader s3Uploader;
     private final ProjectImgRepository projectImgRepository;
     private final UserRepository userRepository;
+    private final GitPatchCodeUtil gitPatchCodeUtil;
 
 
     @Transactional//프로젝트 생성
@@ -114,5 +118,44 @@ public class ProjectService {
         }
 
         return project;
+    }
+
+    public List<TroubleShootingsResponseDto> getTroubleShootings(Integer projectId) {
+        List<TroubleShootingsResponseDto> troubleShootingsResponseDtos = new ArrayList<>();
+
+        //본인이 가지고있는 프로젝트인지 인증까지
+        Project project = getProject(projectId);
+
+        List<GitCommit> gitCommitList = project.getGitCommitList();
+
+        //프로젝트가 가지고 있는 커밋(저장된 커밋)
+        for(GitCommit curGitCommit : gitCommitList) {
+
+            Integer commitId = curGitCommit.getId();
+            String tsName = curGitCommit.getTsName();
+
+            //커밋이 가지고있는 파일들
+            List<GitFile> gitFileList = curGitCommit.getFileList();
+            //파일 정보들을 저장할 공간
+            List<TroubleShootingFileResponseDto> tsFiles = new ArrayList<>();
+            for(GitFile curGitFile : gitFileList) {
+                List<String> tsPatchCodes = gitPatchCodeUtil.parsePatchCode(curGitFile.getPatchCode());
+                Integer fileId = curGitFile.getId();
+                String fileName = curGitFile.getName();
+                String tsContent = curGitFile.getTroubleContents();
+
+                TroubleShootingFileResponseDto fileDto = new TroubleShootingFileResponseDto(fileId, fileName,tsContent,tsPatchCodes);
+                //리스트에 각각의 file 추가
+                tsFiles.add(fileDto);
+            }
+            //각각의 커밋데이터 추가
+            TroubleShootingsResponseDto curDto = new TroubleShootingsResponseDto(commitId,tsName, tsFiles);
+            //curDto에 데이터 넣고, 리스트 clear
+            tsFiles.clear();
+
+            troubleShootingsResponseDtos.add(curDto);
+        }
+
+        return troubleShootingsResponseDtos;
     }
 }

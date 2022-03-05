@@ -6,7 +6,7 @@ import com.f5.onepageresumebe.domain.entity.GitFile;
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
-import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.GitPatchCodeUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
@@ -32,6 +32,8 @@ public class GitService {
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
     private final GitApiConfig gitApiConfig;
+    private final GitPatchCodeUtil gitPatchCodeUtil;
+
 
     @Transactional
     public boolean createTroubleShooting(Integer projectId, CommitRequestDto request) {
@@ -115,7 +117,7 @@ public class GitService {
 
             List<GHCommit.File> files = commit.getFiles();
             for (GHCommit.File curFile : files) {
-                List<String> patchCodeList = parsePatchCode(curFile.getPatch());
+                List<String> patchCodeList = gitPatchCodeUtil.parsePatchCode(curFile.getPatch());
                 FilesResponseDto curDto = new FilesResponseDto(curFile.getFileName(), patchCodeList);
                 filesResponseDtoList.add(curDto);
             }
@@ -129,16 +131,6 @@ public class GitService {
     public String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");
         return gitUrl.substring(idx+5, gitUrl.length()) + "/" +  reName;
-    }
-
-    public List<String> parsePatchCode(String patchCode) {
-        List<String> res = new ArrayList<>();
-        String[] temp = patchCode.split("\n");
-
-        for(int i = 0; i < temp.length; ++i) {
-            res.add(temp[i]);
-        }
-        return res;
     }
 }
 
