@@ -6,7 +6,6 @@ import com.f5.onepageresumebe.domain.entity.GitFile;
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
-import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
@@ -36,7 +35,7 @@ public class GitService {
     @Transactional
     public boolean createTroubleShooting(Integer projectId, CommitRequestDto request) {
 
-        Project project = projectService.getProject(projectId);
+        Project project = projectService.getProjectIfMyProject(projectId);
 
         if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
 
@@ -62,7 +61,7 @@ public class GitService {
 
     public List<CommitMessageResponseDto> getCommitMessages(Integer projectId) {
 
-        Project project = projectService.getProject(projectId);
+        Project project = projectService.getProjectIfMyProject(projectId);
 
         if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
 
@@ -96,7 +95,7 @@ public class GitService {
     public List<FilesResponseDto> getFiles(Integer projectId, String sha) {
 
 
-        Project project = projectService.getProject(projectId);
+        Project project = projectService.getProjectIfMyProject(projectId);
         if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
 
         String gitUrl = project.getGitRepoUrl();

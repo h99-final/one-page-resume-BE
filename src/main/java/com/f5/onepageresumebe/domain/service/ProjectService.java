@@ -133,7 +133,8 @@ public class ProjectService {
                 .build();
     }
 
-    public Project getProject(Integer projectId) {
+
+    public Project getProjectIfMyProject(Integer projectId) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
         List<Project> projects = projectRepository.findAllByUserEmail(email);
