@@ -11,6 +11,7 @@ import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.domain.service.PortfolioService;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackContentsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -149,6 +150,17 @@ public class PorfController {
     public ResDto getCareer(@PathVariable("porfId") Integer porfId){
 
         CareerListResponseDto responseDto = portfolioService.getCareer(porfId);
+
+        return ResDto.builder()
+                .result(true)
+                .data(responseDto)
+                .build();
+    }
+
+    @GetMapping("/porf/{porfId}/project")
+    public ResDto getProject(@PathVariable("porfId") Integer porfId){
+
+        ProjectDetailListResponseDto responseDto = portfolioService.getProject(porfId);
 
         return ResDto.builder()
                 .result(true)

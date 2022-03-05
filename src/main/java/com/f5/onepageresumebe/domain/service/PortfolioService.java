@@ -16,6 +16,8 @@ import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfStackRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackContentsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,8 +41,8 @@ public class PortfolioService {
     private final UserRepository userRepository;
     private final CareerRepository careerRepository;
     private final ProjectRepository projectRepository;
-    private final S3Uploader s3Uploader;
-
+    private final ProjectImgRepository projectImgRepository;
+    private final ProjectStackRepository projectStackRepository;
 
     @Transactional//소개문 작성
     public void createIntro(PorfIntroRequestDto porfIntroRequestDto) throws IOException {
@@ -295,6 +297,37 @@ public class PortfolioService {
 
         return CareerListResponseDto.builder()
                 .careers(careerResponseDtos)
+                .build();
+    }
+
+    public ProjectDetailListResponseDto getProject(Integer porfId){
+
+        Integer myPorf = isMyPorf(porfId);
+        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+
+        List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
+
+        if(myPorf == 1
+                || ((myPorf==0 || myPorf==-1) && (!portfolio.getIsTemp()))){
+
+            List<Project> projects = projectRepository.findAllByPorfId(porfId);
+            projects.stream().forEach(project -> {
+                ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
+                        .projectTitle(project.getTitle())
+                        .projectContent(project.getIntroduce())
+                        .projectImgUrl(projectImgRepository.findFirstByProjectId(project.getId()).orElse(null).getImageUrl())
+                        .projectStack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                        .build();
+
+                projectDetailResponseDtos.add(projectDetailResponseDto);
+            });
+        }else{
+            return null;
+        }
+
+        return ProjectDetailListResponseDto.builder()
+                .projectList(projectDetailResponseDtos)
                 .build();
     }
 
