@@ -78,6 +78,7 @@ public class ProjectController {
         return ResDto.builder()
                 .result(true)
                 .data(projectService.getTroubleShootings(projectId))
+                .build();
   }
 
     @PostMapping("/project/stack")

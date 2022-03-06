@@ -14,7 +14,6 @@ import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
-import javafx.beans.property.ListProperty;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -169,7 +168,7 @@ public class ProjectService {
         List<TroubleShootingsResponseDto> troubleShootingsResponseDtos = new ArrayList<>();
 
         //본인이 가지고있는 프로젝트인지 인증까지
-        Project project = getProject(projectId);
+        Project project = getProjectIfMyProject(projectId);
 
         List<GitCommit> gitCommitList = project.getGitCommitList();
 
