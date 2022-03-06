@@ -40,4 +40,18 @@ public class GitController {
                 .result(gitService.createTroubleShooting(projectId, request))
                 .build();
     }
+
+
+    @Secured("ROLE_USER")
+    @PutMapping("/project/{projectId}/troubleShooting/{commitId}")
+    public ResDto updateProjectTroubleShootings(@PathVariable("projectId") Integer projectId,
+                                                @PathVariable("commitId") Integer commitId,
+                                                @RequestBody CommitRequestDto request) {
+
+        gitService.updateProjectTroubleShootings(projectId, commitId, request);
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
 }

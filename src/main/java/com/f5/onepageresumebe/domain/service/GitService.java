@@ -6,6 +6,7 @@ import com.f5.onepageresumebe.domain.entity.GitFile;
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
+import com.f5.onepageresumebe.util.GitPatchCodeUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
@@ -52,7 +53,7 @@ public class GitService {
         List<FileRequestDto> fileRequestDtoList = request.getTsFile();
 
         for(FileRequestDto curFile : fileRequestDtoList) {
-            GitFile gitFile = GitFile.create(curFile.getFileName(), curFile.getPatchCode(), curFile.getTsContent(), gitCommit);
+            GitFile gitFile = GitFile.create(curFile.getFileName(),GitPatchCodeUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }
 
@@ -114,7 +115,7 @@ public class GitService {
 
             List<GHCommit.File> files = commit.getFiles();
             for (GHCommit.File curFile : files) {
-                List<String> patchCodeList = parsePatchCode(curFile.getPatch());
+                List<String> patchCodeList = GitPatchCodeUtil.parsePatchCode(curFile.getPatch());
                 FilesResponseDto curDto = new FilesResponseDto(curFile.getFileName(), patchCodeList);
                 filesResponseDtoList.add(curDto);
             }
@@ -130,14 +131,23 @@ public class GitService {
         return gitUrl.substring(idx+5, gitUrl.length()) + "/" +  reName;
     }
 
-    public List<String> parsePatchCode(String patchCode) {
-        List<String> res = new ArrayList<>();
-        String[] temp = patchCode.split("\n");
+    @Transactional
+    public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {
 
-        for(int i = 0; i < temp.length; ++i) {
-            res.add(temp[i]);
-        }
-        return res;
+        // 프로젝트에 연결된 특정 commitId내용들 전부 삭제
+        deleteProjectTroubleShootings(commitId);
+
+        //커밋 추가(트러블슈팅 내용까지)
+        createTroubleShooting(projectId, request);
+    }
+
+    public void deleteProjectTroubleShootings(Integer commitId) {
+        GitCommit gitCommit = gitCommitRepository.getById(commitId);
+
+        List<GitFile> gitFileList = gitCommit.getFileList();
+        gitFileRepository.deleteAllInBatch(gitFileList);
+
+        gitCommitRepository.deleteById(commitId);
     }
 }
 

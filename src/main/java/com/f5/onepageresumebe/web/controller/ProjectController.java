@@ -7,6 +7,7 @@ import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -70,6 +71,14 @@ public class ProjectController {
                 .data(responseDto)
                 .build();
     }
+    @Secured("ROLE_USER")
+    @GetMapping("/project/{projectId}/troubleShooting")
+    public ResDto getTroubleShootings(@PathVariable("projectId") Integer projectId) {
+
+        return ResDto.builder()
+                .result(true)
+                .data(projectService.getTroubleShootings(projectId))
+  }
 
     @PostMapping("/project/stack")
     public ResDto getProjectsByStack(@RequestBody StackDto requestDto){
