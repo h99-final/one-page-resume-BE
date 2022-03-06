@@ -32,7 +32,6 @@ public class GitService {
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
     private final GitApiConfig gitApiConfig;
-    private final GitPatchCodeUtil gitPatchCodeUtil;
 
     @Transactional
     public boolean createTroubleShooting(Integer projectId, CommitRequestDto request) {
@@ -54,7 +53,7 @@ public class GitService {
         List<FileRequestDto> fileRequestDtoList = request.getTsFile();
 
         for(FileRequestDto curFile : fileRequestDtoList) {
-            GitFile gitFile = GitFile.create(curFile.getFileName(),gitPatchCodeUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
+            GitFile gitFile = GitFile.create(curFile.getFileName(),GitPatchCodeUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }
 
@@ -116,7 +115,7 @@ public class GitService {
 
             List<GHCommit.File> files = commit.getFiles();
             for (GHCommit.File curFile : files) {
-                List<String> patchCodeList = gitPatchCodeUtil.parsePatchCode(curFile.getPatch());
+                List<String> patchCodeList = GitPatchCodeUtil.parsePatchCode(curFile.getPatch());
                 FilesResponseDto curDto = new FilesResponseDto(curFile.getFileName(), patchCodeList);
                 filesResponseDtoList.add(curDto);
             }

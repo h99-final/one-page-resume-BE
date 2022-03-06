@@ -36,8 +36,6 @@ public class ProjectService {
     private  final S3Uploader s3Uploader;
     private final ProjectImgRepository projectImgRepository;
     private final UserRepository userRepository;
-    private final GitPatchCodeUtil gitPatchCodeUtil;
-
 
     @Transactional//프로젝트 생성
     public ProjectResponseDto createProject(CreateProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
@@ -139,7 +137,7 @@ public class ProjectService {
             //파일 정보들을 저장할 공간
             List<TroubleShootingFileResponseDto> tsFiles = new ArrayList<>();
             for(GitFile curGitFile : gitFileList) {
-                List<String> tsPatchCodes = gitPatchCodeUtil.parsePatchCode(curGitFile.getPatchCode());
+                List<String> tsPatchCodes = GitPatchCodeUtil.parsePatchCode(curGitFile.getPatchCode());
                 Integer fileId = curGitFile.getId();
                 String fileName = curGitFile.getName();
                 String tsContent = curGitFile.getTroubleContents();

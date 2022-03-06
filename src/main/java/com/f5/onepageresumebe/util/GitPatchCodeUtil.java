@@ -5,10 +5,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class GitPatchCodeUtil {
     //String -> List
-    public List<String> parsePatchCode(String patchCode) {
+    public static List<String> parsePatchCode(String patchCode) {
         List<String> res = new ArrayList<>();
         String[] temp = patchCode.split("\n");
 
@@ -18,7 +17,7 @@ public class GitPatchCodeUtil {
         return res;
     }
     //List -> String
-    public String combinePatchCode(List<String> patchCode) {
+    public static String combinePatchCode(List<String> patchCode) {
         String res = "";
 
         for(String curPatch : patchCode) {
