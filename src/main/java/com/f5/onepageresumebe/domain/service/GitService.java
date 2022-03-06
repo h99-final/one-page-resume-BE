@@ -130,5 +130,24 @@ public class GitService {
         int idx = gitUrl.indexOf(".com/");
         return gitUrl.substring(idx+5, gitUrl.length()) + "/" +  reName;
     }
+
+    @Transactional
+    public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {
+
+        // 프로젝트에 연결된 특정 commitId내용들 전부 삭제
+        deleteProjectTroubleShootings(commitId);
+
+        //커밋 추가(트러블슈팅 내용까지)
+        createTroubleShooting(projectId, request);
+    }
+
+    public void deleteProjectTroubleShootings(Integer commitId) {
+        GitCommit gitCommit = gitCommitRepository.getById(commitId);
+
+        List<GitFile> gitFileList = gitCommit.getFileList();
+        gitFileRepository.deleteAllInBatch(gitFileList);
+
+        gitCommitRepository.deleteById(commitId);
+    }
 }
 
