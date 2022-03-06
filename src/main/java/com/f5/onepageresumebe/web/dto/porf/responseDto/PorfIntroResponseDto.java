@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 public class PorfIntroResponseDto {
 
-    private String introduceTitle;
+    private String title;
+    private String contents;
     private String githubUrl;
     private String blogUrl;
-    private String introContents;
     private Integer viewCount;
     private String bgImage;
     private String modifiedAt;

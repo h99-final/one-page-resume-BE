@@ -5,15 +5,14 @@ import lombok.*;
 import java.util.List;
 
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@Builder
 public class ProjectRequestDto {
 
-    private String projectTitle;
-    private String projectContent;
+    private String title;
+    private String content;
     private String gitRepoUrl;
     private String gitRepoName;
-    private List<String> projectStack;
+    private List<String> stack;
 }

@@ -13,8 +13,8 @@ import java.util.List;
 @Builder
 public class ProjectDetailResponseDto {
 
-    private String projectTitle;
-    private String projectContent;
-    private String projectImgUrl;
-    private List<String> projectStack;
+    private String title;
+    private String content;
+    private String imgUrl;
+    private List<String> stack;
 }

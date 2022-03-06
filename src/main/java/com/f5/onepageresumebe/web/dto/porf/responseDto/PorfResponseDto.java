@@ -16,6 +16,6 @@ public class PorfResponseDto {
     private Integer porfId;
     private String username;
     private List<String> userStack;
-    private String introduceTitle;
+    private String title;
     private Integer templateIdx;
 }

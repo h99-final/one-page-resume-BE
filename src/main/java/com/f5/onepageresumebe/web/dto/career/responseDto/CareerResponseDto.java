@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class CareerResponseDto {
 
+    private Integer id;
     private String title;
     private String subTitle;
     private List<String> contents;

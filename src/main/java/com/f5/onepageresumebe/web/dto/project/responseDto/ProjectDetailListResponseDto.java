@@ -13,5 +13,5 @@ import java.util.List;
 @Builder
 public class ProjectDetailListResponseDto {
 
-    private List<ProjectDetailResponseDto> projectList;
+    private List<ProjectDetailResponseDto> projects;
 }

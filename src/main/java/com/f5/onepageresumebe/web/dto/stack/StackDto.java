@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.porf.responseDto;
+package com.f5.onepageresumebe.web.dto.stack;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class PorfStackResponseDto {
-
-    List<String> stackContents;
+public class StackDto {
+    private List<String> stack;
 }

@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.porf.responseDto;
+package com.f5.onepageresumebe.web.dto.project.requestDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class PorfCareerResponseDto {
+public class ProjectUpdateRequestDto {
 
     private String title;
-    private String subTitle;
-    private List<String> contents;
+    private String content;
+    private List<String> stack;
 }

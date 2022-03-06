@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 public class ProjectResponseDto {
 
-    private Integer projectId;
-    private String projectTitle;
+    private Integer id;
+    private String title;
 }
