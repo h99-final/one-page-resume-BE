@@ -20,4 +20,7 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Integer> {
     @Query("select distinct pf.portfolio from PortfolioStack pf left join pf.portfolio p left join pf.stack s where s.name in :stackNames" +
             " and p.isTemp = false ")
     List<Portfolio> findAllByStackNamesIfPublic(@Param("stackNames") List<String> stackNames);
+
+    @Query("select c.id from Career c where c.portfolio.id = :porfId")
+    List<Integer> findCareerIdByPorfId(@Param("porfId") Integer porfId);
 }
