@@ -1,6 +1,5 @@
 package com.f5.onepageresumebe.web.dto.user.responseDto;
 
-import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
 import lombok.Getter;
 import lombok.Setter;
 

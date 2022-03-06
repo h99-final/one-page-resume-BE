@@ -10,11 +10,11 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class FilesResponseDto {
-    private String fileName;
+    private String name;
     private List<String> patchCode;
 
-    public FilesResponseDto(String fileName, List<String> patchCode) {
-        this.fileName = fileName;
+    public FilesResponseDto(String name, List<String> patchCode) {
+        this.name = name;
         this.patchCode = patchCode;
     }
 }

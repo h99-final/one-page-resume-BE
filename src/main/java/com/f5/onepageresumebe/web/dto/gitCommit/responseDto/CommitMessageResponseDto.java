@@ -9,10 +9,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CommitMessageResponseDto {
     private String sha;
-    private String commitMessage;
+    private String message;
 
-    public CommitMessageResponseDto(String sha, String commitMessage) {
+    public CommitMessageResponseDto(String sha, String message) {
         this.sha = sha;
-        this.commitMessage = commitMessage;
+        this.message = message;
     }
 }

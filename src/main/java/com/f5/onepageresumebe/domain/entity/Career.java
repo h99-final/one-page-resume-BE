@@ -61,11 +61,12 @@ public class Career  {
     }
 
 
-    public void updateCareer(String title, String subTitle, String contents){
+    public void updateCareer(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime){
         this.title=title;
         this.subTitle = subTitle;
         this.contents= contents;
-
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
 }

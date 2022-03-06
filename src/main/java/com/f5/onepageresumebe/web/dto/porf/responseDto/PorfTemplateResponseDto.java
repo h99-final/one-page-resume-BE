@@ -5,6 +5,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PorfTemplateResponseDto {
 
-
     private Integer porfId;
 }

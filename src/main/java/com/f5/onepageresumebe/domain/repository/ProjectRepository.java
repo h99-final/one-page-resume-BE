@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.domain.repository;
 
 import com.f5.onepageresumebe.domain.entity.Project;
+import com.f5.onepageresumebe.domain.entity.ProjectStack;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,10 @@ public interface ProjectRepository extends JpaRepository<Project,Integer> {
 
     @Query("select p from Project p where p.id in :projectIdList")
     List<Project> findAllByIds(@Param("projectIdList") List<Integer> projectIdList);
+
+    @Query("select distinct ps.project from ProjectStack ps left join ps.project left join ps.stack s where s.name in :stackNames")
+    List<Project> findAllByStackNames(@Param("stackNames") List<String> stackNames);
+
+    @Query("select p from Project p where p.portfolio.id = :porfId")
+    List<Project> findAllByPorfId(@Param("porfId") Integer porfId);
 }

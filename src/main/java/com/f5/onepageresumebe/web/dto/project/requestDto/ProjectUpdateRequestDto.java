@@ -1,18 +1,19 @@
 package com.f5.onepageresumebe.web.dto.project.requestDto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-
-@Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Builder
-public class ProjectRequestDto {
+public class ProjectUpdateRequestDto {
 
     private String title;
     private String content;
-    private String gitRepoUrl;
-    private String gitRepoName;
     private List<String> stack;
 }

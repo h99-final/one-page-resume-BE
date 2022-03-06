@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.career.requestDto;
+package com.f5.onepageresumebe.web.dto.project.responseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Builder
-public class CreateCareerRequestDto {
+public class ProjectDetailListResponseDto {
 
-    private List<CareerRequestDto> careers;
+    private List<ProjectDetailResponseDto> projects;
 }
