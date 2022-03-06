@@ -105,5 +105,14 @@ public class Portfolio extends TimeEntity{
     public void increaseViewCount(){
         this.viewCount++;
     }
-    
+
+    public void reset(){
+        this.title = null;
+        this.viewCount = 0;
+        this.templateIdx = 0;
+        this.introContents = null;
+        this.githubUrl = null;
+        this.blogUrl = null;
+        this.isTemp = true;
+    }
 }

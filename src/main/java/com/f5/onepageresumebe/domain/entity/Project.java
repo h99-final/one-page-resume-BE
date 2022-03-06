@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.entity;
 
+import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import lombok.*;
 
@@ -80,10 +81,15 @@ public class Project extends TimeEntity{
         portfolio.getProjectList().remove(this);
     }
 
+    public void updateIntro(ProjectUpdateRequestDto requestDto){
+        this.title = requestDto.getTitle();
+        this.introduce = requestDto.getContent();
+    }
+
     public ProjectResponseDto toShortInfo(){
         return ProjectResponseDto.builder()
-                .projectId(this.id)
-                .projectTitle(this.title)
+                .id(this.id)
+                .title(this.title)
                 .build();
     }
 }

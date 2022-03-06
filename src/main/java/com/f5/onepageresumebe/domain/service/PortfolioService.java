@@ -1,24 +1,23 @@
 package com.f5.onepageresumebe.domain.service;
 
-import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
-import com.f5.onepageresumebe.web.dto.career.requestDto.CreateCareerRequestDto;
+import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
+import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfStackRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
-import com.f5.onepageresumebe.web.dto.stack.StackContentsDto;
+import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,16 +54,16 @@ public class PortfolioService {
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
 
-        portfolio.updateIntro(porfIntroRequestDto.getIntroTitle(), user.getGithubUrl(),
+        portfolio.updateIntro(porfIntroRequestDto.getTitle(), user.getGithubUrl(),
                 user.getBlogUrl(),
-                porfIntroRequestDto.getIntroContents());
+                porfIntroRequestDto.getContents());
 
         portfolioRepository.save(portfolio);
 
     }
 
     @Transactional //템플릿 테마 지정
-    public void createTemplate(PorfTemplateRequestDto porfTemplateRequestDto) {
+    public void updateTemplate(PorfTemplateRequestDto porfTemplateRequestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -72,7 +71,7 @@ public class PortfolioService {
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
 
-        portfolio.updateTemplate(porfTemplateRequestDto.getTemplateIdx());
+        portfolio.updateTemplate(porfTemplateRequestDto.getIdx());
         portfolioRepository.save(portfolio);
 
 
@@ -80,38 +79,34 @@ public class PortfolioService {
 
 
     @Transactional//기술 스택 작성
-    public void createStack(PorfStackRequestDto porfStackRequestDto) {
+    public void createStack(StackDto requestDto) {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
+        List<String> stackNames = requestDto.getStack();
 
-        List<String> stackNames = porfStackRequestDto.getStackContents();
-
-        stackNames.stream().forEach(name -> {
-            Stack stack = stackRepository.findFirstByName(name).orElse(null);
-            //이미 존재하는 스택이라면
-            if (stack != null) {
-                PortfolioStack portfolioStack = portfolioStackRepository.findFirstByPortfolioAndStack(portfolio, stack)
-                        .orElse(null);
-                //연결되지 않은 스택일경우
-                if (portfolioStack == null) {
-                    PortfolioStack createdPortfolioStack = PortfolioStack.create(portfolio, stack);
-                    portfolioStackRepository.save(createdPortfolioStack);
-                }
-            } else {
-                //존재하지 않는 스택이라면
-                Stack createdStack = Stack.create(name);
-                stackRepository.save(createdStack);
-                PortfolioStack createdPortfolioStack = PortfolioStack.create(portfolio, createdStack);
-                portfolioStackRepository.save(createdPortfolioStack);
-            }
-        });
+        insertStacksInPortFolio(portfolio,requestDto.getStack());
     }
 
     @Transactional
-    public void createCareer(CreateCareerRequestDto requestDto) {
+    public void updateStack(StackDto requestDto) {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(
+                () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+
+        List<String> stackNames = requestDto.getStack();
+        //기존에 있는 스택 모두 삭제
+        portfolioStackRepository.deleteAllByPorfId(portfolio.getId());
+
+        insertStacksInPortFolio(portfolio,requestDto.getStack());
+    }
+
+    @Transactional
+    public void createCareer(CareerListRequestDto requestDto) {
 
         //현재 로그인한 사람
         String userEmail = SecurityUtil.getCurrentLoginUserId();
@@ -122,23 +117,44 @@ public class PortfolioService {
         requestDto.getCareers().stream().forEach(dto -> {
 
             List<String> contentsList = dto.getContents();
-            StringBuilder sb = new StringBuilder();
-            int size = contentsList.size();
 
-            for (int i = 0; i < size; i++) {
-                if (i == size - 1) {
-                    sb.append(contentsList.get(i));
-                } else {
-                    sb.append(contentsList.get(i) + "----");
-                }
-            }
-            String combinedContents = sb.toString();
+            String combinedContents = careerContentsListToString(contentsList);
 
             Career career = Career.create(dto.getTitle(), dto.getSubTitle(), combinedContents,
                     dto.getStartTime(), dto.getEndTime(), portfolio);
 
             careerRepository.save(career);
 
+        });
+    }
+
+    @Transactional
+    public void updateCareer(CareerListRequestDto requestDto) {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+
+        List<Integer> existCareerIds = portfolioRepository.findCareerIdByPorfId(portfolio.getId());
+
+        List<CareerRequestDto> requestDtos = requestDto.getCareers();
+
+        requestDtos.stream().forEach(dto -> {
+
+            Integer careerId = dto.getId();
+
+            //유저가 소유한 포트폴리오에 존재하지 않는 커리어 일때
+            if (!existCareerIds.contains(careerId)) {
+                //todo: 어떤식으로 에러처리를 해야할까..?
+            } else {
+                //유저가 소유한 포트폴리오에 존재하는 커리어 일때
+                Career career = careerRepository.findById(careerId).orElseThrow(() ->
+                        new IllegalArgumentException("존재하지 않는 커리어입니다."));
+                String careerContents = careerContentsListToString(dto.getContents());
+                career.updateCareer(dto.getTitle(), dto.getSubTitle(), careerContents,dto.getStartTime(),dto.getEndTime());
+                careerRepository.save(career);
+            }
         });
     }
 
@@ -196,14 +212,14 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
         if (myPorf == 1
-                || ((myPorf==0 || myPorf==-1) && (!portfolio.getIsTemp()))) {
+                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
             portfolio.increaseViewCount();
             portfolioRepository.save(portfolio);
             return PorfIntroResponseDto.builder()
-                    .introduceTitle(portfolio.getTitle())
+                    .title(portfolio.getTitle())
                     .githubUrl(portfolio.getGithubUrl())
                     .blogUrl(portfolio.getBlogUrl())
-                    .introContents(portfolio.getIntroContents())
+                    .contents(portfolio.getIntroContents())
                     .bgImage(portfolio.getUser().getProfileImgUrl()) // 유저의 프로필 이미지
                     .viewCount(portfolio.getViewCount())
                     .modifiedAt(portfolio.getUpdatedAt().toString())
@@ -217,9 +233,9 @@ public class PortfolioService {
     }
 
     //전체 조회
-    public List<PorfResponseDto> getIntrosByStacks(PorfStackRequestDto requestDto) {
+    public List<PorfResponseDto> getIntrosByStacks(StackDto requestDto) {
 
-        List<String> stackNames = requestDto.getStackContents();
+        List<String> stackNames = requestDto.getStack();
         List<PorfResponseDto> responseDtoList = new ArrayList<>();
         List<Portfolio> portfolioList = null;
         if (stackNames.size() == 0) {
@@ -239,7 +255,7 @@ public class PortfolioService {
                     .porfId(portfolio.getId())
                     .username(portfolio.getUser().getName())
                     .userStack(stacks)
-                    .introduceTitle(portfolio.getTitle())
+                    .title(portfolio.getTitle())
                     .templateIdx(portfolio.getTemplateIdx())
                     .build();
             responseDtoList.add(responseDto);
@@ -248,19 +264,19 @@ public class PortfolioService {
         return responseDtoList;
     }
 
-    public StackContentsDto getStackContents(Integer porfId){
+    public StackDto getStackContents(Integer porfId) {
 
         Integer myPorf = isMyPorf(porfId);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
         if (myPorf == 1
-                || ((myPorf==0 || myPorf==-1) && (!portfolio.getIsTemp()))) {
+                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
 
             List<String> stackNames = portfolioStackRepository.findStackNamesByPorfId(porfId);
 
-            return StackContentsDto.builder()
-                    .stackContents(stackNames)
+            return StackDto.builder()
+                    .stack(stackNames)
                     .build();
         } else {
             return null;
@@ -269,7 +285,7 @@ public class PortfolioService {
 
     }
 
-    public CareerListResponseDto getCareer(Integer porfId){
+    public CareerListResponseDto getCareer(Integer porfId) {
 
         Integer myPorf = isMyPorf(porfId);
 
@@ -279,12 +295,13 @@ public class PortfolioService {
         List<CareerResponseDto> careerResponseDtos = new ArrayList<>();
 
         if (myPorf == 1
-                || ((myPorf==0 || myPorf==-1) && (!portfolio.getIsTemp()))) {
+                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
 
             List<Career> careers = careerRepository.findAllByPorfId(porfId);
             careers.stream().forEach(career -> {
                 String[] contents = career.getContents().split("----");
                 CareerResponseDto responseDto = CareerResponseDto.builder()
+                        .id(career.getId())
                         .title(career.getTitle())
                         .subTitle(career.getSubTitle())
                         .contents(Arrays.asList(contents))
@@ -300,7 +317,7 @@ public class PortfolioService {
                 .build();
     }
 
-    public ProjectDetailListResponseDto getProject(Integer porfId){
+    public ProjectDetailListResponseDto getProject(Integer porfId) {
 
         Integer myPorf = isMyPorf(porfId);
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
@@ -308,45 +325,90 @@ public class PortfolioService {
 
         List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
 
-        if(myPorf == 1
-                || ((myPorf==0 || myPorf==-1) && (!portfolio.getIsTemp()))){
+        if (myPorf == 1
+                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
 
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
             projects.stream().forEach(project -> {
                 ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
-                        .projectTitle(project.getTitle())
-                        .projectContent(project.getIntroduce())
-                        .projectImgUrl(projectImgRepository.findFirstByProjectId(project.getId()).orElse(null).getImageUrl())
-                        .projectStack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                        .title(project.getTitle())
+                        .content(project.getIntroduce())
+                        .imgUrl(projectImgRepository.findFirstByProjectId(project.getId()).orElse(null).getImageUrl())
+                        .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                         .build();
 
                 projectDetailResponseDtos.add(projectDetailResponseDto);
             });
-        }else{
+        } else {
             return null;
         }
 
         return ProjectDetailListResponseDto.builder()
-                .projectList(projectDetailResponseDtos)
+                .projects(projectDetailResponseDtos)
                 .build();
     }
 
-    private Integer isMyPorf(Integer porfId){
+    @Transactional
+    public void updateIntro(PorfIntroRequestDto requestDto) {
 
-        try{
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(() ->
+                new IllegalArgumentException("존재하지 않는 포트폴리오입니다"));
+
+        portfolio.updateIntro(requestDto.getTitle(), portfolio.getGithubUrl(), requestDto.getContents(), portfolio.getBlogUrl());
+
+        portfolioRepository.save(portfolio);
+    }
+
+    private void insertStacksInPortFolio(Portfolio portfolio,List<String> stackNames){
+        //새로 들어온 스택 모두 연결
+        stackNames.stream().forEach(name -> {
+            Stack stack = stackRepository.findFirstByName(name).orElse(null);
+            PortfolioStack createdPortfolioStack = null;
+            //이미 존재하는 스택이라면
+            if (stack != null) {
+                createdPortfolioStack = PortfolioStack.create(portfolio, stack);
+            } else {
+                //존재하지 않는 스택이라면
+                Stack createdStack = Stack.create(name);
+                stackRepository.save(createdStack);
+                createdPortfolioStack = PortfolioStack.create(portfolio, createdStack);
+            }
+            portfolioStackRepository.save(createdPortfolioStack);
+        });
+    }
+
+    private Integer isMyPorf(Integer porfId) {
+
+        try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).get();
-            if (portfolio.getUser().getId()==porfId){
+            if (portfolio.getUser().getId() == porfId) {
                 return 1;
-            }else {
+            } else {
                 return 0;
             }
 
-        }catch (CustomAuthenticationException e){
+        } catch (CustomAuthenticationException e) {
             return -1;
         }
     }
 
+    private String careerContentsListToString(List<String> contentsList) {
+
+        StringBuilder sb = new StringBuilder();
+        int size = contentsList.size();
+
+        for (int i = 0; i < size; i++) {
+            if (i == size - 1) {
+                sb.append(contentsList.get(i));
+            } else {
+                sb.append(contentsList.get(i) + "----");
+            }
+        }
+        return sb.toString();
+    }
 
 
 }
