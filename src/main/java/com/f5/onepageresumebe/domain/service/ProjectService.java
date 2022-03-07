@@ -277,7 +277,7 @@ public class ProjectService {
 
 //        //연결되어 있는 모든 사진들 삭제
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
-//        s3Uploader.deleteProjectImages(projectImgs);
+        s3Uploader.deleteProjectImages(projectImgs);
         projectImgRepository.deleteAllInBatch(projectImgs);
 
         projectRepository.deleteById(projectId);
