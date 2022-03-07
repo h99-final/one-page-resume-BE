@@ -211,9 +211,16 @@ public class PortfolioService {
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
-            portfolio.increaseViewCount();
+        if (myPorf == 1 || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+            try {
+                String email = SecurityUtil.getCurrentLoginUserId();
+                Portfolio myProtfolio = portfolioRepository.findByUserEmail(email).orElseThrow(() ->
+                        new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
+                if(myProtfolio.getId() != portfolio.getId()) portfolio.increaseViewCount();
+            } catch (CustomAuthenticationException e) {
+                portfolio.increaseViewCount();
+            }
+
             portfolioRepository.save(portfolio);
             return PorfIntroResponseDto.builder()
                     .title(portfolio.getTitle())
