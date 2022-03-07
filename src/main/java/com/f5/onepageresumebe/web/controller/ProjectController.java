@@ -91,4 +91,14 @@ public class ProjectController {
                 .data(responseDtos)
                 .build();
     }
+
+    @DeleteMapping("/project/{projectId}")
+    public ResDto deleteProject(@PathVariable("projectId") Integer projectId) {
+
+        projectService.deleteProject(projectId);
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
 }

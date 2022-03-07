@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.domain.service.GitService;
+import com.f5.onepageresumebe.domain.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class GitController {
 
     private final GitService gitService;
+    private final ProjectService projectService;
 
     @Secured("ROLE_USER")
     @GetMapping("/git/project/{projectId}/commit")
@@ -49,6 +51,17 @@ public class GitController {
                                                 @RequestBody CommitRequestDto request) {
 
         gitService.updateProjectTroubleShootings(projectId, commitId, request);
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/project/{projectId}/troubleShooting/{commitId}")
+    public ResDto deleteTroubleShooting(@PathVariable("projectId") Integer projectId, @PathVariable("commitId") Integer commitId) {
+
+        projectService.deleteProjectTroubleShootings(projectId, commitId);
 
         return ResDto.builder()
                 .result(true)

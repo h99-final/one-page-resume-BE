@@ -5,7 +5,7 @@ import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
-import com.f5.onepageresumebe.util.GitPatchCodeUtil;
+import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
@@ -37,9 +37,12 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final StackRepository stackRepository;
     private final ProjectStackRepository projectStackRepository;
-    private  final S3Uploader s3Uploader;
+    private final S3Uploader s3Uploader;
     private final ProjectImgRepository projectImgRepository;
     private final UserRepository userRepository;
+    private final GitCommitRepository gitCommitRepository;
+    private final GitFileRepository gitFileRepository;
+
 
     @Transactional//프로젝트 생성
     public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
@@ -76,10 +79,9 @@ public class ProjectService {
 
         //연결되어 있는 모든 사진들 삭제
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
-        projectImgs.forEach(projectImg -> {
-            String imageUrl = projectImg.getImageUrl();
-            s3Uploader.deleteProfile(imageUrl,53);
-        });
+      
+        s3Uploader.deleteProjectImages(projectImgs);
+
         projectImgRepository.deleteAllInBatch(projectImgs);
 
         //새로운 사진 모두 추가
@@ -206,7 +208,7 @@ public class ProjectService {
             //파일 정보들을 저장할 공간
             List<TroubleShootingFileResponseDto> tsFiles = new ArrayList<>();
             for(GitFile curGitFile : gitFileList) {
-                List<String> tsPatchCodes = GitPatchCodeUtil.parsePatchCode(curGitFile.getPatchCode());
+                List<String> tsPatchCodes = GitUtil.parsePatchCode(curGitFile.getPatchCode());
                 Integer fileId = curGitFile.getId();
                 String fileName = curGitFile.getName();
                 String tsContent = curGitFile.getTroubleContents();
@@ -257,5 +259,43 @@ public class ProjectService {
         });
 
         projectRepository.save(project);
+    }
+
+    @Transactional
+    public void deleteProject(Integer projectId) {
+
+        Project project = projectRepository.getById(projectId);
+
+        List<GitCommit> gitCommitList = project.getGitCommitList();
+
+        //프로젝트에 연결된 커밋들 삭제
+        for(GitCommit curCommit : gitCommitList) {
+            deleteProjectTroubleShootings(projectId, curCommit.getId());
+        }
+        //프로젝트의 스택들 전부 삭제
+        projectStackRepository.deleteAllByProjectId(projectId);
+
+//        //연결되어 있는 모든 사진들 삭제
+        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
+//        s3Uploader.deleteProjectImages(projectImgs);
+        projectImgRepository.deleteAllInBatch(projectImgs);
+
+        projectRepository.deleteById(projectId);
+
+    }
+
+    @Transactional
+    public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
+
+        Project project = getProjectIfMyProject(projectId);
+
+        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+
+        GitCommit gitCommit = gitCommitRepository.getById(commitId);
+
+        List<GitFile> gitFileList = gitCommit.getFileList();
+        gitFileRepository.deleteAllInBatch(gitFileList);
+
+        gitCommitRepository.deleteById(commitId);
     }
 }

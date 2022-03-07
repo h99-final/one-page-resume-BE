@@ -6,7 +6,7 @@ import com.f5.onepageresumebe.domain.entity.GitFile;
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
-import com.f5.onepageresumebe.util.GitPatchCodeUtil;
+import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
@@ -53,7 +53,7 @@ public class GitService {
         List<FileRequestDto> fileRequestDtoList = request.getTsFile();
 
         for(FileRequestDto curFile : fileRequestDtoList) {
-            GitFile gitFile = GitFile.create(curFile.getFileName(),GitPatchCodeUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
+            GitFile gitFile = GitFile.create(curFile.getFileName(), GitUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }
 
@@ -73,6 +73,7 @@ public class GitService {
         String repoName = makeRepoName(gitUrl, repo);
 
         List<CommitMessageResponseDto> commitMessageResponseDtoList = new ArrayList<>();
+        System.out.println("##" + repoName);
 
         GitHub gitHub = gitApiConfig.gitHub();
 
@@ -115,7 +116,7 @@ public class GitService {
 
             List<GHCommit.File> files = commit.getFiles();
             for (GHCommit.File curFile : files) {
-                List<String> patchCodeList = GitPatchCodeUtil.parsePatchCode(curFile.getPatch());
+                List<String> patchCodeList = GitUtil.parsePatchCode(curFile.getPatch());
                 FilesResponseDto curDto = new FilesResponseDto(curFile.getFileName(), patchCodeList);
                 filesResponseDtoList.add(curDto);
             }
@@ -135,19 +136,10 @@ public class GitService {
     public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {
 
         // 프로젝트에 연결된 특정 commitId내용들 전부 삭제
-        deleteProjectTroubleShootings(commitId);
+        projectService.deleteProjectTroubleShootings(projectId, commitId);
 
         //커밋 추가(트러블슈팅 내용까지)
         createTroubleShooting(projectId, request);
-    }
-
-    public void deleteProjectTroubleShootings(Integer commitId) {
-        GitCommit gitCommit = gitCommitRepository.getById(commitId);
-
-        List<GitFile> gitFileList = gitCommit.getFileList();
-        gitFileRepository.deleteAllInBatch(gitFileList);
-
-        gitCommitRepository.deleteById(commitId);
     }
 }
 
