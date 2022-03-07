@@ -55,8 +55,8 @@ public class PortfolioService {
 
 
         portfolio.updateIntro(porfIntroRequestDto.getTitle(), user.getGithubUrl(),
-                user.getBlogUrl(),
-                porfIntroRequestDto.getContents());
+                porfIntroRequestDto.getContents(),
+                user.getBlogUrl());
 
         portfolioRepository.save(portfolio);
 

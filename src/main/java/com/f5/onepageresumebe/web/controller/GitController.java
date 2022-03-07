@@ -54,4 +54,15 @@ public class GitController {
                 .result(true)
                 .build();
     }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/project/{projectId}/troubleShooting/{commitId}")
+    public ResDto deleteTroubleShooting(@PathVariable("projectId") Integer projectId, @PathVariable("commitId") Integer commitId) {
+
+        gitService.deleteProjectTroubleShootings(projectId, commitId);
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
 }

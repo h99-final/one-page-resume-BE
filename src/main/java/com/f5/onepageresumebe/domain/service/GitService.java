@@ -135,13 +135,19 @@ public class GitService {
     public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {
 
         // 프로젝트에 연결된 특정 commitId내용들 전부 삭제
-        deleteProjectTroubleShootings(commitId);
+        deleteProjectTroubleShootings(projectId, commitId);
 
         //커밋 추가(트러블슈팅 내용까지)
         createTroubleShooting(projectId, request);
     }
 
-    public void deleteProjectTroubleShootings(Integer commitId) {
+    @Transactional
+    public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
+
+        Project project = projectService.getProjectIfMyProject(projectId);
+
+        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+
         GitCommit gitCommit = gitCommitRepository.getById(commitId);
 
         List<GitFile> gitFileList = gitCommit.getFileList();
