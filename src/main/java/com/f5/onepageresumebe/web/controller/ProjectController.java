@@ -71,7 +71,7 @@ public class ProjectController {
                 .data(responseDto)
                 .build();
     }
-    @Secured("ROLE_USER")
+
     @GetMapping("/project/{projectId}/troubleShooting")
     public ResDto getTroubleShootings(@PathVariable("projectId") Integer projectId) {
 
