@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,7 +85,8 @@ public class S3Uploader {
     public void deleteProjectImages(List<ProjectImg> projectImgs) {
         projectImgs.stream().forEach(projectImg -> {
             String imageUrl = projectImg.getImageUrl();
-            deleteProfile(imageUrl,48);
+            deleteProfile(imageUrl,53);
         });
     }
+
 }

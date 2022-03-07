@@ -213,5 +213,17 @@ public class PorfController {
                 .build();
     }
 
+    @Secured("ROLE_USER")
+    @DeleteMapping("/porf/{porfId}")
+    public ResDto reset(@PathVariable("porfId") Integer porfId){
+
+        portfolioService.reset(porfId);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
 
 }

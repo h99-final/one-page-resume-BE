@@ -48,7 +48,8 @@ public class ProjectService {
     public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(userEmail).get();
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()->
+                new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         Project project = Project.create(requestDto.getTitle(), requestDto.getContent(),
                 requestDto.getGitRepoName(), requestDto.getGitRepoUrl(), user);
@@ -78,7 +79,9 @@ public class ProjectService {
 
         //연결되어 있는 모든 사진들 삭제
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
+      
         s3Uploader.deleteProjectImages(projectImgs);
+
         projectImgRepository.deleteAllInBatch(projectImgs);
 
         //새로운 사진 모두 추가
@@ -97,7 +100,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 프로젝트입니다."));
 
-        if(project.getUser().getId()!=user.getId()){
+        if(project.getUser().getId() != user.getId()){
             throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다");
         }
 
@@ -116,8 +119,25 @@ public class ProjectService {
 
         List<Project> projects = projectRepository.findAllByUserEmail(email);
 
-        List<ProjectResponseDto> responseDtos = projects.stream().map(project -> project.toShortInfo())
-                .collect(Collectors.toList());
+        List<ProjectResponseDto> responseDtos = new ArrayList<>();
+
+        projects.forEach(project -> {
+            Integer projectId = project.getId();
+            String imageUrl = null;
+            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+            if(projectImg!=null){
+                imageUrl = projectImg.getImageUrl();
+            }
+
+            ProjectResponseDto responseDto = ProjectResponseDto.builder()
+                    .id(projectId)
+                    .imageUrl(imageUrl)
+                    .title(project.getTitle())
+                    .stack(projectStackRepository.findStackNamesByProjectId(projectId))
+                    .build();
+
+            responseDtos.add(responseDto);
+        });
 
         return ProjectShortInfoResponseDto.builder()
                 .projects(responseDtos)
@@ -133,11 +153,17 @@ public class ProjectService {
         Collections.shuffle(projects);
 
         List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
-        projects.stream().forEach(project -> {
+        projects.forEach(project -> {
+            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
+            String projectImgUrl = null;
+            if(projectImg!=null){
+                projectImgUrl = projectImg.getImageUrl();
+            }
+
             ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
                     .title(project.getTitle())
                     .content(project.getIntroduce())
-                    .imgUrl(projectImgRepository.findFirstByProjectId(project.getId()).orElse(null).getImageUrl())
+                    .imgUrl(projectImgUrl)
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .build();
 
@@ -158,7 +184,7 @@ public class ProjectService {
         Project project = null;
 
         for(Project curProject : projects) {
-            if(curProject.getId() == projectId) project = curProject;
+            if(curProject.getId().equals( projectId)) project = curProject;
         }
 
         return project;
@@ -203,7 +229,7 @@ public class ProjectService {
   }
 
     private void insertStacksInProject(Project project,List<String> stackNames){
-        stackNames.stream().forEach(stackName->{
+        stackNames.forEach(stackName->{
             Stack stack = stackRepository.findFirstByName(stackName).orElse(null);
             ProjectStack createdProjectStack = null;
             //스택이 이미 존재할 때
@@ -221,7 +247,7 @@ public class ProjectService {
 
     private void addImages(Project project,List<MultipartFile> multipartFiles){
 
-        multipartFiles.stream().forEach(multipartFile -> {
+        multipartFiles.forEach(multipartFile -> {
             try{
                 String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
                 ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
