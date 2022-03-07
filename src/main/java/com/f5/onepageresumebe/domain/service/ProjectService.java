@@ -167,8 +167,7 @@ public class ProjectService {
     public List<TroubleShootingsResponseDto> getTroubleShootings(Integer projectId) {
         List<TroubleShootingsResponseDto> troubleShootingsResponseDtos = new ArrayList<>();
 
-        //본인이 가지고있는 프로젝트인지 인증까지
-        Project project = getProjectIfMyProject(projectId);
+        Project project = projectRepository.getById(projectId);
 
         List<GitCommit> gitCommitList = project.getGitCommitList();
 

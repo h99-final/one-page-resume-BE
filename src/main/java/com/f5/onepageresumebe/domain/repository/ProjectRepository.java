@@ -24,4 +24,7 @@ public interface ProjectRepository extends JpaRepository<Project,Integer> {
 
     @Query("select p from Project p where p.portfolio.id = :porfId")
     List<Project> findAllByPorfId(@Param("porfId") Integer porfId);
+
+    @Query("select p from Project p where p.id = :projectId")
+    Project getById(@Param("projectId") Integer projectId);
 }
