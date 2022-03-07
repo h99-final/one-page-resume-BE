@@ -101,14 +101,11 @@ public class UserService {
         User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
-        Boolean isFirstLogin;
+        Boolean isFirstLogin = true;
 
-        //첫 로그인 유저 O
-        if (user.getCreatedAt().equals(user.getUpdatedAt()) == true) {
-            isFirstLogin = true;
-        } else { // 첫 로그인 유저 X (유저의 스텍 까지 넣어주기)
+        //첫 로그인 유저가 아닐 때
+        if (!user.getCreatedAt().equals(user.getUpdatedAt())) {
             isFirstLogin = false;
-
         }
 
         return LoginResultDto.builder()
@@ -164,10 +161,11 @@ public class UserService {
         //존재하는 스택인지 판별
         List<String> existsStackId = stackRepository.findNamesByNamesIfExists(stackNames);
 
-        stackNames.stream().forEach(name -> {
+        stackNames.forEach(name -> {
             //이미 존재하는 스택이라면
             if (existsStackId.contains(name)) {
-                Stack stack = stackRepository.findFirstByName(name).get();
+                Stack stack = stackRepository.findFirstByName(name).orElseThrow(()->
+                        new IllegalArgumentException("스택 정보가 존재하지 않습니다"));
                 UserStack userStack = userstackRepository.findFirstByUserAndStack(curUser, stack).orElse(null);
 
                 //연결되있지 않은 스택일때만 연결
@@ -219,7 +217,8 @@ public class UserService {
     public void updateProfile(MultipartFile multipartFile) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmail(email).orElseThrow(()->
+                new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
         if(!user.getProfileImgUrl().equals("https://myclone.s3.ap-northeast-2.amazonaws.com/profile/%EA%B2%80%EC%A0%95+%EC%82%AC%EC%A7%84.png")){
@@ -238,7 +237,8 @@ public class UserService {
     @Transactional
     public void deleteProfile(){
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).get();
+        User user = userRepository.findByEmail(email).orElseThrow(()->
+                new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         user.deleteProfile();
     }
