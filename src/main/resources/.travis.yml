@@ -1,7 +1,7 @@
 # 언어와 jdk의 버전을 지정한다.
 language: java
 jdk:
-  - openjdk11
+  - openjdk8
 
 # 어느 브랜치가 push 될 때 수행할지 지정한다.
 # 오직 main 브랜치가 push될 때 수행하도록 지정하였다.
