@@ -117,8 +117,25 @@ public class ProjectService {
 
         List<Project> projects = projectRepository.findAllByUserEmail(email);
 
-        List<ProjectResponseDto> responseDtos = projects.stream().map(Project::toShortInfo)
-                .collect(Collectors.toList());
+        List<ProjectResponseDto> responseDtos = new ArrayList<>();
+
+        projects.forEach(project -> {
+            Integer projectId = project.getId();
+            String imageUrl = null;
+            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+            if(projectImg!=null){
+                imageUrl = projectImg.getImageUrl();
+            }
+
+            ProjectResponseDto responseDto = ProjectResponseDto.builder()
+                    .id(projectId)
+                    .imageUrl(imageUrl)
+                    .title(project.getTitle())
+                    .stack(projectStackRepository.findStackNamesByProjectId(projectId))
+                    .build();
+
+            responseDtos.add(responseDto);
+        });
 
         return ProjectShortInfoResponseDto.builder()
                 .projects(responseDtos)

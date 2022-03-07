@@ -86,10 +86,4 @@ public class Project extends TimeEntity{
         this.introduce = requestDto.getContent();
     }
 
-    public ProjectResponseDto toShortInfo(){
-        return ProjectResponseDto.builder()
-                .id(this.id)
-                .title(this.title)
-                .build();
-    }
 }
