@@ -102,11 +102,9 @@ public class UserController {
     @PutMapping("/user/profile")
     public ResDto updateProfile(@RequestPart("profileImage") MultipartFile multipartFile){
 
-        userService.updateProfile(multipartFile);
-
         return ResDto.builder()
                 .result(true)
-                .data(null)
+                .data(userService.updateProfile(multipartFile))
                 .build();
     }
 
