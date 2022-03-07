@@ -9,12 +9,12 @@ IDLE_PORT=$(find_idle_port)
 
 echo "> Health Check Start!"
 echo "> IDLE_PORT: $IDLE_PORT"
-echo "> curl -s http://3.36.209.141:$IDLE_PORT/"
+echo "> curl -s http://13.124.241.74:$IDLE_PORT/"
 sleep 10
 
 for RETRY_COUNT in {1..10}  # for문 10번 돌기
 do
-  RESPONSE=$(curl -s http://3.36.209.141:${IDLE_PORT})   # 현재 문제 없이 잘 실행되고 있는 요청을 보내봅니다.
+  RESPONSE=$(curl -s http://13.124.241.74:${IDLE_PORT})   # 현재 문제 없이 잘 실행되고 있는 요청을 보내봅니다.
   UP_COUNT=$(echo ${RESPONSE} | grep 'real' | wc -l)     # 해당 결과의 줄 수를 숫자로 리턴합니다.
 
   if [ ${UP_COUNT} -ge 1 ]
