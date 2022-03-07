@@ -221,8 +221,8 @@ public class UserService {
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
-        if(!user.getProfileImgUrl().equals("https://myclone.s3.ap-northeast-2.amazonaws.com/profile/%EA%B2%80%EC%A0%95+%EC%82%AC%EC%A7%84.png")){
-            s3Uploader.deleteProfile(user.getProfileImgUrl(),48);
+        if(!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")){
+            s3Uploader.deleteProfile(user.getProfileImgUrl(),53);
         }
         try {
             String profileImgUrl = s3Uploader.upload(multipartFile, "profile");
@@ -239,6 +239,11 @@ public class UserService {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
+
+        //s3에서 삭제
+        if(!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")){
+            s3Uploader.deleteProfile(user.getProfileImgUrl(),53);
+        }
 
         user.deleteProfile();
     }

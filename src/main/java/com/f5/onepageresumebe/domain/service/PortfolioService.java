@@ -410,7 +410,7 @@ public class PortfolioService {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             Portfolio portfolio = portfolioRepository.findByUserEmail(userEmail).orElseThrow(() ->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
-            if (portfolio.getUser().getId().equals(porfId)) {
+            if (portfolio.getUser().getId()==(porfId)) {
                 return 1;
             } else {
                 return 0;

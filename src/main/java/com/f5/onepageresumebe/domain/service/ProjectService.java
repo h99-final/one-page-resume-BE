@@ -78,7 +78,7 @@ public class ProjectService {
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
         projectImgs.forEach(projectImg -> {
             String imageUrl = projectImg.getImageUrl();
-            s3Uploader.deleteProfile(imageUrl,48);
+            s3Uploader.deleteProfile(imageUrl,53);
         });
         projectImgRepository.deleteAllInBatch(projectImgs);
 
@@ -98,7 +98,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 프로젝트입니다."));
 
-        if(project.getUser().getId().equals(user.getId())){
+        if(project.getUser().getId() != user.getId()){
             throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다");
         }
 
