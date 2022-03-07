@@ -10,6 +10,7 @@ cache:
   directories:
     - '$HOME/.m2/repository'
     - '$HOME/.gradle'
+    - '$HOME/.cache/wheels'
 
 script:
   - "./gradlew clean build"   # jar 만들기
