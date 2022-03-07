@@ -22,7 +22,7 @@ public class TestController {
         String defaultProfile = profile.isEmpty() ? "default" : profile.get(0);
 
         return profile.stream()
-                .filter(realProfiles::contains)
+                .filter(realProfiles::contains)//
                 .findAny()
                 .orElse(defaultProfile);
     }
