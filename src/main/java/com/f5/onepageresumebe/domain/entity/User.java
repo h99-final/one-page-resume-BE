@@ -45,7 +45,7 @@ public class User extends TimeEntity{
     @OneToMany(mappedBy = "user")
     private List<UserStack> userStackList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private Portfolio portfolio;
 
     @OneToMany(mappedBy = "user")
