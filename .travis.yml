@@ -21,7 +21,7 @@ before_deploy:
   - zip -r crawler-web * # 현재 위치의 모든 파일을 해당이름으로 압축
   - mkdir -p deploy
   - mv crawler-web.zip deploy/crawler-web.zip
-
+#
 deploy:
   - provider: s3
     access_key_id: $AWS_ACCESS_KEY # Travis repo settings에 설정된 값
