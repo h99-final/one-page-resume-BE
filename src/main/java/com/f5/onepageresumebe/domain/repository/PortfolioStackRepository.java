@@ -14,10 +14,10 @@ import java.util.Optional;
 public interface PortfolioStackRepository extends JpaRepository<PortfolioStack, Integer> {
 
 
-    @Query("select pf.stack.name from PortfolioStack pf where pf.portfolio.id = :porfId")
+    @Query("select s.name from PortfolioStack pf inner join pf.stack s where pf.portfolio.id = :porfId")
     List<String> findStackNamesByPorfId(@Param("porfId") Integer porfId);
 
     @Modifying
-    @Query("delete from PortfolioStack pf where pf.portfolio.id = :porfId")
+    @Query("delete from PortfolioStack pf where pf.portfolio.id in :porfId")
     void deleteAllByPorfId(@Param("porfId") Integer porfId);
 }

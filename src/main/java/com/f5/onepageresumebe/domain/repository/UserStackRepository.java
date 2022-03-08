@@ -17,8 +17,12 @@ public interface UserStackRepository extends JpaRepository<UserStack, Integer> {
     Optional<UserStack> findByUserIdAndStackId(@Param("userId") Integer userId,
                                                @Param("stackId") Integer stackId);
 
-    @Query("select us.stack.name from UserStack us join us.stack where us.user.id = :userId")
+    @Query("select us.stack.name from UserStack us inner join us.stack where us.user.id = :userId")
     List<String> findStackNamesByUserId(@Param("userId") Integer userId);
+
+    @Query("select distinct s.name from UserStack us inner join us.stack s " +
+            "inner join us.user u inner join u.portfolio p where p.id = :porfId")
+    List<String> findStackNamesByPorfId(@Param("porfId") Integer porfId);
 
     Optional<UserStack> findFirstByUserAndStack(User user, Stack stack);
 }

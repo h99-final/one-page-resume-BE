@@ -6,8 +6,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 
 public interface GitCommitRepository extends JpaRepository<GitCommit, Integer> {
+
+    @Query("select gc from GitCommit gc inner join gc.project p where p.id = :projectId")
+    List<GitCommit> findAllByProjectId(@Param("projectId") Integer projectId);
+
     GitCommit findBySha(String sha);
 
     @Modifying

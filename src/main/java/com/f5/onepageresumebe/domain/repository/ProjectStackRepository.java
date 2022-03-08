@@ -15,7 +15,7 @@ public interface ProjectStackRepository extends JpaRepository<ProjectStack,Integ
 
     Optional<ProjectStack> findFirstByProjectAndStack(Project project, Stack stack);
 
-    @Query("select ps.stack.name from ProjectStack ps where ps.project.id = :projectId")
+    @Query("select ps.stack.name from ProjectStack ps inner join ps.stack where ps.project.id = :projectId")
     List<String> findStackNamesByProjectId(@Param("projectId") Integer projectId);
 
     @Modifying
