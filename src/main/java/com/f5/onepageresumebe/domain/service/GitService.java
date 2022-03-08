@@ -129,7 +129,7 @@ public class GitService {
 
     public String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");
-        return gitUrl.substring(idx+5, gitUrl.length()) + "/" +  reName;
+        return gitUrl.substring(idx+5) + "/" +  reName;
     }
 
     @Transactional
