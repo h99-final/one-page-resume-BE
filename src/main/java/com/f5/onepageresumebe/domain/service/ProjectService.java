@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
 @Service
@@ -100,7 +99,8 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 프로젝트입니다."));
 
-        if(project.getUser().getId() != user.getId()){
+        // !project.getUser.getId().equals(user.getID())
+        if(!(project.getUser().getId().equals(user.getId()))){
             throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다");
         }
 
@@ -180,12 +180,13 @@ public class ProjectService {
     public Project getProjectIfMyProject(Integer projectId) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        List<Project> projects = projectRepository.findAllByUserEmail(email);
-        Project project = null;
-
-        for(Project curProject : projects) {
-            if(curProject.getId().equals( projectId)) project = curProject;
-        }
+        Project project = projectRepository.findByUserEmailAndProjectId(email, projectId).orElse(null);
+//        List<Project> projects = projectRepository.findAllByUserEmail(email);
+//        Project project = null;
+//
+//        for(Project curProject : projects) {
+//            if(curProject.getId().equals( projectId)) project = curProject;
+//        }
 
         return project;
     }
@@ -264,9 +265,13 @@ public class ProjectService {
     @Transactional
     public void deleteProject(Integer projectId) {
 
-        Project project = projectRepository.getById(projectId);
+        Project project = getProjectIfMyProject(projectId);
 
-        List<GitCommit> gitCommitList = project.getGitCommitList();
+        if(project ==null){
+            throw new IllegalArgumentException("내가 작성한 프로젝트만 삭제할 수 있습니다");
+        }
+
+        List<GitCommit> gitCommitList = gitCommitRepository.findAllByProjectId(projectId);
 
         //프로젝트에 연결된 커밋들 삭제
         for(GitCommit curCommit : gitCommitList) {
@@ -277,7 +282,7 @@ public class ProjectService {
 
 //        //연결되어 있는 모든 사진들 삭제
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
-//        s3Uploader.deleteProjectImages(projectImgs);
+        s3Uploader.deleteProjectImages(projectImgs);
         projectImgRepository.deleteAllInBatch(projectImgs);
 
         projectRepository.deleteById(projectId);
