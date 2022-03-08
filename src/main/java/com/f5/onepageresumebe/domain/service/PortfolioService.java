@@ -176,12 +176,12 @@ public class PortfolioService {
     @Transactional
     public PorfIntroResponseDto getIntro(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = isMyPorf(porfId);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
-        if (myPorf == 1 || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
             try {
                 String email = SecurityUtil.getCurrentLoginUserId();
                 Portfolio myPortfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
@@ -243,12 +243,11 @@ public class PortfolioService {
 
     public StackDto getStackContents(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = isMyPorf(porfId);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
 
             List<String> stackNames = portfolioStackRepository.findStackNamesByPorfId(porfId);
 
@@ -264,15 +263,14 @@ public class PortfolioService {
 
     public CareerListResponseDto getCareer(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = isMyPorf(porfId);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<CareerResponseDto> careerResponseDtos = new ArrayList<>();
 
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
 
             List<Career> careers = careerRepository.findAllByPorfId(porfId);
             careers.forEach(career -> {
@@ -296,14 +294,13 @@ public class PortfolioService {
 
     public ProjectDetailListResponseDto getProject(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = isMyPorf(porfId);
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
 
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
 
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
             projects.forEach(project -> {
@@ -401,21 +398,20 @@ public class PortfolioService {
 
     }
 
-    private Integer isMyPorf(Integer porfId) {
-
+    private boolean isMyPorf(Integer porfId) {
+        boolean res = false;
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if (portfolio.getId()==porfId) {
-                return 1;
-            } else {
-                return 0;
+                res = true;
             }
 
         } catch (CustomAuthenticationException e) {
-            return -1;
+            return res;
         }
+        return res;
     }
 
     private String careerContentsListToString(List<String> contentsList) {
