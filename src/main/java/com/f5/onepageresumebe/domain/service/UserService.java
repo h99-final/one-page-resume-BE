@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
+import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
@@ -130,7 +131,7 @@ public class UserService {
         //사용자가 추가기입 시, 입력한 stack이 기존 stack테이블에 있으면 stack을 가져옴
         // 기존 stack 테이블이 없으면 새로 생성해 가져옴
         for (String curStackName : stacks) {
-            Stack stack = stackService.registerStack(curStackName);
+            Stack stack = StackUtil.createStack(curStackName, stackRepository);
             UserStack userStack = UserStack.create(curUser, stack);
 
             userstackRepository.save(userStack);
@@ -150,6 +151,8 @@ public class UserService {
 
     @Transactional
     public void updateInfo(AddInfoRequestDto request) {
+
+        //ToDo : 기존의 스택 삭제하기
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
@@ -159,6 +162,7 @@ public class UserService {
         //존재하는 스택인지 판별
         List<String> existsStackId = stackRepository.findNamesByNamesIfExists(stackNames);
 
+        //ToDo : StackUtil 쓰기
         stackNames.forEach(name -> {
             //이미 존재하는 스택이라면
             if (existsStackId.contains(name)) {

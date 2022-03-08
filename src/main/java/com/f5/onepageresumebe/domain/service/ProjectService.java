@@ -7,6 +7,7 @@ import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
+import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
 @Service
@@ -211,19 +213,13 @@ public class ProjectService {
   }
 
     private void insertStacksInProject(Project project,List<String> stackNames){
-        stackNames.forEach(stackName->{
-            Stack stack = stackRepository.findFirstByName(stackName).orElse(null);
-            ProjectStack createdProjectStack = null;
-            //스택이 이미 존재할 때
-            if (stack!=null){
-                createdProjectStack = ProjectStack.create(project, stack);
-            }else{
-                //스택이 존재하지 않을 때
-                Stack createdStack = Stack.create(stackName);
-                stackRepository.save(createdStack);
-                createdProjectStack = ProjectStack.create(project, createdStack);
-            }
-            projectStackRepository.save(createdProjectStack);
+        //중복 스택 입력시, 중복데이터 제거
+        stackNames = stackNames.stream().distinct().collect(Collectors.toList());
+
+        stackNames.forEach(name-> {
+            Stack stack = StackUtil.createStack(name, stackRepository);
+            ProjectStack projectStack = ProjectStack.create(project, stack);
+            projectStackRepository.save(projectStack);
         });
     }
 

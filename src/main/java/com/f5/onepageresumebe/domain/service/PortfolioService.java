@@ -6,6 +6,7 @@ import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
+import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
@@ -345,20 +347,13 @@ public class PortfolioService {
     }
 
     private void insertStacksInPortfolio(Portfolio portfolio, List<String> stackNames) {
-        //새로 들어온 스택 모두 연결
+        //중복 스택 입력시, 중복데이터 제거
+        stackNames = stackNames.stream().distinct().collect(Collectors.toList());
+
         stackNames.forEach(name -> {
-            Stack stack = stackRepository.findFirstByName(name).orElse(null);
-            PortfolioStack createdPortfolioStack;
-            //이미 존재하는 스택이라면
-            if (stack != null) {
-                createdPortfolioStack = PortfolioStack.create(portfolio, stack);
-            } else {
-                //존재하지 않는 스택이라면
-                Stack createdStack = Stack.create(name);
-                stackRepository.save(createdStack);
-                createdPortfolioStack = PortfolioStack.create(portfolio, createdStack);
-            }
-            portfolioStackRepository.save(createdPortfolioStack);
+            Stack stack = StackUtil.createStack(name, stackRepository);
+            PortfolioStack portfolioStack = PortfolioStack.create(portfolio, stack);
+            portfolioStackRepository.save(portfolioStack);
         });
     }
 
