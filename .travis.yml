@@ -6,6 +6,9 @@ branches: # 1.
   only:
     - distribute_test
 
+before_install:
+  - chmod +x gradlew
+
 cache:
   directories:
     - '$HOME/.m2/repository'
