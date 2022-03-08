@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.domain.repository.*;
 
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
@@ -298,34 +299,14 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
-        List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
-
         if (myPorf || !(portfolio.getIsTemp())) {
-
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
-            projects.forEach(project -> {
-                ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
-                String imageUrl = null;
-                if (projectImg != null) {
-                    imageUrl = projectImg.getImageUrl();
-                }
-
-                ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
-                        .title(project.getTitle())
-                        .content(project.getIntroduce())
-                        .imgUrl(imageUrl)
-                        .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
-                        .build();
-
-                projectDetailResponseDtos.add(projectDetailResponseDto);
-            });
+            return ProjectDetailListResponseDto.builder()
+                    .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
+                    .build();
         } else {
             return null;
         }
-
-        return ProjectDetailListResponseDto.builder()
-                .projects(projectDetailResponseDtos)
-                .build();
     }
 
     @Transactional

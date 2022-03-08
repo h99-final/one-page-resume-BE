@@ -6,6 +6,7 @@ import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
+import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
@@ -152,30 +153,10 @@ public class ProjectService {
 
         Collections.shuffle(projects);
 
-        List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
-        projects.forEach(project -> {
-            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
-            String projectImgUrl = null;
-            if(projectImg!=null){
-                projectImgUrl = projectImg.getImageUrl();
-            }
-
-            ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
-                    .title(project.getTitle())
-                    .content(project.getIntroduce())
-                    .imgUrl(projectImgUrl)
-                    .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
-                    .build();
-
-            projectDetailResponseDtos.add(projectDetailResponseDto);
-
-        });
-
         return ProjectDetailListResponseDto.builder()
-                .projects(projectDetailResponseDtos)
+                .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
                 .build();
     }
-
 
     public Project getProjectIfMyProject(Integer projectId) {
 
