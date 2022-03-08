@@ -38,6 +38,7 @@ public class Project extends TimeEntity{
 
     @OneToMany(mappedBy = "project")
     private List<GitCommit> gitCommitList = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "portfolio_id")
     private Portfolio portfolio;
