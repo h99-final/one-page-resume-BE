@@ -26,8 +26,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/intro") //포트폴리오 소개 작성
-    public ResDto createIntro(@RequestBody PorfIntroRequestDto dto)
-            throws IOException {
+    public ResDto createIntro(@RequestBody PorfIntroRequestDto dto) {
 
         portfolioService.createIntro(dto);
 
@@ -214,10 +213,10 @@ public class PorfController {
     }
 
     @Secured("ROLE_USER")
-    @DeleteMapping("/porf/{porfId}")
-    public ResDto reset(@PathVariable("porfId") Integer porfId){
+    @DeleteMapping("/porf")
+    public ResDto reset(){
 
-        portfolioService.reset(porfId);
+        portfolioService.reset();
 
         return ResDto.builder()
                 .result(true)
