@@ -73,7 +73,6 @@ public class GitService {
         String repoName = makeRepoName(gitUrl, repo);
 
         List<CommitMessageResponseDto> commitMessageResponseDtoList = new ArrayList<>();
-        System.out.println("##" + repoName);
 
         GitHub gitHub = gitApiConfig.gitHub();
 
