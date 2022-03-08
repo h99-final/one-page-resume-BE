@@ -7,9 +7,9 @@ files:
 
 permissions:
   - object: /
-    owner: ec2-user
-    group: ec2-user
-
+    pattern: "**"
+    owner: ubuntu
+    group: ubuntu
 hooks:
   AfterInstall:
     - location: stop.sh
@@ -20,7 +20,7 @@ hooks:
     - location: start.sh
       timeout: 60
       runas: root
-#
+
   ValidateService:
     - location: health.sh
       timeout: 60
