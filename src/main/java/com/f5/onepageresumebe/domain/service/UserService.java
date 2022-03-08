@@ -12,6 +12,7 @@ import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -211,7 +212,9 @@ public class UserService {
     }
 
     @Transactional
-    public void updateProfile(MultipartFile multipartFile) {
+    public UserImageResponseDto updateProfile(MultipartFile multipartFile) {
+
+        UserImageResponseDto userImageResponseDto = new UserImageResponseDto();
 
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(() ->
@@ -224,11 +227,12 @@ public class UserService {
         try {
             String profileImgUrl = s3Uploader.upload(multipartFile, "profile");
             user.updateProfile(profileImgUrl);
+            userImageResponseDto.setImg(profileImgUrl);
         } catch (IOException e) {
             log.error("updateProfile -> s3upload : {}", e.getMessage());
             throw new IllegalArgumentException("사진 업로드에 실패하였습니다");
         }
-
+        return userImageResponseDto;
     }
 
     @Transactional
