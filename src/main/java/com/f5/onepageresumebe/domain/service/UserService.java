@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -59,10 +60,9 @@ public class UserService {
         String password = passwordEncoder.encode(requestDto.getPassword());
         User user = User.create(email, password, null, null, null);
 
-        Boolean res;
+        boolean res = false;
 
-        if (user == null) res = false;
-        else {
+        if (user != null) {
             Portfolio portfolio = Portfolio.create(user);
             user.setPortfolio(portfolio);
             userRepository.save(user);
@@ -101,12 +101,9 @@ public class UserService {
         User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
-        Boolean isFirstLogin = true;
+        //첫 로그인 유저가 아닐때
+        boolean isFirstLogin = user.getCreatedAt().equals(user.getUpdatedAt());
 
-        //첫 로그인 유저가 아닐 때
-        if (!user.getCreatedAt().equals(user.getUpdatedAt())) {
-            isFirstLogin = false;
-        }
 
         return LoginResultDto.builder()
                 .tokenDto(tokenDto)
@@ -164,7 +161,7 @@ public class UserService {
         stackNames.forEach(name -> {
             //이미 존재하는 스택이라면
             if (existsStackId.contains(name)) {
-                Stack stack = stackRepository.findFirstByName(name).orElseThrow(()->
+                Stack stack = stackRepository.findFirstByName(name).orElseThrow(() ->
                         new IllegalArgumentException("스택 정보가 존재하지 않습니다"));
                 UserStack userStack = userstackRepository.findFirstByUserAndStack(curUser, stack).orElse(null);
 
@@ -217,12 +214,12 @@ public class UserService {
     public void updateProfile(MultipartFile multipartFile) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).orElseThrow(()->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
-        if(!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")){
-            s3Uploader.deleteProfile(user.getProfileImgUrl(),53);
+        if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {
+            s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
         }
         try {
             String profileImgUrl = s3Uploader.upload(multipartFile, "profile");
@@ -235,14 +232,14 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteProfile(){
+    public void deleteProfile() {
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).orElseThrow(()->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         //s3에서 삭제
-        if(!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")){
-            s3Uploader.deleteProfile(user.getProfileImgUrl(),53);
+        if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {
+            s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
         }
 
         user.deleteProfile();
