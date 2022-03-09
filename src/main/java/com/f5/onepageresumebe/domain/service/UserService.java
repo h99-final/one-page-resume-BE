@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.domain.service;
 import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
+import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.StackUtil;
@@ -44,11 +45,11 @@ public class UserService {
     private final ProjectRepository projectRepository;
     private final PortfolioRepository portfolioRepository;
     private final TokenProvider tokenProvider;
-    private final StackService stackService;
     private final StackRepository stackRepository;
     private final UserStackRepository userstackRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final S3Uploader s3Uploader;
+    private final UserQueryRepository userQueryRepository;
 
     @Transactional
     public Boolean registerUser(SignupRequestDto requestDto) {
@@ -79,7 +80,7 @@ public class UserService {
     public boolean checkEmail(CheckEmailRequestDto request) {
         boolean res = false;
 
-        Optional<User> found = userRepository.findByEmail(request.getEmail());
+        Optional<User> found = userQueryRepository.findByEmail(request.getEmail());
         if (found.isPresent()) res = true;
 
         return res;
@@ -101,7 +102,7 @@ public class UserService {
         TokenDto tokenDto = tokenProvider.generateToken(authentication);
 
         //유저 정보 가져오기
-        User user = userRepository.findByEmail(loginDto.getEmail())
+        User user = userQueryRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
         //첫 로그인 유저가 아닐때
@@ -122,7 +123,7 @@ public class UserService {
     public void addInfo(AddInfoRequestDto requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(userEmail)
+        User user = userQueryRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
         List<String> stacks = requestDto.getStack();
@@ -155,7 +156,7 @@ public class UserService {
 
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User curUser = userRepository.findByEmail(userEmail)
+        User curUser = userQueryRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
         List<String> stackNames = request.getStack();
@@ -178,14 +179,14 @@ public class UserService {
     public UserInfoResponseDto getUserInfo() {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
+        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
 
         //프로젝트 아이디 불러오기
         List<Integer> projectIds = projectRepository.findProjectIdByUserId(user.getId());
 
         //스택 내용 불러오기
-        List<String> stackNames = userstackRepository.findStackNamesByUserId(user.getId());
+        List<String> stackNames = userQueryRepository.findStackNamesByUserId(user.getId());
 
         return UserInfoResponseDto.builder()
                 .userId(user.getId())
@@ -208,7 +209,7 @@ public class UserService {
         UserImageResponseDto userImageResponseDto = new UserImageResponseDto();
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
+        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
@@ -229,7 +230,7 @@ public class UserService {
     @Transactional
     public void deleteProfile() {
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
+        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         //s3에서 삭제

@@ -4,6 +4,8 @@ import com.f5.onepageresumebe.domain.entity.Career;
 import com.f5.onepageresumebe.domain.entity.Portfolio;
 import com.f5.onepageresumebe.domain.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.repository.PortfolioRepository;
+import com.f5.onepageresumebe.domain.repository.querydsl.CareerQueryRepository;
+import com.f5.onepageresumebe.domain.repository.querydsl.PortfolioQueryRepository;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
@@ -24,6 +26,8 @@ public class CareerService {
 
     private final CareerRepository careerRepository;
     private final PortfolioRepository portfolioRepository;
+    private final CareerQueryRepository careerQueryRepository;
+    private final PortfolioQueryRepository portfolioQueryRepository;
 
     @Transactional
     public Integer createCareer(CareerRequestDto requestDto) {
@@ -31,7 +35,7 @@ public class CareerService {
         //현재 로그인한 사람
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         Career career = Career.create(requestDto.getTitle(),
@@ -51,7 +55,7 @@ public class CareerService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Career career = careerRepository.findByIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
+        Career career = careerQueryRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new IllegalArgumentException("내가 작성한 직무 경험만 수정할 수 있습니다"));
 
         career.updateCareer(requestDto.getTitle(),
@@ -66,7 +70,7 @@ public class CareerService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Career career = careerRepository.findByIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
+        Career career = careerQueryRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new IllegalArgumentException("내가 작성한 직무 경험만 삭제할 수 있습니다"));
 
         careerRepository.deleteById(careerId);
@@ -74,7 +78,7 @@ public class CareerService {
 
     public CareerListResponseDto getCareer(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));

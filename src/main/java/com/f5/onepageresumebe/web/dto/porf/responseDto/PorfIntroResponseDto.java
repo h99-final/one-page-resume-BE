@@ -5,14 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
 public class PorfIntroResponseDto {
 
+    private Integer id;
     private String title;
     private String contents;
     private String githubUrl;
@@ -21,4 +20,5 @@ public class PorfIntroResponseDto {
     private String bgImage;
     private String modifiedAt;
     private Integer templateIdx;
+
 }
