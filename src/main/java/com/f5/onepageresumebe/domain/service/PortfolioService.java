@@ -5,6 +5,9 @@ import com.f5.onepageresumebe.domain.repository.*;
 
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.PorfUtil;
+import com.f5.onepageresumebe.util.ProjectUtil;
+import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
@@ -22,11 +25,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
@@ -52,13 +55,10 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 포트폴리오입니다"));
 
-        portfolio.updateIntro(requestDto.getTitle(), portfolio.getUser().getGithubUrl(),
-                requestDto.getContents(),
-                portfolio.getUser().getBlogUrl());
+        portfolio.updateIntro(requestDto.getTitle(), portfolio.getUser().getGithubUrl(), requestDto.getContents(), portfolio.getUser().getBlogUrl());
 
         portfolioRepository.save(portfolio);
     }
-
 
     @Transactional //템플릿 테마 지정
     public void updateTemplate(PorfTemplateRequestDto porfTemplateRequestDto) {
@@ -72,8 +72,8 @@ public class PortfolioService {
         portfolio.updateTemplate(porfTemplateRequestDto.getIdx());
         portfolioRepository.save(portfolio);
 
-
     }
+
 
     @Transactional
     public void updateStack(StackDto requestDto) {
@@ -88,8 +88,6 @@ public class PortfolioService {
 
         insertStacksInPortfolio(portfolio, requestDto.getStack());
     }
-
-
 
     @Transactional
     public ChangeStatusDto changeStatus(ChangeStatusDto dto) {
@@ -140,12 +138,12 @@ public class PortfolioService {
     @Transactional
     public PorfIntroResponseDto getIntro(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
-        if (myPorf == 1 || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
             try {
                 String email = SecurityUtil.getCurrentLoginUserId();
                 Portfolio myPortfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
@@ -207,12 +205,11 @@ public class PortfolioService {
 
     public StackDto getStackContents(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
 
             List<String> stackNames = portfolioStackRepository.findStackNamesByPorfId(porfId);
 
@@ -230,40 +227,20 @@ public class PortfolioService {
 
     public ProjectDetailListResponseDto getProject(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
-        List<ProjectDetailResponseDto> projectDetailResponseDtos = new ArrayList<>();
-
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
-
+        if (myPorf || !(portfolio.getIsTemp())) {
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
-            projects.forEach(project -> {
-                ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
-                String imageUrl = null;
-                if (projectImg != null) {
-                    imageUrl = projectImg.getImageUrl();
-                }
-
-                ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
-                        .title(project.getTitle())
-                        .content(project.getIntroduce())
-                        .imgUrl(imageUrl)
-                        .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
-                        .build();
-
-                projectDetailResponseDtos.add(projectDetailResponseDto);
-            });
+            return ProjectDetailListResponseDto.builder()
+                    .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
+                    .build();
         } else {
             return null;
         }
-
-        return ProjectDetailListResponseDto.builder()
-                .projects(projectDetailResponseDtos)
-                .build();
     }
+
 
 
     @Transactional
@@ -289,40 +266,14 @@ public class PortfolioService {
     }
 
     private void insertStacksInPortfolio(Portfolio portfolio, List<String> stackNames) {
-        //새로 들어온 스택 모두 연결
+        //중복 스택 입력시, 중복데이터 제거
+        stackNames = stackNames.stream().distinct().collect(Collectors.toList());
+
         stackNames.forEach(name -> {
-            Stack stack = stackRepository.findFirstByName(name).orElse(null);
-            PortfolioStack createdPortfolioStack;
-            //이미 존재하는 스택이라면
-            if (stack != null) {
-                createdPortfolioStack = PortfolioStack.create(portfolio, stack);
-            } else {
-                //존재하지 않는 스택이라면
-                Stack createdStack = Stack.create(name);
-                stackRepository.save(createdStack);
-                createdPortfolioStack = PortfolioStack.create(portfolio, createdStack);
-            }
-            portfolioStackRepository.save(createdPortfolioStack);
+            Stack stack = StackUtil.createStack(name, stackRepository);
+            PortfolioStack portfolioStack = PortfolioStack.create(portfolio, stack);
+            portfolioStackRepository.save(portfolioStack);
         });
     }
-
-    private Integer isMyPorf(Integer porfId) {
-
-        try {
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
-            if (portfolio.getId()==porfId) {
-                return 1;
-            } else {
-                return 0;
-            }
-
-        } catch (CustomAuthenticationException e) {
-            return -1;
-        }
-    }
-
-
 
 }

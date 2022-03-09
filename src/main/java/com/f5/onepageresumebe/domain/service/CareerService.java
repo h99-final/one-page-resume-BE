@@ -4,8 +4,8 @@ import com.f5.onepageresumebe.domain.entity.Career;
 import com.f5.onepageresumebe.domain.entity.Portfolio;
 import com.f5.onepageresumebe.domain.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.repository.PortfolioRepository;
-import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
@@ -39,17 +39,15 @@ public class CareerService {
                 careerContentsListToString(requestDto.getContents()),
                 requestDto.getStartTime(),
                 requestDto.getEndTime(),
-                portfolio
-        );
+                portfolio);
 
         careerRepository.save(career);
 
         return career.getId();
-
     }
 
     @Transactional
-    public void updateCareer(Integer careerId,CareerRequestDto requestDto) {
+    public void updateCareer(Integer careerId ,CareerRequestDto requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -71,29 +69,30 @@ public class CareerService {
         Career career = careerRepository.findByIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new IllegalArgumentException("내가 작성한 직무 경험만 삭제할 수 있습니다"));
 
-        careerRepository.delete(career);
+        careerRepository.deleteById(careerId);
     }
 
     public CareerListResponseDto getCareer(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<CareerResponseDto> careerResponseDtos = new ArrayList<>();
 
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
+        if (myPorf || !(portfolio.getIsTemp())) {
 
             List<Career> careers = careerRepository.findAllByPorfId(porfId);
             careers.forEach(career -> {
                 String[] contents = career.getContents().split("----");
+                List<String> contentsList = Arrays.asList(contents);
+
                 CareerResponseDto responseDto = CareerResponseDto.builder()
                         .id(career.getId())
                         .title(career.getTitle())
                         .subTitle(career.getSubTitle())
-                        .contents(Arrays.asList(contents))
+                        .contents(contentsList)
                         .build();
                 careerResponseDtos.add(responseDto);
             });
@@ -120,22 +119,4 @@ public class CareerService {
         }
         return sb.toString();
     }
-
-    private Integer isMyPorf(Integer porfId) {
-
-        try {
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
-            if (portfolio.getId()==porfId) {
-                return 1;
-            } else {
-                return 0;
-            }
-
-        } catch (CustomAuthenticationException e) {
-            return -1;
-        }
-    }
-
 }

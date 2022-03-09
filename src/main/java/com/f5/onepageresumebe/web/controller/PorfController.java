@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.domain.service.CareerService;
+import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -23,20 +24,6 @@ import java.util.List;
 public class PorfController {
 
     private final PortfolioService portfolioService;
-    private final CareerService careerService;
-
-
-    @Secured("ROLE_USER")
-    @PostMapping("/porf/career")
-    public ResDto createCareer(@RequestBody CareerRequestDto dto) {
-
-        Integer careerId = careerService.createCareer(dto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(careerId)
-                .build();
-    }
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/status")
@@ -107,17 +94,6 @@ public class PorfController {
                 .build();
     }
 
-    @GetMapping("/porf/{porfId}/career")
-    public ResDto getCareer(@PathVariable("porfId") Integer porfId){
-
-        CareerListResponseDto responseDto = careerService.getCareer(porfId);
-
-        return ResDto.builder()
-                .result(true)
-                .data(responseDto)
-                .build();
-    }
-
     @GetMapping("/porf/{porfId}/project")
     public ResDto getProject(@PathVariable("porfId") Integer porfId){
 
@@ -158,31 +134,6 @@ public class PorfController {
     public ResDto updateStack(@RequestBody StackDto requestDto){
 
         portfolioService.updateStack(requestDto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(null)
-                .build();
-    }
-
-    @Secured("ROLE_USER")
-    @PutMapping("/porf/career/{careerId}")
-    public ResDto updateCareer(@RequestBody CareerRequestDto requestDto,
-                               @PathVariable("careerId") Integer careerId){
-
-        careerService.updateCareer(careerId,requestDto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(null)
-                .build();
-    }
-
-    @Secured("ROLE_USER")
-    @DeleteMapping("/porf/career/{careerId}")
-    public ResDto deleteCareer(@PathVariable("careerId") Integer careerId){
-
-        careerService.deleteCareer(careerId);
 
         return ResDto.builder()
                 .result(true)

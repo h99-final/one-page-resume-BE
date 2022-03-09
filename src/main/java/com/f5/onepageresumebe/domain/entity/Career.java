@@ -46,6 +46,10 @@ public class Career  {
 
     public static Career create(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime, Portfolio portfolio){
 
+        if("current".equals(endTime)){
+            endTime = LocalDate.of(3000,1,1);
+        }
+
         Career career = Career.builder()
                 .title(title)
                 .subTitle(subTitle)
@@ -62,16 +66,15 @@ public class Career  {
 
 
     public void updateCareer(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime){
+        if("current".equals(endTime)){
+            endTime = LocalDate.of(3000,1,1);
+        }
 
         this.title=title;
         this.subTitle = subTitle;
         this.contents= contents;
         this.startTime = startTime;
-        if("current".equals(endTime)){
-            this.endTime = LocalDate.of(3000,01,01);
-        }else{
-            this.endTime = endTime;
-        }
+        this.endTime = endTime;
     }
 
 }
