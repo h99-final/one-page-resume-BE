@@ -9,7 +9,7 @@ permissions:
   - object: /
     pattern: "**"
     owner: ubuntu
-    group: pp
+    group: ubuntu
 hooks:
   AfterInstall:
     - location: stop.sh
