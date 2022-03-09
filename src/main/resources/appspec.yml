@@ -8,8 +8,8 @@ files:
 permissions:
   - object: /
     pattern: "**"
-    owner: project
-    group: project
+    owner: ubuntu
+    group: ubuntu
 hooks:
   AfterInstall:
     - location: stop.sh
