@@ -8,7 +8,7 @@ files:
 permissions:
   - object: /
     pattern: "**"
-    owner: kim
+    owner: ubuntu
     group: pp
 hooks:
   AfterInstall:
