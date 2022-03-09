@@ -54,6 +54,9 @@ public class User extends TimeEntity{
     @Column(name="user_role", columnDefinition = "varchar(10)")
     private String role = "ROLE_USER";
 
+    @OneToMany(mappedBy = "user")
+    private List<ProjectBookmark> projectBookmarkList = new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
     public User(String email, String password, String name, String githubUrl, String blogUrl) {
         this.email = email;

@@ -47,6 +47,9 @@ public class Project extends TimeEntity{
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "project")
+    private List<ProjectBookmark> projectBookmarkList = new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
     public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user) {
         this.title = title;
