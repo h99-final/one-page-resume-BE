@@ -13,9 +13,7 @@ import java.util.Optional;
 
 public interface ProjectStackRepository extends JpaRepository<ProjectStack,Integer> {
 
-    Optional<ProjectStack> findFirstByProjectAndStack(Project project, Stack stack);
-
-    @Query("select ps.stack.name from ProjectStack ps inner join ps.stack where ps.project.id = :projectId")
+    @Query("select s.name from ProjectStack ps inner join ps.stack s where ps.project.id = :projectId")
     List<String> findStackNamesByProjectId(@Param("projectId") Integer projectId);
 
     @Modifying

@@ -2,6 +2,7 @@ package com.f5.onepageresumebe.security.service;
 
 import com.f5.onepageresumebe.domain.entity.User;
 import com.f5.onepageresumebe.domain.repository.UserRepository;
+import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,11 +16,11 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UserQueryRepository userQueryRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
+        return userQueryRepository.findByEmail(email)
                 .map(this::createUserDetails)
                 .orElseThrow(()->new UsernameNotFoundException(email + ": 해당 이메일 정보가 존재하지 않습니다."));
 

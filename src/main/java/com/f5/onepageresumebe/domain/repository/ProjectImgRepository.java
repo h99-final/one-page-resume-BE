@@ -11,6 +11,6 @@ public interface ProjectImgRepository extends JpaRepository<ProjectImg, Integer>
 
     Optional<ProjectImg> findFirstByProjectId(Integer projectId);
 
-    @Query("select pi from ProjectImg pi where pi.project.id = :projectId")
+    @Query("select pi from ProjectImg pi inner join fetch pi.project p where p.id = :projectId")
     List<ProjectImg> findAllByProjectId(Integer projectId);
 }

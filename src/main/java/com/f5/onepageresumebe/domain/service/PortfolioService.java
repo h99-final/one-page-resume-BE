@@ -3,6 +3,8 @@ package com.f5.onepageresumebe.domain.service;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 
+import com.f5.onepageresumebe.domain.repository.querydsl.PortfolioQueryRepository;
+import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.PorfUtil;
@@ -40,19 +42,20 @@ public class PortfolioService {
     private final PortfolioRepository portfolioRepository;
     private final StackRepository stackRepository;
     private final PortfolioStackRepository portfolioStackRepository;
-    private final UserRepository userRepository;
     private final UserStackRepository userStackRepository;
     private final CareerRepository careerRepository;
     private final ProjectRepository projectRepository;
     private final ProjectImgRepository projectImgRepository;
     private final ProjectStackRepository projectStackRepository;
+    private final PortfolioQueryRepository portfolioQueryRepository;
+    private final UserQueryRepository userQueryRepository;
 
     @Transactional
     public void updateIntro(PorfIntroRequestDto requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 포트폴리오입니다"));
 
         portfolio.updateIntro(requestDto.getTitle(), portfolio.getUser().getGithubUrl(), requestDto.getContents(), portfolio.getUser().getBlogUrl());
@@ -65,7 +68,7 @@ public class PortfolioService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
 
@@ -80,7 +83,7 @@ public class PortfolioService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         //기존에 있는 스택 모두 삭제
@@ -94,7 +97,7 @@ public class PortfolioService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         String changedStatus = portfolio.changeStatus(dto.getStatus());
@@ -107,7 +110,7 @@ public class PortfolioService {
     @Transactional
     public void inputProjectInPorf(PorfProjectRequestDto requestDto) {
         String email = SecurityUtil.getCurrentLoginUserId();
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<Integer> projectIds = requestDto.getProjectId();
@@ -125,7 +128,7 @@ public class PortfolioService {
     @Transactional
     public void deleteProjectInPorf(PorfProjectRequestDto requestDto) {
         String email = SecurityUtil.getCurrentLoginUserId();
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<Integer> projectIds = requestDto.getProjectId();
@@ -138,7 +141,7 @@ public class PortfolioService {
     @Transactional
     public PorfIntroResponseDto getIntro(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
@@ -146,7 +149,7 @@ public class PortfolioService {
         if (myPorf || !(portfolio.getIsTemp())) {
             try {
                 String email = SecurityUtil.getCurrentLoginUserId();
-                Portfolio myPortfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
+                Portfolio myPortfolio = portfolioQueryRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
                         new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
                 if (myPortfolio.getId()!=portfolio.getId()) portfolio.increaseViewCount();
             } catch (CustomAuthenticationException e) {
@@ -180,16 +183,16 @@ public class PortfolioService {
         if (stackNames.size() == 0) {
             //특정 조건이 없을 때
             //공개 된 것들만 가져온다
-            portfolioList = portfolioRepository.findAllFetchUserIfPublic();
+            portfolioList = portfolioQueryRepository.findAllFetchUserIfPublic();
         } else {
             //특정 스택을 가진, 공개된 포트폴리오만 조회
-            portfolioList = portfolioRepository.findAllByStackNamesIfPublic(stackNames);
+            portfolioList = portfolioQueryRepository.findAllByStackNamesIfPublic(stackNames);
         }
 
         Collections.shuffle(portfolioList); // 순서 섞음
 
         portfolioList.forEach(portfolio -> {
-            List<String> stacks = userStackRepository.findStackNamesByPorfId(portfolio.getId());
+            List<String> stacks = userQueryRepository.findStackNamesByPorfId(portfolio.getId());
             PorfResponseDto responseDto = PorfResponseDto.builder()
                     .porfId(portfolio.getId())
                     .username(portfolio.getUser().getName())
@@ -205,13 +208,13 @@ public class PortfolioService {
 
     public StackDto getStackContents(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
 
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
         if (myPorf || !(portfolio.getIsTemp())) {
 
-            List<String> stackNames = portfolioStackRepository.findStackNamesByPorfId(porfId);
+            List<String> stackNames = portfolioQueryRepository.findStackNamesByPorfId(porfId);
 
             return StackDto.builder()
                     .stack(stackNames)
@@ -227,7 +230,7 @@ public class PortfolioService {
 
     public ProjectDetailListResponseDto getProject(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioRepository);
+        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
@@ -248,7 +251,7 @@ public class PortfolioService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
+        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 포트폴리오 입니다"));
 
         Integer porfId = portfolio.getId();

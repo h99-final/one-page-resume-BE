@@ -4,6 +4,8 @@ package com.f5.onepageresumebe.domain.service;
 import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
+import com.f5.onepageresumebe.domain.repository.querydsl.ProjectQueryRepository;
+import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
@@ -44,13 +46,15 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
+    private final ProjectQueryRepository projectQueryRepository;
+    private final UserQueryRepository userQueryRepository;
 
 
     @Transactional//프로젝트 생성
     public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(userEmail).orElseThrow(()->
+        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(()->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         Project project = Project.create(requestDto.getTitle(), requestDto.getContent(),
@@ -96,7 +100,7 @@ public class ProjectService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
+        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
@@ -120,7 +124,7 @@ public class ProjectService {
 
         String email = SecurityUtil.getCurrentLoginUserId();
 
-        List<Project> projects = projectRepository.findAllByUserEmail(email);
+        List<Project> projects = projectQueryRepository.findAllByUserEmail(email);
 
         List<ProjectResponseDto> responseDtos = new ArrayList<>();
 
@@ -151,7 +155,7 @@ public class ProjectService {
 
         List<String> stackNames = requestDto.getStack();
 
-        List<Project> projects = projectRepository.findAllByStackNames(stackNames);
+        List<Project> projects = projectQueryRepository.findAllByStackNames(stackNames);
 
         Collections.shuffle(projects);
 
@@ -163,7 +167,7 @@ public class ProjectService {
     public Project getProjectIfMyProject(Integer projectId) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        Project project = projectRepository.findByUserEmailAndProjectId(email, projectId).orElse(null);
+        Project project = projectQueryRepository.findByUserEmailAndProjectId(email, projectId).orElse(null);
 //        List<Project> projects = projectRepository.findAllByUserEmail(email);
 //        Project project = null;
 //
