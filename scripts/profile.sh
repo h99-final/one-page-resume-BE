@@ -7,7 +7,7 @@ function find_idle_profile()
     # -s옵션으로 진행/에러 무시 / -o옵션으로 결과를 /dev/null(임시파일)에 저장 / w 옵션으로 원하는값 반환
     # 여기서는 status코드만 필요하므로 http_code만 받았다.
 
-    RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/profile)
+    RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}"  http://15.164.99.147/profile)
 
     if [ "${RESPONSE_CODE}" -ge 400 ] # 400 보다 크면 (즉, 40x/50x 에러 모두 포함)
     # 만약 오류가 있다면 강제로 1번에 배포하기 위해 real2로 둠
