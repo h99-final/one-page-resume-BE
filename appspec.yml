@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source:  /     # 현재 프로젝트의 루트 경로
-    destination: /home/ec2-user/app/step3/zip/   # EC2 내부에서 어떤 디렉토리로 전달할 것인지?
+    destination: /home/ubuntu/ec2-user/app/step3/zip   # EC2 내부에서 어떤 디렉토리로 전달할 것인지?
     overwrite: yes  # 덮어쓰기 할 것인지?
 
 permissions:
@@ -10,7 +10,6 @@ permissions:
     pattern: "**"
     owner: ubuntu
     group: ubuntu
-
 hooks:
   AfterInstall:
     - location: stop.sh
