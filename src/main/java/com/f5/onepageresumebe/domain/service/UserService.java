@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.security.jwt.TokenProvider.AUTHORIZATION_HEADER;
 
@@ -152,38 +153,24 @@ public class UserService {
     @Transactional
     public void updateInfo(AddInfoRequestDto request) {
 
-        //ToDo : 기존의 스택 삭제하기
+
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
         List<String> stackNames = request.getStack();
 
-        //존재하는 스택인지 판별
-        List<String> existsStackId = stackRepository.findNamesByNamesIfExists(stackNames);
+        //기존의 스택 삭제하기
+        userstackRepository.deleteAllUserStackByUserId(curUser.getId());
 
-        //ToDo : StackUtil 쓰기
+        //스텍 중복 삭제
+        stackNames = stackNames.stream().distinct().collect(Collectors.toList());
+        //입력으로 들어온 스택 추가
         stackNames.forEach(name -> {
-            //이미 존재하는 스택이라면
-            if (existsStackId.contains(name)) {
-                Stack stack = stackRepository.findFirstByName(name).orElseThrow(() ->
-                        new IllegalArgumentException("스택 정보가 존재하지 않습니다"));
-                UserStack userStack = userstackRepository.findFirstByUserAndStack(curUser, stack).orElse(null);
-
-                //연결되있지 않은 스택일때만 연결
-                if (userStack == null) {
-                    UserStack createdUserStack = UserStack.create(curUser, stack);
-                    userstackRepository.save(createdUserStack);
-                }
-            } else {
-                //존재하지 않는 스택이라면
-                Stack stack = Stack.create(name);
-                stackRepository.save(stack);
-                UserStack userStack = UserStack.create(curUser, stack);
-                userstackRepository.save(userStack);
-            }
+            Stack stack = StackUtil.createStack(name, stackRepository);
+            UserStack userStack = UserStack.create(curUser, stack);
+            userstackRepository.save(userStack);
         });
-
         curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
         userRepository.save(curUser);
     }
