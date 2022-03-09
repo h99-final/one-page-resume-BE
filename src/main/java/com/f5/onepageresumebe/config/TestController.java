@@ -15,8 +15,8 @@ public class TestController {
 
     private final Environment env;
 
-    @GetMapping("/")
-    public String gyunny() {
+    @GetMapping("/profile/")
+    public String profile() {
         List<String> profile = Arrays.asList(env.getActiveProfiles());
         List<String> realProfiles = Arrays.asList("real1", "real2");
         String defaultProfile = profile.isEmpty() ? "default" : profile.get(0);
