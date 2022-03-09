@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.domain.entity.Stack;
 import com.f5.onepageresumebe.domain.entity.User;
 import com.f5.onepageresumebe.domain.entity.UserStack;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,4 +26,8 @@ public interface UserStackRepository extends JpaRepository<UserStack, Integer> {
     List<String> findStackNamesByPorfId(@Param("porfId") Integer porfId);
 
     Optional<UserStack> findFirstByUserAndStack(User user, Stack stack);
+
+    @Modifying
+    @Query("delete from UserStack  us where us.user.id = :userId")
+    void deleteAllUserStackByUserId(@Param("userId") Integer userId);
 }

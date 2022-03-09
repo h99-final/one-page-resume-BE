@@ -1,24 +1,9 @@
 package com.f5.onepageresumebe.util;
 
-import com.f5.onepageresumebe.domain.entity.GitCommit;
-import com.f5.onepageresumebe.domain.entity.GitFile;
-import com.f5.onepageresumebe.domain.entity.Project;
-import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
-import com.f5.onepageresumebe.domain.repository.GitFileRepository;
-import com.f5.onepageresumebe.domain.service.ProjectService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor
 public class GitUtil {
-
-    private final GitCommitRepository gitCommitRepository;
-    private final GitFileRepository gitFileRepository;
-    private final ProjectService projectService;
-
     //String -> List
     public static List<String> parsePatchCode(String patchCode) {
         List<String> res = new ArrayList<>();
