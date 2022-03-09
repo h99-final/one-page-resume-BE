@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
+import com.f5.onepageresumebe.domain.service.CareerService;
+import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 
@@ -23,53 +23,18 @@ import java.util.List;
 public class PorfController {
 
     private final PortfolioService portfolioService;
+    private final CareerService careerService;
 
-    @Secured("ROLE_USER")
-    @PostMapping("/porf/intro") //포트폴리오 소개 작성
-    public ResDto createIntro(@RequestBody PorfIntroRequestDto dto) {
-
-        portfolioService.createIntro(dto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(null)
-                .build();
-    }
-
-    @Secured("ROLE_USER")
-    @PostMapping("/porf/template") //포트폴리오 템플릿 작성
-    public ResDto createTemplate(@RequestBody PorfTemplateRequestDto porfTemplateRequestDto) {
-      
-        portfolioService.updateTemplate(porfTemplateRequestDto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(null)
-                .build();
-    }
-
-    @Secured("ROLE_USER")
-    @PostMapping("/porf/stack")
-    public ResDto createStack(@RequestBody StackDto requestDto) {
-
-
-        portfolioService.createStack(requestDto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(null)
-                .build();
-    }
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/career")
-    public ResDto createCareer(@RequestBody CareerListRequestDto dto) {
+    public ResDto createCareer(@RequestBody CareerRequestDto dto) {
 
-        portfolioService.createCareer(dto);
+        Integer careerId = careerService.createCareer(dto);
 
         return ResDto.builder()
                 .result(true)
-                .data(null)
+                .data(careerId)
                 .build();
     }
 
@@ -145,7 +110,7 @@ public class PorfController {
     @GetMapping("/porf/{porfId}/career")
     public ResDto getCareer(@PathVariable("porfId") Integer porfId){
 
-        CareerListResponseDto responseDto = portfolioService.getCareer(porfId);
+        CareerListResponseDto responseDto = careerService.getCareer(porfId);
 
         return ResDto.builder()
                 .result(true)
@@ -201,10 +166,23 @@ public class PorfController {
     }
 
     @Secured("ROLE_USER")
-    @PutMapping("/porf/career")
-    public ResDto updateCareer(@RequestBody CareerListRequestDto requestDto){
+    @PutMapping("/porf/career/{careerId}")
+    public ResDto updateCareer(@RequestBody CareerRequestDto requestDto,
+                               @PathVariable("careerId") Integer careerId){
 
-        portfolioService.updateCareer(requestDto);
+        careerService.updateCareer(careerId,requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/porf/career/{careerId}")
+    public ResDto deleteCareer(@PathVariable("careerId") Integer careerId){
+
+        careerService.deleteCareer(careerId);
 
         return ResDto.builder()
                 .result(true)

@@ -62,11 +62,16 @@ public class Career  {
 
 
     public void updateCareer(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime){
+
         this.title=title;
         this.subTitle = subTitle;
         this.contents= contents;
         this.startTime = startTime;
-        this.endTime = endTime;
+        if("current".equals(endTime)){
+            this.endTime = LocalDate.of(3000,01,01);
+        }else{
+            this.endTime = endTime;
+        }
     }
 
 }

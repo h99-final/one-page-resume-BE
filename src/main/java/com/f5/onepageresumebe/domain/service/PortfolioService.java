@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,23 +44,21 @@ public class PortfolioService {
     private final ProjectImgRepository projectImgRepository;
     private final ProjectStackRepository projectStackRepository;
 
-    @Transactional//소개문 작성
-    public void createIntro(PorfIntroRequestDto porfIntroRequestDto) {
+    @Transactional
+    public void updateIntro(PorfIntroRequestDto requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        //유저 이메일로 포폴 아이디 가져오기
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                new IllegalArgumentException("존재하지 않는 포트폴리오입니다"));
 
-
-        portfolio.updateIntro(porfIntroRequestDto.getTitle(), portfolio.getUser().getGithubUrl(),
-                porfIntroRequestDto.getContents(),
+        portfolio.updateIntro(requestDto.getTitle(), portfolio.getUser().getGithubUrl(),
+                requestDto.getContents(),
                 portfolio.getUser().getBlogUrl());
 
         portfolioRepository.save(portfolio);
-
     }
+
 
     @Transactional //템플릿 테마 지정
     public void updateTemplate(PorfTemplateRequestDto porfTemplateRequestDto) {
@@ -76,17 +75,6 @@ public class PortfolioService {
 
     }
 
-
-    @Transactional//기술 스택 작성
-    public void createStack(StackDto requestDto) {
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
-                () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-
-        insertStacksInPortfolio(portfolio, requestDto.getStack());
-    }
-
     @Transactional
     public void updateStack(StackDto requestDto) {
 
@@ -101,31 +89,7 @@ public class PortfolioService {
         insertStacksInPortfolio(portfolio, requestDto.getStack());
     }
 
-    @Transactional
-    public void createCareer(CareerListRequestDto requestDto) {
 
-        //현재 로그인한 사람
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
-                () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-
-        insertCareersInPortfolio(portfolio,requestDto);
-    }
-
-    @Transactional
-    public void updateCareer(CareerListRequestDto requestDto) {
-
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
-
-        //커리어 모두 삭제
-        careerRepository.deleteAllByPorfId(portfolio.getId());
-
-        insertCareersInPortfolio(portfolio,requestDto);
-    }
 
     @Transactional
     public ChangeStatusDto changeStatus(ChangeStatusDto dto) {
@@ -262,37 +226,7 @@ public class PortfolioService {
 
     }
 
-    public CareerListResponseDto getCareer(Integer porfId) {
 
-        Integer myPorf = isMyPorf(porfId);
-
-        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-
-        List<CareerResponseDto> careerResponseDtos = new ArrayList<>();
-
-        if (myPorf == 1
-                || ((myPorf == 0 || myPorf == -1) && (!portfolio.getIsTemp()))) {
-
-            List<Career> careers = careerRepository.findAllByPorfId(porfId);
-            careers.forEach(career -> {
-                String[] contents = career.getContents().split("----");
-                CareerResponseDto responseDto = CareerResponseDto.builder()
-                        .id(career.getId())
-                        .title(career.getTitle())
-                        .subTitle(career.getSubTitle())
-                        .contents(Arrays.asList(contents))
-                        .build();
-                careerResponseDtos.add(responseDto);
-            });
-        } else {
-            return null;
-        }
-
-        return CareerListResponseDto.builder()
-                .careers(careerResponseDtos)
-                .build();
-    }
 
     public ProjectDetailListResponseDto getProject(Integer porfId) {
 
@@ -331,18 +265,6 @@ public class PortfolioService {
                 .build();
     }
 
-    @Transactional
-    public void updateIntro(PorfIntroRequestDto requestDto) {
-
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 포트폴리오입니다"));
-
-        portfolio.updateIntro(requestDto.getTitle(), portfolio.getGithubUrl(), requestDto.getContents(), portfolio.getBlogUrl());
-
-        portfolioRepository.save(portfolio);
-    }
 
     @Transactional
     public void reset() {
@@ -384,23 +306,6 @@ public class PortfolioService {
         });
     }
 
-    private void insertCareersInPortfolio(Portfolio portfolio,CareerListRequestDto requestDto){
-
-        requestDto.getCareers().forEach(dto -> {
-
-            List<String> contentsList = dto.getContents();
-
-            String combinedContents = careerContentsListToString(contentsList);
-
-            Career career = Career.create(dto.getTitle(), dto.getSubTitle(), combinedContents,
-                    dto.getStartTime(), dto.getEndTime(), portfolio);
-
-            careerRepository.save(career);
-
-        });
-
-    }
-
     private Integer isMyPorf(Integer porfId) {
 
         try {
@@ -418,20 +323,6 @@ public class PortfolioService {
         }
     }
 
-    private String careerContentsListToString(List<String> contentsList) {
-
-        StringBuilder sb = new StringBuilder();
-        int size = contentsList.size();
-
-        for (int i = 0; i < size; i++) {
-            if (i == size - 1) {
-                sb.append(contentsList.get(i));
-            } else {
-                sb.append(contentsList.get(i) + "----");
-            }
-        }
-        return sb.toString();
-    }
 
 
 }

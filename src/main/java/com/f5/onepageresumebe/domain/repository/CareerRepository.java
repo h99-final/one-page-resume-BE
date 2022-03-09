@@ -8,11 +8,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CareerRepository extends JpaRepository<Career, Integer> {
 
     @Query("select c from Career c where c.portfolio.id = :porfId")
     List<Career> findAllByPorfId(@Param("porfId") Integer porfId);
+
+    @Query("select c from Career c inner join fetch c.portfolio p inner join fetch p.user u " +
+            "where u.email = :userEmail and c.id = :careerId")
+    Optional<Career> findByIdAndUserEmail(@Param("careerId") Integer careerId,
+                                          @Param("userEmail") String userEmail);
 
     @Modifying
     @Query("delete from Career c where c.portfolio.id = :porfId")
