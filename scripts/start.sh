@@ -25,6 +25,8 @@ echo "> $JAR_NAME 실행"
 IDLE_PROFILE=$(find_idle_profile)
 
 echo "> $JAR_NAME 를 profile=$IDLE_PROFILE 로 실행합니다."
+
+
 nohup java -jar \
     -Dspring.profiles.active=$IDLE_PROFILE \   # 위에서 보았던 것처럼 $IDLE_PROFILE에는 real1 or real2가 반환되는데 반환되는 properties를 실행한다는 뜻입니다.
     $JAR_NAME > $REPOSITORY/nohup.out 2>&1 &
