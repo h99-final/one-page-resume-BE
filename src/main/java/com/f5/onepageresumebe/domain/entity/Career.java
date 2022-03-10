@@ -46,10 +46,6 @@ public class Career  {
 
     public static Career create(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime, Portfolio portfolio){
 
-        if("current".equals(endTime)){
-            endTime = LocalDate.of(3000,1,1);
-        }
-
         Career career = Career.builder()
                 .title(title)
                 .subTitle(subTitle)
@@ -66,9 +62,6 @@ public class Career  {
 
 
     public void updateCareer(String title, String subTitle, String contents, LocalDate startTime, LocalDate endTime){
-        if("current".equals(endTime)){
-            endTime = LocalDate.of(3000,1,1);
-        }
 
         this.title=title;
         this.subTitle = subTitle;

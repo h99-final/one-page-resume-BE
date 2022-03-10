@@ -6,6 +6,8 @@ import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
@@ -30,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
 @Service
@@ -62,8 +66,16 @@ public class ProjectService {
 
         projectRepository.save(project);
 
+        List<String> stacks = requestDto.getStack();
+
+        if(stacks.size()<3){
+            throw new CustomException("프로젝트 기술 스택을 3가지 이상 선택해 주세요.", INVALID_INPUT_ERROR);
+        }else if(multipartFiles.isEmpty()){
+            throw new CustomException("프로젝트 이미지를 1개 이상 업로드 해주세요.", INVALID_INPUT_ERROR);
+        }
+
         //스택 넣기
-        insertStacksInProject(project,requestDto.getStack());
+        insertStacksInProject(project, stacks);
 
         //이미지 넣기
         addImages(project,multipartFiles);
@@ -111,13 +123,19 @@ public class ProjectService {
             throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다");
         }
 
+        List<String> stacks = requestDto.getStack();
+
+        if (stacks.size()<3){
+            throw new CustomException("프로젝트 스택을 3개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
+        }
+
         project.updateIntro(requestDto);
 
         //기존에 있던 모든 연결된 스택 제거
         projectStackRepository.deleteAllByProjectId(projectId);
 
         //새로 들어온 스택 모두 프로젝트와 연결
-        insertStacksInProject(project, requestDto.getStack());
+        insertStacksInProject(project, stacks);
     }
 
     public ProjectShortInfoResponseDto getShortInfos(){

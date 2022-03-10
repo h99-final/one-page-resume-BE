@@ -13,6 +13,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
 import java.util.List;
 
 @AllArgsConstructor
@@ -24,7 +26,7 @@ public class ProjectController {
     @Secured("ROLE_USER")
     @PostMapping("/project")
     public ResDto createProject(@RequestPart("images") List<MultipartFile> multipartFileList,
-                                @RequestPart("data") ProjectRequestDto requestDto) {
+                                @Valid @RequestPart("data") ProjectRequestDto requestDto) {
 
         ProjectResponseDto responseDto = projectService.createProject(requestDto, multipartFileList);
 
@@ -37,7 +39,7 @@ public class ProjectController {
     @Secured("ROLE_USER")
     @PutMapping("/project/{projectId}")
     public ResDto updateProjectIntro(@PathVariable("projectId") Integer projectId,
-                                     @RequestBody ProjectUpdateRequestDto requestDto){
+                                     @Valid @RequestBody ProjectUpdateRequestDto requestDto){
 
         projectService.updateProjectInfo(projectId,requestDto);
 

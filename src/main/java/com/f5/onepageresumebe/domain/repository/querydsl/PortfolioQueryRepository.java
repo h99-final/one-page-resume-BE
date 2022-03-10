@@ -1,8 +1,6 @@
 package com.f5.onepageresumebe.domain.repository.querydsl;
 
 import com.f5.onepageresumebe.domain.entity.*;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.QPorfIntroResponseDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

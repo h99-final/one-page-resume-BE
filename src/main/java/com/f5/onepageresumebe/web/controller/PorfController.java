@@ -1,8 +1,5 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
-import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.*;
@@ -15,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -27,7 +24,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/status")
-    public ResDto changeStatus(@RequestBody ChangeStatusDto requestDto){
+    public ResDto changeStatus(@Valid @RequestBody ChangeStatusDto requestDto){
 
         ChangeStatusDto changeStatusDto = portfolioService.changeStatus(requestDto);
 
@@ -39,7 +36,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/project")
-    public ResDto inputProjectInPortfolio(@RequestBody PorfProjectRequestDto requestDto){
+    public ResDto inputProjectInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
 
         portfolioService.inputProjectInPorf(requestDto);
 
@@ -51,7 +48,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @DeleteMapping("/porf/project")
-    public ResDto deleteProjectInPortfolio(@RequestBody PorfProjectRequestDto requestDto){
+    public ResDto deleteProjectInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
 
         portfolioService.deleteProjectInPorf(requestDto);
 
@@ -107,7 +104,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/intro")
-    public ResDto updateIntro(@RequestBody PorfIntroRequestDto requestDto){
+    public ResDto updateIntro(@Valid @RequestBody PorfIntroRequestDto requestDto){
 
         portfolioService.updateIntro(requestDto);
 
@@ -119,7 +116,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/template")
-    public ResDto updateTemplate(@RequestBody PorfTemplateRequestDto requestDto){
+    public ResDto updateTemplate(@Valid @RequestBody PorfTemplateRequestDto requestDto){
 
         portfolioService.updateTemplate(requestDto);
 

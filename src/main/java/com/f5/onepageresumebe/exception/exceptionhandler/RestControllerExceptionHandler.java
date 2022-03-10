@@ -2,6 +2,7 @@ package com.f5.onepageresumebe.exception.exceptionhandler;
 
 import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.ErrorResponse;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomFieldException;
@@ -47,6 +48,15 @@ public class RestControllerExceptionHandler {
 
     @ExceptionHandler(CustomAuthorizationException.class)
     public ResDto customAuthorizationException(CustomAuthorizationException e){
+
+        return ResDto.builder()
+                .result(false)
+                .data(ErrorResponse.of(e.getMessage(),e.getErrorCode()))
+                .build();
+    }
+
+    @ExceptionHandler(CustomAuthenticationException.class)
+    public ResDto customAuthenticationException(CustomAuthenticationException e){
 
         return ResDto.builder()
                 .result(false)
