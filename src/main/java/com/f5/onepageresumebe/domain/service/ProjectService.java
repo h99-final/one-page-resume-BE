@@ -155,7 +155,14 @@ public class ProjectService {
 
         List<String> stackNames = requestDto.getStack();
 
-        List<Project> projects = projectQueryRepository.findAllByStackNames(stackNames);
+        List<Project> projects;
+        
+        if(stackNames.size() == 0) {
+            projects = projectRepository.findAll();
+        }
+        else {
+            projects = projectQueryRepository.findAllByStackNames(stackNames);
+        }
 
         Collections.shuffle(projects);
 
