@@ -10,24 +10,19 @@ import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.util.StackUtil;
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerListRequestDto;
-import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
-import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -227,7 +222,7 @@ public class PortfolioService {
 
 
 
-    public ProjectDetailListResponseDto getProject(Integer porfId) {
+    public List<ProjectResponseDto> getProject(Integer porfId) {
 
         boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
@@ -235,9 +230,7 @@ public class PortfolioService {
 
         if (myPorf || !(portfolio.getIsTemp())) {
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
-            return ProjectDetailListResponseDto.builder()
-                    .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
-                    .build();
+            return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
         } else {
             return null;
         }

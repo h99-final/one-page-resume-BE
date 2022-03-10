@@ -13,5 +13,8 @@ public class ProjectResponseDto {
     private String title;
     private String imageUrl;
     private List<String> stack;
+    private String content;
     private Integer bookmarkCount;
+    private String userName;
+    private String userJob;
 }

@@ -12,10 +12,8 @@ import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
@@ -119,7 +117,7 @@ public class ProjectService {
         insertStacksInProject(project, requestDto.getStack());
     }
 
-    public ProjectShortInfoResponseDto getShortInfos(){
+    public List<ProjectResponseDto> getShortInfos(){
 
         String email = SecurityUtil.getCurrentLoginUserId();
 
@@ -141,17 +139,16 @@ public class ProjectService {
                     .title(project.getTitle())
                     .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(projectId))
+                    .content(project.getIntroduce())
                     .build();
 
             responseDtos.add(responseDto);
         });
 
-        return ProjectShortInfoResponseDto.builder()
-                .projects(responseDtos)
-                .build();
+        return responseDtos;
     }
 
-    public ProjectDetailListResponseDto getAllByStacks(StackDto requestDto){
+    public List<ProjectResponseDto> getAllByStacks(StackDto requestDto){
 
         List<String> stackNames = requestDto.getStack();
 
@@ -166,9 +163,7 @@ public class ProjectService {
 
         Collections.shuffle(projects);
 
-        return ProjectDetailListResponseDto.builder()
-                .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
-                .build();
+        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
     }
 
     public Project getProjectIfMyProject(Integer projectId) {
