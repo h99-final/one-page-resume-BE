@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.domain.service.GitService;
 import com.f5.onepageresumebe.domain.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
+import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -37,9 +38,11 @@ public class GitController {
     @Secured("ROLE_USER")
     @PostMapping("/project/{projectId}/troubleShooting")
     public ResDto createTroubleShooting(@RequestBody CommitRequestDto request, @PathVariable("projectId") Integer projectId) {
+        CommitIdResponseDto commitIdResponseDto = gitService.createTroubleShooting(projectId, request);
 
         return ResDto.builder()
-                .result(gitService.createTroubleShooting(projectId, request))
+                .result(true)
+                .data(commitIdResponseDto)
                 .build();
     }
 

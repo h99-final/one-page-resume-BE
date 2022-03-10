@@ -8,6 +8,7 @@ import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
+import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
@@ -34,7 +35,7 @@ public class GitService {
     private final GitApiConfig gitApiConfig;
 
     @Transactional
-    public boolean createTroubleShooting(Integer projectId, CommitRequestDto request) {
+    public CommitIdResponseDto createTroubleShooting(Integer projectId, CommitRequestDto request) {
 
         Project project = projectService.getProjectIfMyProject(projectId);
 
@@ -45,7 +46,7 @@ public class GitService {
 
         //이미 등록된 커밋
         if(tempCommit != null) {
-            return false;
+            return new CommitIdResponseDto(-1);
         }
 
         GitCommit gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
@@ -57,7 +58,7 @@ public class GitService {
             gitFileRepository.save(gitFile);
         }
 
-        return true;
+        return new CommitIdResponseDto(gitCommit.getId());
     }
 
     public List<CommitMessageResponseDto> getCommitMessages(Integer projectId) {
