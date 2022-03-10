@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# switch.sh
-# nginx 연결 설정 스위치
-source /home/ubuntu/.bash_profile
-
 ABSPATH=$(readlink -f $0)
 ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
@@ -13,11 +9,22 @@ function switch_proxy() {
 
     echo "> 전환할 Port: $IDLE_PORT"
     echo "> Port 전환"
-    # nginx와 연결한 주소 생성
-    # | sudo tee ~ : 앞에서 넘긴 문장을 service-url.inc에 덮어씀
-    echo "set \$service_url http://15.164.99.147:${IDLE_PORT};" | sudo tee /etc/nginx/conf.d/service-url.inc
+    echo "set \$service_url http://127.0.0.1:${IDLE_PORT};" | sudo tee /etc/nginx/conf.d/service-url.inc
+
+    # 포트 전환하면서, 바꾼거말고 다른거 kill
+    if [ ${IDLE_PORT} == 8081 ]
+    then
+      KILL_PORT=8082
+      IDLE_PID=$(lsof -ti tcp:${KILL_PORT})
+      echo "> ${KILL_PORT} 포트를 종료합니다."
+      kill -15 ${IDLE_PID}
+    else
+      KILL_PORT=8081
+      IDLE_PID=$(lsof -ti tcp:${KILL_PORT})
+      echo "> ${KILL_PORT} 포트를 종료합니다."
+      kill -15 ${IDLE_PID}
+    fi
 
     echo "> 엔진엑스 Reload"
-    # nginx reload. restart와는 다르게 설정 값만 불러옴
     sudo service nginx reload
 }
