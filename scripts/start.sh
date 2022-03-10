@@ -39,4 +39,4 @@ echo "> $JAR_NAME 실행"
 cd $REPOSITORY
 
 echo "> $JAR_NAME 를 profile=$IDLE_PROFILE 로 실행합니다."
-nohup java -jar -Dspring.config.location=classpath:/application.properties,classpath:/application-$IDLE_PROFILE.properties,/home/ec2-user/app/application-oauth.properties,/home/ec2-user/app/application-real-db.properties -Dspring.profiles.active=$IDLE_PROFILE $JAR_NAME > $REPOSITORY/nohup.out 2>&1 &
+nohup java -jar -Dspring.profiles.active=real2 one-page-resume-BE-0.0.1-SNAPSHOT.jar &
