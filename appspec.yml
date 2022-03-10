@@ -4,7 +4,7 @@ files:
   # source는 프로젝트 기준, destination은 instance 기준
   # source가 destination으로 저장
   - source: /
-    destination: /home/ec2-user/app/step3/zip
+    destination: /home/ubuntu/scope/zip
 
 permissions:
   - object: /
