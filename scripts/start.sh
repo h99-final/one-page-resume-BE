@@ -24,6 +24,7 @@ chmod +x $JAR_NAME
 echo "> $JAR_NAME 실행"
 #
 IDLE_PROFILE=$(find_idle_profile)
+
 cd $REPOSITORY
 echo "> $JAR_NAME 를 profile=$IDLE_PROFILE 로 실행합니다."
 
