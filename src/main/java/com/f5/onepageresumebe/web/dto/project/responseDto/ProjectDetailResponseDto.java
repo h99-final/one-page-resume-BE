@@ -19,7 +19,7 @@ public class ProjectDetailResponseDto {
     private List<String> stack;
     private Integer bookmarkCount;
     private String content;
-    private String userName;
+    private String username;
     private String userJob;
     private Boolean isMyProject;
     private Boolean isBookmarking;
