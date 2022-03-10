@@ -36,17 +36,3 @@ function find_idle_port()
       echo "8082"
     fi
 }
-
-function changePortToReal()
-{
-    CURRENT_PORT=$(cat /etc/nginx/conf.d/service-url.inc | cut -c 35-38)
-
-    if [ ${CURRENT_PORT} == 8081 ]
-    then
-        SERVICE_URL=real1
-    else
-        SERVICE_URL=real2
-    fi
-
-    echo "${SERVICE_URL}"
-}
