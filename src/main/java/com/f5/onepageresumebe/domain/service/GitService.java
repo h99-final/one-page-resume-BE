@@ -116,6 +116,12 @@ public class GitService {
         Project project = projectService.getProjectIfMyProject(projectId);
         if(project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
 
+        //하나의 커밋에는 하나의 트러블 슈팅만 작성할 수 있으므로, 이미 등록된 sha(commit)이면 에러 발생
+        GitCommit existCommit = gitCommitRepository.findBySha(sha);
+        if(existCommit != null){
+            throw new CustomException("이미 등록된 트러블 슈팅(commit)입니다. 기존의 트러블 슈팅을 수정해 주세요.",ErrorCode.DUPLICATED_INPUT_ERROR);
+        }
+
         String gitUrl = project.getGitRepoUrl();
         String repo = project.getGitRepoName();
 

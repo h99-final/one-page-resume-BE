@@ -30,6 +30,9 @@ public class Project extends TimeEntity{
     @Column(columnDefinition = "varchar(100)")
     private String gitRepoUrl;
 
+    @Column(nullable = false, columnDefinition = "SMALLINT")
+    private Integer bookmarkCount;
+
     @OneToMany(mappedBy = "project")
     private List<ProjectStack> projectStackList = new ArrayList<>();
 
@@ -48,13 +51,14 @@ public class Project extends TimeEntity{
     private User user;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user) {
+    public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user,Integer bookmarkCount) {
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
         this.user = user;
         this.gitRepoName = gitRepoName;
         this.gitRepoUrl = gitRepoUrl;
+        this.bookmarkCount = bookmarkCount;
     }
 
     public static Project create(String title, String introduce,String gitRepoName,String gitRepoUrl,User user) {
@@ -65,6 +69,7 @@ public class Project extends TimeEntity{
                 .gitRepoName(gitRepoName)
                 .gitRepoUrl(gitRepoUrl)
                 .user(user)
+                .bookmarkCount(0)
                 .build();
 
         user.getProjectList().add(project);

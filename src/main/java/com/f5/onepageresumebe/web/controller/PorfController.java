@@ -6,7 +6,7 @@ import com.f5.onepageresumebe.web.dto.porf.requestDto.*;
 import com.f5.onepageresumebe.domain.service.PortfolioService;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -94,7 +94,7 @@ public class PorfController {
     @GetMapping("/porf/{porfId}/project")
     public ResDto getProject(@PathVariable("porfId") Integer porfId){
 
-        ProjectDetailListResponseDto responseDto = portfolioService.getProject(porfId);
+        List<ProjectResponseDto> responseDto = portfolioService.getProject(porfId);
 
         return ResDto.builder()
                 .result(true)

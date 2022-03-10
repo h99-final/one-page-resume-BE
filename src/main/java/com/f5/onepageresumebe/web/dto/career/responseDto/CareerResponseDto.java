@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -17,4 +18,6 @@ public class CareerResponseDto {
     private String title;
     private String subTitle;
     private List<String> contents;
+    private LocalDate startTime;
+    private LocalDate endTime;
 }

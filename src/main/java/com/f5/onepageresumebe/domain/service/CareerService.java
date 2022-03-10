@@ -6,12 +6,10 @@ import com.f5.onepageresumebe.domain.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.repository.PortfolioRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.CareerQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.PortfolioQueryRepository;
-import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
-import com.f5.onepageresumebe.web.dto.career.responseDto.CareerListResponseDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -90,7 +88,7 @@ public class CareerService {
         careerRepository.deleteById(careerId);
     }
 
-    public CareerListResponseDto getCareer(Integer porfId) {
+    public List<CareerResponseDto> getCareer(Integer porfId) {
 
         boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
 
@@ -111,6 +109,8 @@ public class CareerService {
                         .title(career.getTitle())
                         .subTitle(career.getSubTitle())
                         .contents(contentsList)
+                        .startTime(career.getStartTime())
+                        .endTime(career.getEndTime())
                         .build();
                 careerResponseDtos.add(responseDto);
             });
@@ -118,9 +118,7 @@ public class CareerService {
             return null;
         }
 
-        return CareerListResponseDto.builder()
-                .careers(careerResponseDtos)
-                .build();
+        return careerResponseDtos;
     }
 
     private String careerContentsListToString(List<String> contentsList) {

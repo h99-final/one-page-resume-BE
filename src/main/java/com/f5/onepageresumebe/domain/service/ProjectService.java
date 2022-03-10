@@ -6,7 +6,6 @@ import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
-import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
@@ -14,11 +13,8 @@ import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
@@ -80,9 +76,14 @@ public class ProjectService {
         //이미지 넣기
         addImages(project,multipartFiles);
 
+        Integer projectId = project.getId();
+
         return ProjectResponseDto.builder()
-                .id(project.getId())
+                .id(projectId)
                 .title(project.getTitle())
+                .imageUrl(projectImgRepository.findFirstByProjectId(projectId).get()
+                        .getImageUrl())
+                .stack(stacks)
                 .build();
     }
 
@@ -138,38 +139,16 @@ public class ProjectService {
         insertStacksInProject(project, stacks);
     }
 
-    public ProjectShortInfoResponseDto getShortInfos(){
+    public List<ProjectResponseDto> getShortInfos(){
 
         String email = SecurityUtil.getCurrentLoginUserId();
 
         List<Project> projects = projectQueryRepository.findAllByUserEmail(email);
 
-        List<ProjectResponseDto> responseDtos = new ArrayList<>();
-
-        projects.forEach(project -> {
-            Integer projectId = project.getId();
-            String imageUrl = null;
-            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
-            if(projectImg!=null){
-                imageUrl = projectImg.getImageUrl();
-            }
-
-            ProjectResponseDto responseDto = ProjectResponseDto.builder()
-                    .id(projectId)
-                    .imageUrl(imageUrl)
-                    .title(project.getTitle())
-                    .stack(projectStackRepository.findStackNamesByProjectId(projectId))
-                    .build();
-
-            responseDtos.add(responseDto);
-        });
-
-        return ProjectShortInfoResponseDto.builder()
-                .projects(responseDtos)
-                .build();
+        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
     }
 
-    public ProjectDetailListResponseDto getAllByStacks(StackDto requestDto){
+    public List<ProjectResponseDto> getAllByStacks(StackDto requestDto){
 
         List<String> stackNames = requestDto.getStack();
 
@@ -177,9 +156,8 @@ public class ProjectService {
 
         Collections.shuffle(projects);
 
-        return ProjectDetailListResponseDto.builder()
-                .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
-                .build();
+        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
+
     }
 
     public Project getProjectIfMyProject(Integer projectId) {
