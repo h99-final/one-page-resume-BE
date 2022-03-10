@@ -7,7 +7,7 @@ REPOSITORY=/home/ubuntu/experiment/deploy
 cd $REPOSITORY
 
 # 실행될 앱 이름
-APP_NAME=final
+APP_NAME=MBTI
 
 echo "> 현재 구동 중인 애플리케이션 pid 확인"
 
