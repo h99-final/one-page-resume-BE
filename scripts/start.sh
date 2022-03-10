@@ -8,7 +8,6 @@ ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
 source /etc/profile.d/scopekey.sh
 
-
 # 현재 프로젝트 경로 지정
 REPOSITORY=/home/ubuntu/scope
 IDLE_PORT=$(find_idle_port)
@@ -24,7 +23,6 @@ echo "> cp $REPOSITORY/zip/*.jar $REPOSITORY/"
 # 새로운 jar file 덮어쓰기
 cp $REPOSITORY/zip/*.jar $REPOSITORY
 
-
 echo "> 새 어플리케이션 배포"
 JAR_NAME=$(ls -S $REPOSITORY/*.jar | head -n 1)
 
@@ -36,7 +34,9 @@ sudo chmod +x $JAR_NAME
 
 echo "> $JAR_NAME 실행"
 
+echo "> $JAR_NAME 를 profile=$IDLE_PROFILE 로 실행합니다."
+
 cd $REPOSITORY
 
 echo "> $JAR_NAME 를 profile=$IDLE_PROFILE 로 실행합니다."
-nohup java -jar -Dspring.profiles.active=real2 one-page-resume-BE-0.0.1-SNAPSHOT.jar &
+nohup java -jar -Dspring.profiles.active=$IDLE_PROFILE one-page-resume-BE-0.0.1-SNAPSHOT.jar &
