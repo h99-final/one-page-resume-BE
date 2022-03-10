@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.domain.entity.ProjectImg;
 import com.f5.onepageresumebe.domain.entity.User;
 import com.f5.onepageresumebe.domain.repository.ProjectImgRepository;
 import com.f5.onepageresumebe.domain.repository.ProjectStackRepository;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 
 import java.util.ArrayList;
@@ -38,5 +39,28 @@ public class ProjectUtil {
 
         });
         return projectResponseDtos;
+    }
+    public static ProjectDetailResponseDto projectToDeatilResponseDto(Project project,
+                                                                   ProjectImgRepository projectImgRepository,
+                                                                   ProjectStackRepository projectStackRepository) {
+
+        ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
+        String projectImgUrl = null;
+        if (projectImg != null) {
+            projectImgUrl = projectImg.getImageUrl();
+        }
+            User user = project.getUser();
+
+            ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
+                    .title(project.getTitle())
+                    .content(project.getIntroduce())
+                    .imageUrl(projectImgUrl)
+                    .bookmarkCount(project.getBookmarkCount())
+                    .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                    .userJob(user.getJob())
+                    .userName(user.getName())
+                    .build();
+
+        return projectDetailResponseDto;
     }
 }
