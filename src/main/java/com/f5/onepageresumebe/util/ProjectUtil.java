@@ -12,9 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectUtil {
+
     public static List<ProjectResponseDto> projectToResponseDtos(List<Project> projects,
-                                                                       ProjectImgRepository projectImgRepository,
-                                                                       ProjectStackRepository projectStackRepository) {
+                                                                 ProjectImgRepository projectImgRepository,
+                                                                 ProjectStackRepository projectStackRepository) {
         List<ProjectResponseDto> projectResponseDtos = new ArrayList<>();
         projects.forEach(project -> {
             ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
@@ -32,14 +33,16 @@ public class ProjectUtil {
                     .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .userJob(user.getJob())
-                    .userName(user.getName())
+                    .username(user.getName())
                     .build();
 
             projectResponseDtos.add(projectResponseDto);
 
         });
         return projectResponseDtos;
+
     }
+  
     public static ProjectDetailResponseDto projectToDeatilResponseDto(Project project,
                                                                    ProjectImgRepository projectImgRepository,
                                                                    ProjectStackRepository projectStackRepository) {
@@ -58,7 +61,7 @@ public class ProjectUtil {
                     .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .userJob(user.getJob())
-                    .userName(user.getName())
+                    .username(user.getName())
                     .build();
 
         return projectDetailResponseDto;

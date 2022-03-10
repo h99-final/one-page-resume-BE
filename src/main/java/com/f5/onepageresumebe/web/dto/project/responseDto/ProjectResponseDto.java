@@ -15,6 +15,6 @@ public class ProjectResponseDto {
     private List<String> stack;
     private String content;
     private Integer bookmarkCount;
-    private String userName;
+    private String username;
     private String userJob;
 }

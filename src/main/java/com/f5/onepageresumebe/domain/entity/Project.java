@@ -30,6 +30,7 @@ public class Project extends TimeEntity{
     @Column(columnDefinition = "varchar(100)")
     private String gitRepoUrl;
 
+
     @Column(nullable = false,  columnDefinition = "SMALLINT")
     private Integer bookmarkCount;
 

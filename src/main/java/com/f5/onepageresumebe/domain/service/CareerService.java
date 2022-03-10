@@ -6,6 +6,7 @@ import com.f5.onepageresumebe.domain.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.repository.PortfolioRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.CareerQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.PortfolioQueryRepository;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,9 +40,14 @@ public class CareerService {
         Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
+        List<String> contents = requestDto.getContents();
+        if (contents.isEmpty()){
+            throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
+        }
+
         Career career = Career.create(requestDto.getTitle(),
                 requestDto.getSubTitle(),
-                careerContentsListToString(requestDto.getContents()),
+                careerContentsListToString(contents),
                 requestDto.getStartTime(),
                 requestDto.getEndTime(),
                 portfolio);
@@ -56,6 +64,11 @@ public class CareerService {
 
         Career career = careerQueryRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new IllegalArgumentException("내가 작성한 직무 경험만 수정할 수 있습니다"));
+
+        List<String> contents = requestDto.getContents();
+        if (contents.isEmpty()){
+            throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
+        }
 
         career.updateCareer(requestDto.getTitle(),
                 requestDto.getSubTitle(),
@@ -96,6 +109,8 @@ public class CareerService {
                         .title(career.getTitle())
                         .subTitle(career.getSubTitle())
                         .contents(contentsList)
+                        .startTime(career.getStartTime())
+                        .endTime(career.getEndTime())
                         .build();
                 careerResponseDtos.add(responseDto);
             });

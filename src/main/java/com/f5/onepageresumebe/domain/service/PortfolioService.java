@@ -6,6 +6,7 @@ import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.PortfolioQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
@@ -27,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
 @Service
@@ -36,7 +39,6 @@ public class PortfolioService {
     private final PortfolioRepository portfolioRepository;
     private final StackRepository stackRepository;
     private final PortfolioStackRepository portfolioStackRepository;
-    private final UserStackRepository userStackRepository;
     private final CareerRepository careerRepository;
     private final ProjectRepository projectRepository;
     private final ProjectImgRepository projectImgRepository;
@@ -80,10 +82,15 @@ public class PortfolioService {
         Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
+        List<String> stacks = requestDto.getStack();
+        if (stacks.size()<3){
+            throw new CustomException("포트폴리오 스택을 3개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
+        }
+
         //기존에 있는 스택 모두 삭제
         portfolioStackRepository.deleteAllByPorfId(portfolio.getId());
 
-        insertStacksInPortfolio(portfolio, requestDto.getStack());
+        insertStacksInPortfolio(portfolio, stacks);
     }
 
     @Transactional
@@ -94,7 +101,12 @@ public class PortfolioService {
         Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
-        String changedStatus = portfolio.changeStatus(dto.getStatus());
+        String status = dto.getStatus();
+        if(!("public".equals(status) || "private".equals(status)) ){
+            throw new CustomException("포트폴리오 상태값은 public 이거나 private 입니다.", INVALID_INPUT_ERROR);
+        }
+
+        String changedStatus = portfolio.changeStatus(status);
 
         return ChangeStatusDto.builder()
                 .status(changedStatus)
@@ -108,6 +120,10 @@ public class PortfolioService {
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<Integer> projectIds = requestDto.getProjectId();
+
+        if (projectIds.isEmpty()){
+            throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
+        }
 
         List<Project> projects = projectRepository.findAllByIds(projectIds);
 
@@ -126,6 +142,10 @@ public class PortfolioService {
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<Integer> projectIds = requestDto.getProjectId();
+
+        if (projectIds.isEmpty()){
+            throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
+        }
 
         List<Project> projects = projectRepository.findAllByIds(projectIds);
 
@@ -152,6 +172,7 @@ public class PortfolioService {
 
             portfolioRepository.save(portfolio);
             return PorfIntroResponseDto.builder()
+                    .id(porfId)
                     .title(portfolio.getTitle())
                     .githubUrl(portfolio.getGithubUrl())
                     .blogUrl(portfolio.getBlogUrl())
@@ -177,13 +198,11 @@ public class PortfolioService {
         if (stackNames.size() == 0) {
             //특정 조건이 없을 때
             //공개 된 것들만 가져온다
-            portfolioList = portfolioQueryRepository.findAllFetchUserIfPublic();
+            portfolioList = portfolioQueryRepository.findAllFetchUserIfPublicLimit();
         } else {
             //특정 스택을 가진, 공개된 포트폴리오만 조회
-            portfolioList = portfolioQueryRepository.findAllByStackNamesIfPublic(stackNames);
+            portfolioList = portfolioQueryRepository.findAllByStackNamesIfPublicLimit(stackNames);
         }
-
-        Collections.shuffle(portfolioList); // 순서 섞음
 
         portfolioList.forEach(portfolio -> {
             List<String> stacks = userQueryRepository.findStackNamesByPorfId(portfolio.getId());

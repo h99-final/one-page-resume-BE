@@ -6,6 +6,10 @@ import com.f5.onepageresumebe.domain.entity.GitFile;
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.repository.GitFileRepository;
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
@@ -39,7 +43,7 @@ public class GitService {
 
         Project project = projectService.getProjectIfMyProject(projectId);
 
-        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+        if(project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
 
         //이미 등록한 커밋이랑 중복되는지 체크
         GitCommit tempCommit = gitCommitRepository.findBySha(request.getSha());
@@ -65,7 +69,7 @@ public class GitService {
 
         Project project = projectService.getProjectIfMyProject(projectId);
 
-        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+        if(project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
 
         String gitUrl = project.getGitRepoUrl(); //github.com/skekq123
         String repo = project.getGitRepoName(); // ourWiki
@@ -77,8 +81,18 @@ public class GitService {
 
         GitHub gitHub = gitApiConfig.gitHub();
 
+        GHRepository ghRepository = null;
+
+        try{
+            ghRepository = gitHub.getRepository(repoName);
+        } catch (IOException e){
+            log.error("Repository 가져오기 실패: {}",e.getMessage());
+            e.printStackTrace();
+            throw new CustomException("Github Repository를 가져오는데 실패하였습니다.\n프로젝트를 만들 때 입력한 Repository 이름을 다시 한번 확인해 주세요.",
+                    ErrorCode.INVALID_INPUT_ERROR);
+        }
+
         try {
-            GHRepository ghRepository = gitHub.getRepository(repoName);
             List<GHCommit> commits = ghRepository.listCommits().toList();
             for(GHCommit curCommit  : commits) {
                 String curSha = curCommit.getSHA1();
@@ -88,7 +102,10 @@ public class GitService {
                 commitMessageResponseDtoList.add(curDto);
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("해당 repository가 존재하지 않습니다.");
+            log.error("Commit 가져오기 실패: {}", e.getMessage());
+            e.printStackTrace();
+            throw new CustomException("Github Commit 정보를 불러오는데 실패하였습니다.\n 다시 시도해도 안될 경우, 관리자에게 문의해 주세요.",
+                    ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         return commitMessageResponseDtoList;
@@ -98,7 +115,13 @@ public class GitService {
 
 
         Project project = projectService.getProjectIfMyProject(projectId);
-        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+        if(project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
+
+        //하나의 커밋에는 하나의 트러블 슈팅만 작성할 수 있으므로, 이미 등록된 sha(commit)이면 에러 발생
+        GitCommit existCommit = gitCommitRepository.findBySha(sha);
+        if(existCommit != null){
+            throw new CustomException("이미 등록된 트러블 슈팅(commit)입니다. 기존의 트러블 슈팅을 수정해 주세요.",ErrorCode.DUPLICATED_INPUT_ERROR);
+        }
 
         String gitUrl = project.getGitRepoUrl();
         String repo = project.getGitRepoName();
@@ -110,8 +133,18 @@ public class GitService {
 
         GitHub gitHub = gitApiConfig.gitHub();
 
+        GHRepository ghRepository = null;
+
+        try{
+            ghRepository = gitHub.getRepository(repoName);
+        } catch (IOException e){
+            log.error("Repository 가져오기 실패: {}",e.getMessage());
+            e.printStackTrace();
+            throw new CustomException("Github Repository를 가져오는데 실패하였습니다.\n프로젝트를 만들 때 입력한 Repository 이름을 다시 한번 확인해 주세요.",
+                    ErrorCode.INVALID_INPUT_ERROR);
+        }
+
         try {
-            GHRepository ghRepository = gitHub.getRepository(repoName);
             GHCommit commit = ghRepository.getCommit(sha);
 
             List<GHCommit.File> files = commit.getFiles();
@@ -121,7 +154,10 @@ public class GitService {
                 filesResponseDtoList.add(curDto);
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("해당 repository가 존재하지 않습니다.");
+            log.error("File 가져오기 실패: {}", e.getMessage());
+            e.printStackTrace();
+            throw new CustomException("Github File 정보를 불러오는데 실패하였습니다.\n 다시 시도해도 안될 경우, 관리자에게 문의해 주세요.",
+                    ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         return filesResponseDtoList;

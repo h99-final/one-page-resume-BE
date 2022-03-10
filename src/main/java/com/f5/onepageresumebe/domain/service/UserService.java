@@ -4,6 +4,10 @@ import com.f5.onepageresumebe.config.S3Uploader;
 import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.exception.customException.CustomException;
+import com.f5.onepageresumebe.exception.customException.CustomImageException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.StackUtil;
@@ -32,6 +36,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.f5.onepageresumebe.exception.ErrorCode.INTERNAL_SERVER_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.security.jwt.TokenProvider.AUTHORIZATION_HEADER;
 
 @Service
@@ -57,7 +63,7 @@ public class UserService {
         String email = requestDto.getEmail();
         //비밀번호, 비밀번호 확인 체크
         if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
-            throw new IllegalArgumentException("비밀번호와 비밀번호 확인이 다릅니다");
+            throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
         }
 
         // 패스워드 암호화
@@ -102,8 +108,9 @@ public class UserService {
         TokenDto tokenDto = tokenProvider.generateToken(authentication);
 
         //유저 정보 가져오기
+        //아이디가 잘못된 값이면 여기까지 안오지만..
         User user = userQueryRepository.findByEmail(loginDto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+                .orElseThrow(() -> new CustomAuthenticationException("Email을 확인해 주세요"));
 
         //첫 로그인 유저가 아닐때
         boolean isFirstLogin = user.getCreatedAt().equals(user.getUpdatedAt());
@@ -124,9 +131,13 @@ public class UserService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         List<String> stacks = requestDto.getStack();
+
+        if(stacks.size()<3){
+            throw new CustomException("기술 스택은 3개 이상 입력해 주세요",INVALID_INPUT_ERROR);
+        }
 
         User curUser = userRepository.getById(user.getId());
 
@@ -157,9 +168,13 @@ public class UserService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userQueryRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         List<String> stackNames = request.getStack();
+
+        if(stackNames.size()<3){
+            throw new CustomException("기술 스택은 3개 이상 입력해 주세요",INVALID_INPUT_ERROR);
+        }
 
         //기존의 스택 삭제하기
         userstackRepository.deleteAllUserStackByUserId(curUser.getId());
@@ -180,7 +195,7 @@ public class UserService {
 
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
-                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //프로젝트 아이디 불러오기
         List<Integer> projectIds = projectRepository.findProjectIdByUserId(user.getId());
@@ -210,7 +225,7 @@ public class UserService {
 
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
-                new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
         if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {
@@ -221,8 +236,9 @@ public class UserService {
             user.updateProfile(profileImgUrl);
             userImageResponseDto.setImg(profileImgUrl);
         } catch (IOException e) {
-            log.error("updateProfile -> s3upload : {}", e.getMessage());
-            throw new IllegalArgumentException("사진 업로드에 실패하였습니다");
+            //log.error("updateProfile -> s3upload : {}", e.getMessage());
+            e.printStackTrace();
+            throw new CustomImageException("사진 업로드에 실패하였습니다. 관리자에게 문의하세요.");
         }
         return userImageResponseDto;
     }
@@ -231,7 +247,7 @@ public class UserService {
     public void deleteProfile() {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
-                new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //s3에서 삭제
         if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {

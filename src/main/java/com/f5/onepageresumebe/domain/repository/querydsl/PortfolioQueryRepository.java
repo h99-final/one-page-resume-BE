@@ -34,24 +34,28 @@ public class PortfolioQueryRepository {
         else return Optional.of(portfolios.get(0));
     }
 
-    public List<Portfolio> findAllByStackNamesIfPublic(List<String> stacks) {
+    public List<Portfolio> findAllByStackNamesIfPublicLimit(List<String> stacks) {
 
         List<Portfolio> portfolios = queryFactory.select(portfolio).from(portfolioStack)
                 .innerJoin(portfolioStack.portfolio, portfolio)
                 .innerJoin(portfolioStack.stack, stack)
                 .innerJoin(portfolio.user, user)
                 .where(stack.name.in(stacks).and(portfolio.isTemp.eq(false)))
+                .orderBy(portfolio.viewCount.desc())
+                .limit(12L)
                 .fetch();
 
         return portfolios;
     }
 
     //공개된 포트폴리오만 가져온다
-    public List<Portfolio> findAllFetchUserIfPublic() {
+    public List<Portfolio> findAllFetchUserIfPublicLimit() {
 
         List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
                 .innerJoin(portfolio.user, user).fetchJoin()
                 .where(portfolio.isTemp.eq(false))
+                .orderBy(portfolio.viewCount.desc())
+                .limit(12L)
                 .fetch();
 
         return portfolios;

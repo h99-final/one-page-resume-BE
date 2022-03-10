@@ -1,6 +1,8 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.domain.entity.User;
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
@@ -18,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +32,7 @@ public class UserController {
 
     // 회원 가입 요청 처리
     @PostMapping("/user/signup")
-    public ResDto registerUser(@RequestBody SignupRequestDto request) {
+    public ResDto registerUser(@Valid @RequestBody SignupRequestDto request) {
 
         return ResDto.builder()
                 .result(userService.registerUser(request))
@@ -36,7 +41,7 @@ public class UserController {
 
     //이메일 중복 체크
     @PostMapping("/user/dupEmail")
-    public ResDto checkEmail(@RequestBody CheckEmailRequestDto request) {
+    public ResDto checkEmail(@Valid @RequestBody CheckEmailRequestDto request) {
 
         return ResDto.builder()
                 .result(userService.checkEmail(request))
@@ -46,7 +51,7 @@ public class UserController {
     // 로그인
 //    private static final int COOKIE_TIME = 60 * 5;
     @PostMapping("/user/login")
-    public ResponseEntity login(@RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity login(@Valid @RequestBody LoginRequestDto requestDto) {
 
         LoginResultDto loginResultDto = userService.login(requestDto);
         HttpHeaders headers = userService.tokenToHeader(loginResultDto.getTokenDto());
@@ -64,7 +69,7 @@ public class UserController {
     //추가 기입
     @Secured("ROLE_USER")
     @PostMapping("/user/info")
-    public ResDto addInfo(@RequestBody AddInfoRequestDto requestDto) {
+    public ResDto addInfo(@Valid @RequestBody AddInfoRequestDto requestDto) {
 
         userService.addInfo(requestDto);
 
@@ -76,7 +81,7 @@ public class UserController {
     //개인 정보 수정
     @Secured("ROLE_USER")
     @PutMapping("/user/info")
-    public ResDto updateInfo(@RequestBody AddInfoRequestDto requestDto) {
+    public ResDto updateInfo(@Valid @RequestBody AddInfoRequestDto requestDto) {
 
         userService.updateInfo(requestDto);
 
@@ -101,6 +106,10 @@ public class UserController {
     @Secured("ROLE_USER")
     @PutMapping("/user/profile")
     public ResDto updateProfile(@RequestPart("profileImage") MultipartFile multipartFile){
+
+        if(multipartFile.isEmpty()){
+            throw new CustomException("빈 이미지 파일입니다. 다시 업로드 해주세요", INVALID_INPUT_ERROR);
+        }
 
         return ResDto.builder()
                 .result(true)

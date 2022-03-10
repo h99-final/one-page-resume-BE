@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -18,7 +20,7 @@ public class CareerController {
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/career")
-    public ResDto createCareer(@RequestBody CareerRequestDto dto) {
+    public ResDto createCareer(@Valid @RequestBody CareerRequestDto dto) {
 
         Integer id = careerService.createCareer(dto);
 
@@ -41,7 +43,7 @@ public class CareerController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/career/{careerId}")
-    public ResDto updateCareer(@RequestBody CareerRequestDto requestDto,
+    public ResDto updateCareer(@Valid @RequestBody CareerRequestDto requestDto,
                                @PathVariable("careerId") Integer careerId){
 
         careerService.updateCareer(careerId, requestDto);
