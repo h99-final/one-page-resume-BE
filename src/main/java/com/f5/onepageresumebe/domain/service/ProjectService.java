@@ -13,7 +13,6 @@ import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
@@ -140,6 +139,7 @@ public class ProjectService {
                     .id(projectId)
                     .imageUrl(imageUrl)
                     .title(project.getTitle())
+                    .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(projectId))
                     .build();
 
@@ -156,7 +156,7 @@ public class ProjectService {
         List<String> stackNames = requestDto.getStack();
 
         List<Project> projects;
-        
+
         if(stackNames.size() == 0) {
             projects = projectRepository.findAll();
         }

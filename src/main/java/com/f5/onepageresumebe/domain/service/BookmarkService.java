@@ -36,6 +36,7 @@ public class BookmarkService {
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
 
         Project project = projectRepository.getById(projectId);
+        project.updateBookmarkCount(1);
 
         ProjectBookmark projectBookmark = ProjectBookmark.create(user, project);
 
@@ -47,6 +48,8 @@ public class BookmarkService {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+        Project project = projectRepository.getById(projectId);
+        project.updateBookmarkCount(-1);
 
         projectBookmarkRepository.deleteByUserIdAndProjectId(user.getId(), projectId);
     }

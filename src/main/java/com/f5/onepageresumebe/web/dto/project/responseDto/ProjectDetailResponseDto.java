@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
 
 @AllArgsConstructor
@@ -13,8 +14,10 @@ import java.util.List;
 @Builder
 public class ProjectDetailResponseDto {
 
+    private Integer id;
     private String title;
     private String content;
     private String imgUrl;
     private List<String> stack;
+    private Integer bookmarkCount;
 }

@@ -21,7 +21,6 @@ import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

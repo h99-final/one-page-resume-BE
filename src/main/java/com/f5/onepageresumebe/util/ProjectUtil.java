@@ -25,6 +25,7 @@ public class ProjectUtil {
                     .title(project.getTitle())
                     .content(project.getIntroduce())
                     .imgUrl(projectImgUrl)
+                    .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .build();
 

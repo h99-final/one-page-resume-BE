@@ -13,4 +13,5 @@ public class ProjectResponseDto {
     private String title;
     private String imageUrl;
     private List<String> stack;
+    private Integer bookmarkCount;
 }
