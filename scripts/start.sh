@@ -23,6 +23,7 @@ echo "> cp $REPOSITORY/zip/*.jar $REPOSITORY/"
 # 새로운 jar file 덮어쓰기
 cp $REPOSITORY/zip/*.jar $REPOSITORY
 
+
 echo "> 새 어플리케이션 배포"
 JAR_NAME=$(ls -S $REPOSITORY/*.jar | head -n 1)
 
