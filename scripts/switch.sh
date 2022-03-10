@@ -1,16 +1,23 @@
 #!/usr/bin/env bash
 
+# switch.sh
+# nginx 연결 설정 스위치
+source /home/ubuntu/.bash_profile
+
 ABSPATH=$(readlink -f $0)
 ABSDIR=$(dirname $ABSPATH)
-source ${ABSDIR}/profile.sh # 자바 import와 동일
+source ${ABSDIR}/profile.sh
 
 function switch_proxy() {
-  IDLE_PORT=$(find_idle_port)
+    IDLE_PORT=$(find_idle_port)
 
-  echo "> 전환할 Port: $IDLE_PORT"
-  echo "> Port 전환"
-  echo "set \$service_url http://127.0.0.1:${IDLE_PORT};" | sudo tee /etc/nginx/conf.d/service-url.inc #tee: 파일에도 쓰고 표준출력도 한다.
+    echo "> 전환할 Port: $IDLE_PORT"
+    echo "> Port 전환"
+    # nginx와 연결한 주소 생성
+    # | sudo tee ~ : 앞에서 넘긴 문장을 service-url.inc에 덮어씀
+    echo "set \$service_url http://127.0.0.1:${IDLE_PORT};" | sudo tee /etc/nginx/conf.d/service-url.inc
 
-  echo "> 엔진엑스 Reload"
-  sudo service nginx reload # restart는 끊김이 있지만 reload는 끊김이 없다.
+    echo "> 엔진엑스 Reload"
+    # nginx reload. restart와는 다르게 설정 값만 불러옴
+    sudo service nginx reload
 }
