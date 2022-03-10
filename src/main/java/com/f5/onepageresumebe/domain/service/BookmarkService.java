@@ -7,7 +7,7 @@ import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +36,7 @@ public class BookmarkService {
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
 
         Project project = projectRepository.getById(projectId);
+        project.updateBookmarkCount(1);
 
         ProjectBookmark projectBookmark = ProjectBookmark.create(user, project);
 
@@ -47,11 +48,13 @@ public class BookmarkService {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+        Project project = projectRepository.getById(projectId);
+        project.updateBookmarkCount(-1);
 
         projectBookmarkRepository.deleteByUserIdAndProjectId(user.getId(), projectId);
     }
 
-    public ProjectDetailListResponseDto getProjectBookmark() {
+    public List<ProjectResponseDto> getProjectBookmark() {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
@@ -62,8 +65,7 @@ public class BookmarkService {
             projects.add(projectBookmark.getProject());
         }
 
-        return ProjectDetailListResponseDto.builder()
-                .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
-                .build();
+        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
+
     }
 }

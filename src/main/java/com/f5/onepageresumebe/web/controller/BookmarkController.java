@@ -2,7 +2,6 @@ package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.domain.service.BookmarkService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;

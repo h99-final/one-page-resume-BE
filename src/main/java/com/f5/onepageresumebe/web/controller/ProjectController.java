@@ -4,10 +4,8 @@ import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.domain.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -64,7 +62,7 @@ public class ProjectController {
     @GetMapping("/user/project")
     public ResDto getProjectsByUser(){
 
-        ProjectShortInfoResponseDto responseDto = projectService.getShortInfos();
+        List<ProjectResponseDto> responseDto = projectService.getShortInfos();
 
         return ResDto.builder()
                 .result(true)
@@ -84,7 +82,7 @@ public class ProjectController {
     @PostMapping("/project/stack")
     public ResDto getProjectsByStack(@RequestBody StackDto requestDto){
 
-        ProjectDetailListResponseDto responseDtos = projectService.getAllByStacks(requestDto);
+        List<ProjectResponseDto> responseDtos = projectService.getAllByStacks(requestDto);
 
         return ResDto.builder()
                 .result(true)
@@ -99,6 +97,17 @@ public class ProjectController {
 
         return ResDto.builder()
                 .result(true)
+                .build();
+    }
+
+    @GetMapping("/project/{projectId}")
+    public ResDto getProjectDetail(@PathVariable("projectId") Integer projectId) {
+
+        ProjectDetailResponseDto responseDto = projectService.getProjectDetail(projectId);
+
+        return ResDto.builder()
+                .result(true)
+                .data(responseDto)
                 .build();
     }
 }

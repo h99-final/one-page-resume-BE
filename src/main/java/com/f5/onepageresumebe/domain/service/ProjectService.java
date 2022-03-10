@@ -6,17 +6,16 @@ import com.f5.onepageresumebe.domain.entity.*;
 import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailListResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectShortInfoResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
@@ -43,12 +43,11 @@ public class ProjectService {
     private final ProjectStackRepository projectStackRepository;
     private final S3Uploader s3Uploader;
     private final ProjectImgRepository projectImgRepository;
-    private final UserRepository userRepository;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
     private final ProjectQueryRepository projectQueryRepository;
     private final UserQueryRepository userQueryRepository;
-
+    private final ProjectBookmarkRepository projectBookmarkRepository;
 
     @Transactional//프로젝트 생성
     public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
@@ -120,7 +119,7 @@ public class ProjectService {
         insertStacksInProject(project, requestDto.getStack());
     }
 
-    public ProjectShortInfoResponseDto getShortInfos(){
+    public List<ProjectResponseDto> getShortInfos(){
 
         String email = SecurityUtil.getCurrentLoginUserId();
 
@@ -140,28 +139,33 @@ public class ProjectService {
                     .id(projectId)
                     .imageUrl(imageUrl)
                     .title(project.getTitle())
+                    .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(projectId))
+                    .content(project.getIntroduce())
                     .build();
 
             responseDtos.add(responseDto);
         });
 
-        return ProjectShortInfoResponseDto.builder()
-                .projects(responseDtos)
-                .build();
+        return responseDtos;
     }
 
-    public ProjectDetailListResponseDto getAllByStacks(StackDto requestDto){
+    public List<ProjectResponseDto> getAllByStacks(StackDto requestDto){
 
         List<String> stackNames = requestDto.getStack();
 
-        List<Project> projects = projectQueryRepository.findAllByStackNames(stackNames);
+        List<Project> projects;
+
+        if(stackNames.size() == 0) {
+            projects = projectRepository.findAll();
+        }
+        else {
+            projects = projectQueryRepository.findAllByStackNames(stackNames);
+        }
 
         Collections.shuffle(projects);
 
-        return ProjectDetailListResponseDto.builder()
-                .projects(ProjectUtil.projectToDetailResponseDtos(projects, projectImgRepository, projectStackRepository))
-                .build();
+        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
     }
 
     public Project getProjectIfMyProject(Integer projectId) {
@@ -284,4 +288,69 @@ public class ProjectService {
 
         gitCommitRepository.deleteById(commitId);
     }
+
+    public ProjectDetailResponseDto getProjectDetail(Integer projectId) {
+
+        Project project;
+        boolean isMyProject = true;
+        boolean isBookmarking = false;
+
+        try {
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
+            User user = userQueryRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+
+            //프로젝트 주인이 조회하는지 체크
+            project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElse(null);
+
+            //본 주인이 아니라면, isMyProject : false, 프로젝트 가져오기
+            if(project == null) {
+                isMyProject = false;
+                project = projectRepository.getById(projectId);
+
+                Optional<ProjectBookmark> optionalProjectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId);
+                isBookmarking = optionalProjectBookmark.isPresent();
+            }
+        } catch (CustomAuthenticationException ce) {
+            project = projectRepository.getById(projectId);
+            isMyProject = false;
+            isBookmarking = false;
+        }
+
+        ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDeatilResponseDto(project,
+                projectImgRepository,
+                projectStackRepository);
+
+        projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);
+
+        return projectDetailResponseDto;
+     }
 }
+//
+//    String userEmail = SecurityUtil.getCurrentLoginUserId();
+//    User user = userQueryRepository.findByEmail(userEmail)
+//            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+//
+//    //프로젝트 주인이 조회하는지 체크
+//    Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElse(null);
+//
+//    boolean isMyProject = true;
+//    boolean isBookmarking = false;
+//
+////본 주인이 아니라면, isMyProject : false, 프로젝트 가져오기
+//        if(project == null) {
+//                isMyProject = false;
+//                project = projectRepository.getById(projectId);
+//
+//                Optional<ProjectBookmark> optionalProjectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId);
+//        isBookmarking = optionalProjectBookmark.isPresent();
+//        }
+//
+//
+//        ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDeatilResponseDto(project,
+//        projectImgRepository,
+//        projectStackRepository);
+//
+//        projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);
+//
+//        return projectDetailResponseDto;
