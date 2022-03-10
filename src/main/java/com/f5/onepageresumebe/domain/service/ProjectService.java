@@ -7,12 +7,14 @@ import com.f5.onepageresumebe.domain.repository.*;
 import com.f5.onepageresumebe.domain.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomException;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
@@ -43,12 +46,11 @@ public class ProjectService {
     private final ProjectStackRepository projectStackRepository;
     private final S3Uploader s3Uploader;
     private final ProjectImgRepository projectImgRepository;
-    private final UserRepository userRepository;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
     private final ProjectQueryRepository projectQueryRepository;
     private final UserQueryRepository userQueryRepository;
-
+    private final ProjectBookmarkRepository projectBookmarkRepository;
 
     @Transactional//프로젝트 생성
     public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
@@ -152,12 +154,18 @@ public class ProjectService {
 
         List<String> stackNames = requestDto.getStack();
 
-        List<Project> projects = projectQueryRepository.findAllByStackNames(stackNames);
+        List<Project> projects;
+
+        if(stackNames.size() == 0) {
+            projects = projectRepository.findAll();
+        }
+        else {
+            projects = projectQueryRepository.findAllByStackNames(stackNames);
+        }
 
         Collections.shuffle(projects);
 
         return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
-
     }
 
     public Project getProjectIfMyProject(Integer projectId) {
@@ -280,4 +288,41 @@ public class ProjectService {
 
         gitCommitRepository.deleteById(commitId);
     }
+
+    public ProjectDetailResponseDto getProjectDetail(Integer projectId) {
+
+        Project project;
+        boolean isMyProject = true;
+        boolean isBookmarking = false;
+
+        try {
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
+            User user = userQueryRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+
+            //프로젝트 주인이 조회하는지 체크
+            project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElse(null);
+
+            //본 주인이 아니라면, isMyProject : false, 프로젝트 가져오기
+            if(project == null) {
+                isMyProject = false;
+                project = projectRepository.getById(projectId);
+
+                Optional<ProjectBookmark> optionalProjectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId);
+                isBookmarking = optionalProjectBookmark.isPresent();
+            }
+        } catch (CustomAuthenticationException ce) {
+            project = projectRepository.getById(projectId);
+            isMyProject = false;
+            isBookmarking = false;
+        }
+
+        ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDeatilResponseDto(project,
+                projectImgRepository,
+                projectStackRepository);
+
+        projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);
+
+        return projectDetailResponseDto;
+     }
 }

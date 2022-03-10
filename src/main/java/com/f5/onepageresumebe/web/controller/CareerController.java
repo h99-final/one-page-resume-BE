@@ -9,6 +9,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -32,7 +33,7 @@ public class CareerController {
     @GetMapping("/porf/{porfId}/career")
     public ResDto getCareer(@PathVariable("porfId") Integer porfId){
 
-        List<CareerResponseDto> responseDto = careerService.getCareer(porfId);
+        List<CareerResponseDto>  responseDto = careerService.getCareer(porfId);
 
         return ResDto.builder()
                 .result(true)

@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.domain.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.AllArgsConstructor;
@@ -98,6 +99,17 @@ public class ProjectController {
 
         return ResDto.builder()
                 .result(true)
+                .build();
+    }
+
+    @GetMapping("/project/{projectId}")
+    public ResDto getProjectDetail(@PathVariable("projectId") Integer projectId) {
+
+        ProjectDetailResponseDto responseDto = projectService.getProjectDetail(projectId);
+
+        return ResDto.builder()
+                .result(true)
+                .data(responseDto)
                 .build();
     }
 }

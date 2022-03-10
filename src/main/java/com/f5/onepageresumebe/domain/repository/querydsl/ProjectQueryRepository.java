@@ -49,7 +49,7 @@ public class ProjectQueryRepository {
         List<Project> projects = queryFactory.selectDistinct(project).from(projectStack)
                 .innerJoin(projectStack.project, project)
                 .innerJoin(projectStack.stack, stack)
-                .innerJoin(project.user,user).fetchJoin()
+                .innerJoin(project.user, user).fetchJoin()
                 .where(stack.name.in(stackNames))
                 .fetch();
 

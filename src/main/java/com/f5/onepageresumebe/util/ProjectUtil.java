@@ -23,14 +23,14 @@ public class ProjectUtil {
             if(projectImg!=null){
                 projectImgUrl = projectImg.getImageUrl();
             }
-
             User user = project.getUser();
 
             ProjectResponseDto projectResponseDto = ProjectResponseDto.builder()
+                    .id(project.getId())
                     .title(project.getTitle())
                     .content(project.getIntroduce())
-                    .bookmarkCount(project.getBookmarkCount())
                     .imageUrl(projectImgUrl)
+                    .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .userJob(user.getJob())
                     .username(user.getName())
@@ -40,5 +40,30 @@ public class ProjectUtil {
 
         });
         return projectResponseDtos;
+
+    }
+  
+    public static ProjectDetailResponseDto projectToDeatilResponseDto(Project project,
+                                                                   ProjectImgRepository projectImgRepository,
+                                                                   ProjectStackRepository projectStackRepository) {
+
+        ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
+        String projectImgUrl = null;
+        if (projectImg != null) {
+            projectImgUrl = projectImg.getImageUrl();
+        }
+            User user = project.getUser();
+
+            ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
+                    .title(project.getTitle())
+                    .content(project.getIntroduce())
+                    .imageUrl(projectImgUrl)
+                    .bookmarkCount(project.getBookmarkCount())
+                    .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                    .userJob(user.getJob())
+                    .username(user.getName())
+                    .build();
+
+        return projectDetailResponseDto;
     }
 }

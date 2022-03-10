@@ -30,7 +30,8 @@ public class Project extends TimeEntity{
     @Column(columnDefinition = "varchar(100)")
     private String gitRepoUrl;
 
-    @Column(nullable = false, columnDefinition = "SMALLINT")
+
+    @Column(nullable = false,  columnDefinition = "SMALLINT")
     private Integer bookmarkCount;
 
     @OneToMany(mappedBy = "project")
@@ -50,8 +51,11 @@ public class Project extends TimeEntity{
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToMany(mappedBy = "project")
+    private List<ProjectBookmark> projectBookmarkList = new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
-    public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user,Integer bookmarkCount) {
+    public Project(String title, String introduce,String gitRepoUrl,String gitRepoName ,Portfolio portfolio,User user, Integer bookmarkCount) {
         this.title = title;
         this.introduce = introduce;
         this.portfolio = portfolio;
@@ -91,5 +95,7 @@ public class Project extends TimeEntity{
         this.title = requestDto.getTitle();
         this.introduce = requestDto.getContent();
     }
-
+    public void updateBookmarkCount(Integer value) {
+        this.bookmarkCount += value;
+    }
 }
