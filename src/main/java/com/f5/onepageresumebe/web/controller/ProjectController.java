@@ -92,7 +92,7 @@ public class ProjectController {
 
         return ResDto.builder()
                 .result(true)
-                .data(responseDtos)
+                .data(responseDtos.getContent())
                 .build();
     }
 
