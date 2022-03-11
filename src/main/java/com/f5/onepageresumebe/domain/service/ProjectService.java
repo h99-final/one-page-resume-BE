@@ -21,6 +21,8 @@ import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsRespon
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -150,22 +152,21 @@ public class ProjectService {
         return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
     }
 
-    public List<ProjectResponseDto> getAllByStacks(StackDto requestDto){
+    public Page<ProjectResponseDto> getAllByStacks(StackDto requestDto, Pageable pageable){
 
         List<String> stackNames = requestDto.getStack();
 
-        List<Project> projects;
+        Page<Project> projects;
 
         if(stackNames.size() == 0) {
-            projects = projectRepository.findAll();
+            projects = projectRepository.findAllByOrderByBookmarkCountDesc(pageable);
         }
         else {
-            projects = projectQueryRepository.findAllByStackNames(stackNames);
+            projects = projectQueryRepository.findAllByStackNamesPaging(stackNames,pageable);
         }
 
-        Collections.shuffle(projects);
 
-        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
+        return ProjectUtil.projectToResponseDtosPaging(projects,pageable, projectImgRepository, projectStackRepository);
     }
 
     public Project getProjectIfMyProject(Integer projectId) {

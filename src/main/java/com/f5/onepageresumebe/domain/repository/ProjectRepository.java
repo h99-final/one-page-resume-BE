@@ -2,6 +2,8 @@ package com.f5.onepageresumebe.domain.repository;
 
 import com.f5.onepageresumebe.domain.entity.Project;
 import com.f5.onepageresumebe.domain.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -13,6 +15,8 @@ import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project,Integer> {
 
+    @Query("select p from Project p order by p.bookmarkCount desc")
+    Page<Project> findAllByOrderByBookmarkCountDesc(Pageable pageable);
 
     @Query("select p.id from Project p where p.user.id = :userId")
     List<Integer> findProjectIdByUserId(@Param("userId") Integer userId);

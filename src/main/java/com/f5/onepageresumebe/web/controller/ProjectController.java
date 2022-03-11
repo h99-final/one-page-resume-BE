@@ -8,6 +8,9 @@ import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseD
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -82,9 +85,10 @@ public class ProjectController {
   }
 
     @PostMapping("/project/stack")
-    public ResDto getProjectsByStack(@RequestBody StackDto requestDto){
+    public ResDto getProjectsByStack(@RequestBody StackDto requestDto,
+                                     @PageableDefault(size = 12) Pageable pageable){
 
-        List<ProjectResponseDto> responseDtos = projectService.getAllByStacks(requestDto);
+        Page<ProjectResponseDto> responseDtos = projectService.getAllByStacks(requestDto,pageable);
 
         return ResDto.builder()
                 .result(true)
