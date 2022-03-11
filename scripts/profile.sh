@@ -29,7 +29,6 @@ function find_idle_profile()
     echo "${IDLE_PROFILE}"
 }
 
-
 # 유휴 port 찾기
 function find_idle_port()
 {

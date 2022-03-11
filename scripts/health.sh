@@ -7,7 +7,7 @@
 ABSPATH=$(readlink -f $0)
 ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
-source ${ABSDIR}/switch.sh
+#source ${ABSDIR}/switch.sh
 
 # 유휴포트를 IDLE_PORT에 저장
 IDLE_PORT=$(find_idle_port)
