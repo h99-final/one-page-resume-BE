@@ -30,7 +30,6 @@ function find_idle_profile()
 }
 
 
-
 # 유휴 port 찾기
 function find_idle_port()
 {
