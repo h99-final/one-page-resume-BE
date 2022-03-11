@@ -33,8 +33,7 @@ echo "> $JAR_NAME 실행"
 
 cd $REPOSITORY
 
-nohup java -jar -Dspring.profiles.active=$IDLE_PROFILE one-page-resume-BE-0.0.1-SNAPSHOT.jar & \\\
-
-echo "> 성공"
+nohup java -jar -Dspring.profiles.active=$IDLE_PROFILE one-page-resume-BE-0.0.1-SNAPSHOT.jar /dev/null 2> /dev/null < /dev/null &
+#nohup java -jar /home/ubuntu/app/step3/aws-exercise-0.0.1-SNAPSHOT.jar /dev/null 2> /dev/null < /dev/null &
 
 
