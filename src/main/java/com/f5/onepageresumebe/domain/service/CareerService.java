@@ -45,6 +45,10 @@ public class CareerService {
             throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
         }
 
+        if(requestDto.getStartTime().isAfter(requestDto.getEndTime())){
+            throw new CustomException("직무 경험 시작일은 직무 경험 종료일 보다 앞선 날짜여야 합니다.",INVALID_INPUT_ERROR);
+        }
+
         Career career = Career.create(requestDto.getTitle(),
                 requestDto.getSubTitle(),
                 careerContentsListToString(contents),
@@ -99,7 +103,7 @@ public class CareerService {
 
         if (myPorf || !(portfolio.getIsTemp())) {
 
-            List<Career> careers = careerRepository.findAllByPorfId(porfId);
+            List<Career> careers = careerRepository.findAllByPorfIdOrderByEndTimeDesc(porfId);
             careers.forEach(career -> {
                 String[] contents = career.getContents().split("----");
                 List<String> contentsList = Arrays.asList(contents);

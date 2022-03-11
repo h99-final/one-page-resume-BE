@@ -12,8 +12,8 @@ import java.util.Optional;
 
 public interface CareerRepository extends JpaRepository<Career, Integer> {
 
-    @Query("select c from Career c inner join fetch c.portfolio p where p.id = :porfId")
-    List<Career> findAllByPorfId(@Param("porfId") Integer porfId);
+    @Query("select c from Career c inner join fetch c.portfolio p where p.id = :porfId order by c.endTime desc")
+    List<Career> findAllByPorfIdOrderByEndTimeDesc(@Param("porfId") Integer porfId);
 
     @Modifying
     @Query("delete from Career c where c.portfolio.id = :porfId")
