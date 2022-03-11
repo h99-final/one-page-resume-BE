@@ -20,5 +20,10 @@ public class PorfIntroResponseDto {
     private String bgImage;
     private String modifiedAt;
     private Integer templateIdx;
+    //추가
+    private String job;
+    private String phoneNum;
+    private String username;
+    private String email;
 
 }

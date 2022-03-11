@@ -19,6 +19,7 @@ import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
 import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
+import com.f5.onepageresumebe.web.dto.stack.response.PorfStackReponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -170,6 +171,8 @@ public class PortfolioService {
                 portfolio.increaseViewCount();
             }
 
+            User user = portfolio.getUser();
+
             portfolioRepository.save(portfolio);
             return PorfIntroResponseDto.builder()
                     .id(porfId)
@@ -177,10 +180,14 @@ public class PortfolioService {
                     .githubUrl(portfolio.getGithubUrl())
                     .blogUrl(portfolio.getBlogUrl())
                     .contents(portfolio.getIntroContents())
-                    .bgImage(portfolio.getUser().getProfileImgUrl()) // 유저의 프로필 이미지
+                    .bgImage(user.getProfileImgUrl()) // 유저의 프로필 이미지
                     .viewCount(portfolio.getViewCount())
                     .modifiedAt(portfolio.getUpdatedAt().toString())
                     .templateIdx(portfolio.getTemplateIdx())
+                    .job(user.getJob())
+                    .username(user.getName())
+                    .phoneNum(user.getPhoneNum())
+                    .email(user.getEmail())
                     .build();
         } else {
             return null;
@@ -219,7 +226,7 @@ public class PortfolioService {
         return responseDtoList;
     }
 
-    public StackDto getStackContents(Integer porfId) {
+    public PorfStackReponseDto getStackContents(Integer porfId) {
 
         boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
 
@@ -227,10 +234,12 @@ public class PortfolioService {
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
         if (myPorf || !(portfolio.getIsTemp())) {
 
-            List<String> stackNames = portfolioQueryRepository.findStackNamesByPorfId(porfId);
+            List<String> porfStacks = portfolioQueryRepository.findStackNamesByPorfId(porfId);
+            List<String> userStacks = userQueryRepository.findStackNamesByPorfId(porfId);
 
-            return StackDto.builder()
-                    .stack(stackNames)
+            return PorfStackReponseDto.builder()
+                    .mainStack(userStacks)
+                    .subStack(porfStacks)
                     .build();
         } else {
             return null;

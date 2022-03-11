@@ -9,6 +9,7 @@ import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
+import com.f5.onepageresumebe.web.dto.stack.response.PorfStackReponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -83,11 +84,11 @@ public class PorfController {
     @GetMapping("/porf/{porfId}/stack")
     public ResDto getStacks(@PathVariable("porfId") Integer porfId){
 
-        StackDto stackContents = portfolioService.getStackContents(porfId);
+        PorfStackReponseDto reponseDto = portfolioService.getStackContents(porfId);
 
         return ResDto.builder()
                 .result(true)
-                .data(stackContents)
+                .data(reponseDto)
                 .build();
     }
 
