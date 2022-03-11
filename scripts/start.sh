@@ -5,7 +5,7 @@ ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
 
 REPOSITORY=/home/ubuntu/app/step3
-PROJECT_NAME=thandbag-webservice
+IMAGEPATH=/home/ubuntu/app
 
 echo "> Build 파일 복사"
 echo "> cp $REPOSITORY/zip/*.jar $REPOSITORY/"
