@@ -12,12 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @Builder
-public class CareerResponseDto {
+public class CareerResponseDto<T> {
 
     private Integer id;
     private String title;
     private String subTitle;
     private List<String> contents;
     private LocalDate startTime;
-    private LocalDate endTime;
+    private String endTime;
 }

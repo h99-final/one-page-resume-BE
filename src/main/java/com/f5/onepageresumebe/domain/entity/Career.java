@@ -1,9 +1,12 @@
 package com.f5.onepageresumebe.domain.entity;
 
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 
 @Entity
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -68,6 +71,29 @@ public class Career  {
         this.contents= contents;
         this.startTime = startTime;
         this.endTime = endTime;
+    }
+
+    private LocalDate convertEndTime(String endTimeString){
+
+        LocalDate endTime = null;
+        if("current".equals(endTimeString)){
+            endTime = LocalDate.of(3000,1,1);
+        }else{
+            String[] split = endTimeString.split("-");
+            Integer year = Integer.valueOf(split[0]);
+            Integer month = Integer.valueOf(split[1]);
+            Integer day = Integer.valueOf(split[2]);
+            endTime = LocalDate.of(year,month,day);
+        }
+
+        return endTime;
+    }
+
+    private void validateDate(LocalDate startTime, LocalDate endTime){
+
+        if(startTime.isAfter(endTime)){
+            throw new CustomException("직무 경험 시작일은 직무 경험 종료일 보다 앞선 날짜여야 합니다.",INVALID_INPUT_ERROR);
+        }
     }
 
 }

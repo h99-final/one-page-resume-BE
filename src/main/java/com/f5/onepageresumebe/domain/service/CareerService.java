@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,15 +46,16 @@ public class CareerService {
             throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
         }
 
-        if(requestDto.getStartTime().isAfter(requestDto.getEndTime())){
-            throw new CustomException("직무 경험 시작일은 직무 경험 종료일 보다 앞선 날짜여야 합니다.",INVALID_INPUT_ERROR);
-        }
+        LocalDate startTime = requestDto.getStartTime();
+        LocalDate endTime = convertEndTime(requestDto.getEndTime());
+
+        validateDate(startTime,endTime);
 
         Career career = Career.create(requestDto.getTitle(),
                 requestDto.getSubTitle(),
                 careerContentsListToString(contents),
-                requestDto.getStartTime(),
-                requestDto.getEndTime(),
+                startTime,
+                endTime,
                 portfolio);
 
         careerRepository.save(career);
@@ -74,11 +76,16 @@ public class CareerService {
             throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
         }
 
+        LocalDate startTime = requestDto.getStartTime();
+        LocalDate endTime = convertEndTime(requestDto.getEndTime());
+
+        validateDate(startTime,endTime);
+
         career.updateCareer(requestDto.getTitle(),
                 requestDto.getSubTitle(),
                 careerContentsListToString(requestDto.getContents()),
-                requestDto.getStartTime(),
-                requestDto.getEndTime());
+                startTime,
+                endTime);
     }
 
     @Transactional
@@ -108,13 +115,21 @@ public class CareerService {
                 String[] contents = career.getContents().split("----");
                 List<String> contentsList = Arrays.asList(contents);
 
+                LocalDate endTime = career.getEndTime();
+                String endTimeString = null;
+                if(endTime.isEqual(LocalDate.of(3000,1,1))){
+                    endTimeString = "current";
+                }else{
+                    endTimeString = endTime.toString();
+                }
+
                 CareerResponseDto responseDto = CareerResponseDto.builder()
                         .id(career.getId())
                         .title(career.getTitle())
                         .subTitle(career.getSubTitle())
                         .contents(contentsList)
                         .startTime(career.getStartTime())
-                        .endTime(career.getEndTime())
+                        .endTime(endTimeString)
                         .build();
                 careerResponseDtos.add(responseDto);
             });
@@ -139,4 +154,28 @@ public class CareerService {
         }
         return sb.toString();
     }
+
+    private LocalDate convertEndTime(String endTimeString){
+
+        LocalDate endTime = null;
+        if("current".equals(endTimeString)){
+            endTime = LocalDate.of(3000,1,1);
+        }else{
+            String[] split = endTimeString.split("-");
+            Integer year = Integer.valueOf(split[0]);
+            Integer month = Integer.valueOf(split[1]);
+            Integer day = Integer.valueOf(split[2]);
+            endTime = LocalDate.of(year,month,day);
+        }
+
+        return endTime;
+    }
+
+    private void validateDate(LocalDate startTime, LocalDate endTime){
+
+        if(startTime.isAfter(endTime)){
+            throw new CustomException("직무 경험 시작일은 직무 경험 종료일 보다 앞선 날짜여야 합니다.",INVALID_INPUT_ERROR);
+        }
+    }
+
 }

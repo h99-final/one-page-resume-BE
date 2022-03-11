@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.web.dto.career.requestDto;
 
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,9 +12,10 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+
 @AllArgsConstructor
 @Data
-@Builder
 @NoArgsConstructor
 public class CareerRequestDto {
 
@@ -29,5 +31,7 @@ public class CareerRequestDto {
     private LocalDate startTime;
 
     @NotNull(message = "경력 종료일이 필요합니다.")
-    private LocalDate endTime;
+    private String endTime;
+
+
 }
