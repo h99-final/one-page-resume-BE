@@ -73,16 +73,16 @@ public class RestControllerExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResDto globalException(Exception e){
-
-        log.error("알수 없는 오류 : {}",e.getMessage());
-        e.printStackTrace();
-
-        return ResDto.builder()
-                .result(false)
-                .data(ErrorResponse.of("알 수 없는 오류가 발생하였습니다. 관리자에게 문의해 주세요.", INTERNAL_SERVER_ERROR))
-                .build();
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResDto globalException(Exception e){
+//
+//        log.error("알수 없는 오류 : {}",e.getMessage());
+//        e.printStackTrace();
+//
+//        return ResDto.builder()
+//                .result(false)
+//                .data(ErrorResponse.of("알 수 없는 오류가 발생하였습니다. 관리자에게 문의해 주세요.", INTERNAL_SERVER_ERROR))
+//                .build();
+//    }
 
 }
