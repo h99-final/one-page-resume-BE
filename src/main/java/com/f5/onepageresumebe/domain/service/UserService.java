@@ -160,6 +160,11 @@ public class UserService {
         user.addInfo(name, gitUrl, blogUrl, phoneNum, job);
         userRepository.save(user);
 
+        //업데이트 한 정보를 다시 포트폴리오 정보에 넣기
+        Portfolio portfolio = user.getPortfolio();
+        portfolio.updateIntro(portfolio.getTitle(),gitUrl, portfolio.getIntroContents(), blogUrl);
+        portfolioRepository.save(portfolio);
+
     }
 
     @Transactional
@@ -189,6 +194,11 @@ public class UserService {
         });
         curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
         userRepository.save(curUser);
+
+        //업데이트 한 정보를 다시 포트폴리오 정보에 넣기
+        Portfolio portfolio = curUser.getPortfolio();
+        portfolio.updateIntro(portfolio.getTitle(),curUser.getGithubUrl(), portfolio.getIntroContents(), curUser.getBlogUrl());
+        portfolioRepository.save(portfolio);
     }
 
     public UserInfoResponseDto getUserInfo() {
