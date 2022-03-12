@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.domain.service.BookmarkService;
+import com.f5.onepageresumebe.domain.mysql.service.BookmarkService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;

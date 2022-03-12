@@ -1,10 +1,10 @@
 package com.f5.onepageresumebe.util;
 
-import com.f5.onepageresumebe.domain.entity.Project;
-import com.f5.onepageresumebe.domain.entity.ProjectImg;
-import com.f5.onepageresumebe.domain.entity.User;
-import com.f5.onepageresumebe.domain.repository.ProjectImgRepository;
-import com.f5.onepageresumebe.domain.repository.ProjectStackRepository;
+import com.f5.onepageresumebe.domain.mysql.entity.Project;
+import com.f5.onepageresumebe.domain.mysql.entity.ProjectImg;
+import com.f5.onepageresumebe.domain.mysql.entity.User;
+import com.f5.onepageresumebe.domain.mysql.repository.ProjectImgRepository;
+import com.f5.onepageresumebe.domain.mysql.repository.ProjectStackRepository;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import org.springframework.data.domain.Page;

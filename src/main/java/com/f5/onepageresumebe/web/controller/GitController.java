@@ -1,7 +1,7 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.domain.service.GitService;
-import com.f5.onepageresumebe.domain.service.ProjectService;
+import com.f5.onepageresumebe.domain.mysql.service.GitService;
+import com.f5.onepageresumebe.domain.mysql.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;

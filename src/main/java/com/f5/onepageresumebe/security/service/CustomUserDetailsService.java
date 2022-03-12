@@ -1,8 +1,7 @@
 package com.f5.onepageresumebe.security.service;
 
-import com.f5.onepageresumebe.domain.entity.User;
-import com.f5.onepageresumebe.domain.repository.UserRepository;
-import com.f5.onepageresumebe.domain.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.domain.mysql.entity.User;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.domain.service.CareerService;
+import com.f5.onepageresumebe.domain.mysql.service.CareerService;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;

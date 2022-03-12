@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.util;
-import com.f5.onepageresumebe.domain.entity.Stack;
-import com.f5.onepageresumebe.domain.repository.StackRepository;
+import com.f5.onepageresumebe.domain.mysql.entity.Stack;
+import com.f5.onepageresumebe.domain.mysql.repository.StackRepository;
 
 public class StackUtil {
 

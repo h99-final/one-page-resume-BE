@@ -1,25 +1,21 @@
 package com.f5.onepageresumebe.web.controller;
 
-import com.f5.onepageresumebe.domain.entity.User;
-import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
-import com.f5.onepageresumebe.domain.service.UserService;
+import com.f5.onepageresumebe.domain.mysql.service.UserService;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
