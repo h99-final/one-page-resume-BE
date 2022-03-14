@@ -126,8 +126,9 @@ public class MGitService {
         gitCommit.getFiles().forEach(gitFile -> {
 
             String patchCode = gitFile.getPatchCode();
-            responseDtos.add(new FilesResponseDto(gitFile.getName(), GitUtil.parsePatchCode(patchCode)));
-
+            if(patchCode != null) {
+                responseDtos.add(new FilesResponseDto(gitFile.getName(), GitUtil.parsePatchCode(patchCode)));
+            }
         });
 
         return responseDtos;
