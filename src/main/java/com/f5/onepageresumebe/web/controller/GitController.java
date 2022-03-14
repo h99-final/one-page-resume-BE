@@ -19,26 +19,6 @@ public class GitController {
     private final ProjectService projectService;
 
     @Secured("ROLE_USER")
-    @GetMapping("/git/project/{projectId}/commit")
-    public ResDto getCommitMessages(@PathVariable("projectId") Integer projectId) {
-
-        return ResDto.builder()
-                .result(true)
-                .data(gitService.getCommitMessages(projectId))
-                .build();
-    }
-
-    @Secured("ROLE_USER")
-    @GetMapping("/git/project/{projectId}/commit/{sha}/file")
-    public ResDto getFiles(@PathVariable("projectId") Integer projectId, @PathVariable("sha") String sha) {
-
-        return ResDto.builder()
-                .result(true)
-                .data(gitService.getFiles(projectId, sha))
-                .build();
-    }
-
-    @Secured("ROLE_USER")
     @PostMapping("/project/{projectId}/troubleShooting")
     public ResDto createTroubleShooting(@Valid @RequestBody CommitRequestDto request, @PathVariable("projectId") Integer projectId) {
  
