@@ -4,7 +4,10 @@ import com.f5.onepageresumebe.domain.mysql.entity.Portfolio;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.PortfolioQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PorfUtil {
 
     public static boolean isMyPorf(Integer porfId, PortfolioQueryRepository portfolioQueryRepository) {

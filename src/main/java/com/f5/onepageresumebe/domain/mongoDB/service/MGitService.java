@@ -1,17 +1,19 @@
 package com.f5.onepageresumebe.domain.mongoDB.service;
 
-import com.f5.onepageresumebe.config.GitApiConfig;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
+import com.f5.onepageresumebe.domain.mysql.entity.User;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import com.f5.onepageresumebe.web.dto.MGit.response.MCommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
+import org.kohsuke.github.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -27,10 +29,11 @@ import java.util.List;
 public class MGitService {
 
     private final MongoTemplate mongoTemplate;
-    private final GitApiConfig gitApiConfig;
+    private final UserQueryRepository userQueryRepository;
+    private final AES256 aes256;
 
     public void sync(MGitRequestDto requestDto) {
-        GitHub gitHub = gitApiConfig.gitHub();
+        GitHub gitHub = getGitHub();
 
         String repoName = requestDto.getAccessRepoName();
 
@@ -132,6 +135,30 @@ public class MGitService {
         });
 
         return responseDtos;
+    }
+
+    private GitHub getGitHub(){
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+        String rawToken = null;
+        try{
+            rawToken = aes256.decrypt(user.getGitToken());
+        }catch (Exception e){
+            log.error("git Token 복호화에 실패하였습니다.");
+        }
+
+        try{
+            GitHub gitHub = new GitHubBuilder().withOAuthToken(rawToken).build();
+            gitHub.checkApiUrlValidity();
+
+            return gitHub;
+        }catch (IOException e){
+            log.error("깃허브 연결 실패 : {}",e.getMessage());
+        }
+
+        return null;
     }
 
 }

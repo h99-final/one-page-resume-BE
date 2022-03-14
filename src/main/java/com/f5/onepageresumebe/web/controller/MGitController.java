@@ -8,11 +8,9 @@ import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -52,4 +50,5 @@ public class MGitController {
                 .data(responseDtos)
                 .build();
     }
+
 }

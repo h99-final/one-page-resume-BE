@@ -1,28 +1,20 @@
 package com.f5.onepageresumebe.domain.mysql.service;
 
-import com.f5.onepageresumebe.config.GitApiConfig;
 import com.f5.onepageresumebe.domain.mysql.entity.GitCommit;
 import com.f5.onepageresumebe.domain.mysql.entity.GitFile;
 import com.f5.onepageresumebe.domain.mysql.entity.Project;
 import com.f5.onepageresumebe.domain.mysql.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.GitFileRepository;
-import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
-import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
-import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
-import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.github.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -35,7 +27,6 @@ public class GitService {
     private final ProjectService projectService;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
-    private final GitApiConfig gitApiConfig;
 
     @Transactional
     public CommitIdResponseDto createTroubleShooting(Integer projectId, CommitRequestDto request) {
