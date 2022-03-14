@@ -3,8 +3,10 @@ package com.f5.onepageresumebe.domain.mongoDB.service;
 import com.f5.onepageresumebe.config.GitApiConfig;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
+import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import com.f5.onepageresumebe.web.dto.MGit.response.MCommitMessageResponseDto;
+import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GHCommit;
@@ -108,4 +110,27 @@ public class MGitService {
 
         mongoTemplate.remove(query, MCommit.class);
     }
+
+    public List<FilesResponseDto> findFilesBySha(String sha){
+
+        MCommit gitCommit = mongoTemplate.findOne(
+                Query.query(Criteria.where("sha").is(sha)),
+                MCommit.class
+        );
+
+        if(gitCommit==null){
+            //todo: 오류 처리
+        }
+
+        List<FilesResponseDto> responseDtos = new ArrayList<>();
+        gitCommit.getFiles().forEach(gitFile -> {
+
+            String patchCode = gitFile.getPatchCode();
+            responseDtos.add(new FilesResponseDto(gitFile.getName(), GitUtil.parsePatchCode(patchCode)));
+
+        });
+
+        return responseDtos;
+    }
+
 }
