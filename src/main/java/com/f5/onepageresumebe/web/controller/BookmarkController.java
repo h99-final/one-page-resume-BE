@@ -13,7 +13,7 @@ public class BookmarkController {
     private final BookmarkService bookmarkService;
 
     @Secured("ROLE_USER")
-    @PostMapping("bookmark/{projectId}")
+    @PostMapping("bookmark/project/{projectId}")
     public ResDto addProjectBookmark(@PathVariable("projectId") Integer projectId) {
 
         bookmarkService.addProjectBookmark(projectId);
@@ -24,7 +24,7 @@ public class BookmarkController {
     }
 
     @Secured("ROLE_USER")
-    @DeleteMapping("/bookmark/{projectId}")
+    @DeleteMapping("/bookmark/project/{projectId}")
     public ResDto deleteProjectBookmark(@PathVariable("projectId") Integer projectId) {
 
         bookmarkService.deleteProjectBookmark(projectId);
