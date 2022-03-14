@@ -15,7 +15,7 @@ import java.util.List;
 public class ProjectDetailResponseDto {
     private Integer id;
     private String title;
-    private String imageUrl;
+    private List<String> imageUrl;
     private List<String> stack;
     private Integer bookmarkCount;
     private String content;

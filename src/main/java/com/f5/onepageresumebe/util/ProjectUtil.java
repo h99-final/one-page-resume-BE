@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProjectUtil {
 
@@ -77,21 +78,19 @@ public class ProjectUtil {
 
     }
   
-    public static ProjectDetailResponseDto projectToDeatilResponseDto(Project project,
-                                                                   ProjectImgRepository projectImgRepository,
-                                                                   ProjectStackRepository projectStackRepository) {
+    public static ProjectDetailResponseDto projectToDetailResponseDto(Project project,
+                                                                      ProjectImgRepository projectImgRepository,
+                                                                      ProjectStackRepository projectStackRepository) {
 
-        ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
-        String projectImgUrl = null;
-        if (projectImg != null) {
-            projectImgUrl = projectImg.getImageUrl();
-        }
+        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
+
+
             User user = project.getUser();
 
             ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
                     .title(project.getTitle())
                     .content(project.getIntroduce())
-                    .imageUrl(projectImgUrl)
+                    .imageUrl(projectImgs.stream().map(ProjectImg::getImageUrl).collect(Collectors.toList()))
                     .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .userJob(user.getJob())
