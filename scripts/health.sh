@@ -16,7 +16,7 @@ echo "> Health Check Start!"
 echo "> IDLE_PORT: $IDLE_PORT"
 echo "> curl -s http://localhost:$IDLE_PORT/profile "
 sleep 10
-
+#
 # 순차적으로 올라가며 for 문 수행
 for RETRY_COUNT in {1..20}
 do
