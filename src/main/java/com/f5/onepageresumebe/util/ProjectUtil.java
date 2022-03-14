@@ -80,9 +80,9 @@ public class ProjectUtil {
 
     }
   
-    public static ProjectDetailResponseDto projectToDeatilResponseDto(Project project,
-                                                                   ProjectImgRepository projectImgRepository,
-                                                                   ProjectStackRepository projectStackRepository) {
+    public static ProjectDetailResponseDto projectToDetailResponseDto(Project project,
+                                                                      ProjectImgRepository projectImgRepository,
+                                                                      ProjectStackRepository projectStackRepository) {
 
         ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
         String projectImgUrl = null;

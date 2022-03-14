@@ -317,7 +317,7 @@ public class ProjectService {
             isBookmarking = false;
         }
 
-        ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDeatilResponseDto(project,
+        ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDetailResponseDto(project,
                 projectImgRepository,
                 projectStackRepository);
 
