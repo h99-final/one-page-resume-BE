@@ -2,10 +2,8 @@ package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
+import com.f5.onepageresumebe.web.dto.stack.StackDto;
+import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.domain.mysql.service.UserService;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
@@ -77,7 +75,7 @@ public class UserController {
     //개인 정보 수정
     @Secured("ROLE_USER")
     @PutMapping("/user/info")
-    public ResDto updateInfo(@Valid @RequestBody AddInfoRequestDto requestDto) {
+    public ResDto updateInfo(@Valid @RequestBody UpdateInfoRequestDto requestDto) {
 
         userService.updateInfo(requestDto);
 
@@ -85,6 +83,19 @@ public class UserController {
                 .result(true)
                 .build();
     }
+
+    //개인 스택 수정
+    @Secured("ROLE_USER")
+    @PutMapping("/user/stack")
+    public ResDto updateStack(@Valid @RequestBody StackDto requestDto) {
+
+        userService.updateStacks(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
+
 
     //유저 정보
     @Secured("ROLE_USER")
