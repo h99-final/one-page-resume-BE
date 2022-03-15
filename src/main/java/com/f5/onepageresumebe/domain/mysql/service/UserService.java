@@ -352,4 +352,24 @@ public class UserService {
 
         return key;
     }
+
+    @Transactional
+    public void findPassword(CertificationRequestDto requestDto) {
+        String newPassword = makeRandomString();
+        String email = requestDto.getEmail();
+
+        User user = userQueryRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomAuthenticationException("해당 이메일이 존재하지 않습니다."));
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+
+        message.setSubject("임시 비밀번호 발송");
+        message.setText("임시 비밀번호 : " + newPassword);
+
+        javaMailSender.send(message);
+
+        user.changePassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

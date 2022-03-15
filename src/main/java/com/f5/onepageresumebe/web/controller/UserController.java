@@ -153,4 +153,15 @@ public class UserController {
                 .data(null)
                 .build();
     }
+
+    @PostMapping("/user/password/find")
+    public ResDto findPassword(@RequestBody CertificationRequestDto requestDto) {
+
+        userService.findPassword(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
 }
