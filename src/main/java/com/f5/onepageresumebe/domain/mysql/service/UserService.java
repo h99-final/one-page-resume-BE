@@ -296,21 +296,11 @@ public class UserService {
 
     public void certificationEmail(CertificationRequestDto requestDto) {
         String email = requestDto.getEmail();
-
-        Random random = new Random(); //난수 생성
-        String key=""; // 인증번호
+        String key = makeRandomString();
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
 
-        for(int i = 0; i < 3; ++i){
-            int index = random.nextInt(25)+65;
-
-            key+=(char)index;
-        }
-        int numIndex = random.nextInt(9999)+1000;
-
-        key += numIndex;
         message.setSubject("인증번호 입력을 위한 메일 전송");
         message.setText("인증 번호 : " + key);
 
@@ -336,5 +326,20 @@ public class UserService {
             certificationRepository.delete(certification);
         }
         return isCertificated;
+    }
+
+    public String makeRandomString() {
+        Random random = new Random(); //난수 생성
+        String key=""; // 인증번호
+
+        for(int i = 0; i < 3; ++i){
+            int index = random.nextInt(25)+65;
+
+            key+=(char)index;
+        }
+        int numIndex = random.nextInt(9999)+1000;
+        key += numIndex;
+
+        return key;
     }
 }
