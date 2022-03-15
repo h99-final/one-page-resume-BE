@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.domain.mysql.service.UserService;
+import com.f5.onepageresumebe.web.dto.user.responseDto.FindEmailResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -162,6 +163,15 @@ public class UserController {
         return ResDto.builder()
                 .result(true)
                 .data(null)
+                .build();
+    }
+
+    @PostMapping("/user/email/find")
+    public ResDto findEmail(@RequestBody FindEmailRequestDto requestDto) {
+
+        return ResDto.builder()
+                .result(true)
+                .data(userService.findEmail(requestDto))
                 .build();
     }
 }

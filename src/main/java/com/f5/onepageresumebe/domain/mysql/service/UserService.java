@@ -12,10 +12,7 @@ import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
-import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -371,5 +368,37 @@ public class UserService {
 
         user.changePassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
+        String name = requestDto.getName();
+        String phoneNum = requestDto.getPhoneNum();
+
+        User user = userRepository.findUserByNameAndPhoneNum(name,phoneNum);
+
+        FindEmailResponseDto findEmailResponseDto = new FindEmailResponseDto();
+
+        if(user == null) {
+            findEmailResponseDto.setEmail(null);
+        }
+        else {
+            String email = user.getEmail();
+            int idx = email.indexOf("@");
+
+            //@기준으로, 이메일을 나눈다
+            String emailFront = email.substring(0,idx);
+            String emailBack = email.substring(idx);
+
+            int frontHalfLength = emailFront.length()/2;
+
+            StringBuilder blindFront = new StringBuilder(emailFront);
+
+            for(int i = 0; i < frontHalfLength; ++i) {
+                blindFront.setCharAt(i, '*');
+            }
+
+            findEmailResponseDto.setEmail(blindFront.toString() + emailBack);
+        }
+        return findEmailResponseDto;
     }
 }
