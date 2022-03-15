@@ -13,6 +13,12 @@ import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.web.dto.user.responseDto.*;
+import com.f5.onepageresumebe.web.dto.stack.StackDto;
+import com.f5.onepageresumebe.web.dto.user.requestDto.*;
+import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
+import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -165,8 +171,24 @@ public class UserService {
     }
 
     @Transactional
-    public void updateInfo(AddInfoRequestDto request) {
+    public void updateInfo(UpdateInfoRequestDto request) {
 
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+        User curUser = userQueryRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+
+        curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
+
+
+        //업데이트 한 정보를 다시 포트폴리오 정보에 넣기
+        Portfolio portfolio = curUser.getPortfolio();
+        portfolio.updateIntro(portfolio.getTitle(),curUser.getGithubUrl(), portfolio.getIntroContents(), curUser.getBlogUrl());
+        portfolioRepository.save(portfolio);
+        userRepository.save(curUser);
+    }
+
+    @Transactional
+    public void updateStacks(StackDto request){
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userQueryRepository.findByEmail(userEmail)
@@ -189,13 +211,6 @@ public class UserService {
             UserStack userStack = UserStack.create(curUser, stack);
             userstackRepository.save(userStack);
         });
-        curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
-        userRepository.save(curUser);
-
-        //업데이트 한 정보를 다시 포트폴리오 정보에 넣기
-        Portfolio portfolio = curUser.getPortfolio();
-        portfolio.updateIntro(portfolio.getTitle(),curUser.getGithubUrl(), portfolio.getIntroContents(), curUser.getBlogUrl());
-        portfolioRepository.save(portfolio);
     }
 
     public UserInfoResponseDto getUserInfo() {
