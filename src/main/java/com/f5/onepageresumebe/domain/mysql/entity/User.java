@@ -110,4 +110,8 @@ public class User extends TimeEntity{
     public void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
     }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
 }
