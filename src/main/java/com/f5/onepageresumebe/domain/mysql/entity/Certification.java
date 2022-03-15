@@ -34,4 +34,7 @@ public class Certification {
 
         return certification;
     }
+    public void changeCode(String code) {
+        this.code = code;
+    }
 }

@@ -294,6 +294,7 @@ public class UserService {
         userRepository.save(curUser);
     }
 
+    @Transactional
     public void certificationEmail(CertificationRequestDto requestDto) {
         String email = requestDto.getEmail();
         String key = makeRandomString();
@@ -306,7 +307,16 @@ public class UserService {
 
         javaMailSender.send(message);
 
-        Certification certification = Certification.create(email, key);
+        Certification certification = certificationRepository.findCertificationByEmail(email);
+
+        //만약 기존의 이메일을 가진 certification 엔티티가 있으면
+        if(certification != null) {
+            //인증코드만 수정
+            certification.changeCode(key);
+        } else {
+            //없으면, 새로 생성
+            certification = Certification.create(email, key);
+        }
 
         certificationRepository.save(certification);
     }
