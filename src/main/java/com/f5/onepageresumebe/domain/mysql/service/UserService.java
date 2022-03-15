@@ -320,4 +320,21 @@ public class UserService {
 
         certificationRepository.save(certification);
     }
+
+    @Transactional
+    public boolean checkCertification(CheckCertificationRequestDto requestDto) {
+        boolean isCertificated = false;
+
+        String email = requestDto.getEmail();
+        String code = requestDto.getCode();
+
+        Certification certification = certificationRepository.findCertificationByEmailAndCode(email, code);
+
+        //해당 테이블이 있으면, return 데이터에 true 넣고 테이블 삭제
+        if(certification != null) {
+            isCertificated = true;
+            certificationRepository.delete(certification);
+        }
+        return isCertificated;
+    }
 }

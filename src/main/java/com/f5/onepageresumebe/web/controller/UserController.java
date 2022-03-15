@@ -144,4 +144,13 @@ public class UserController {
                 .data(null)
                 .build();
     }
+
+    @PostMapping("/user/auth/email/valid")
+    public ResDto checkCertification(@RequestBody CheckCertificationRequestDto requestDto) {
+
+        return ResDto.builder()
+                .result(userService.checkCertification(requestDto))
+                .data(null)
+                .build();
+    }
 }
