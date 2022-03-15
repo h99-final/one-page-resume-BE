@@ -162,10 +162,6 @@ public class GitService {
 //        return filesResponseDtoList;
 //    }
 
-//    public String makeRepoName(String gitUrl, String reName) {
-//        int idx = gitUrl.indexOf(".com/");
-//        return gitUrl.substring(idx+5) + "/" +  reName;
-//    }
 
     @Transactional
     public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {

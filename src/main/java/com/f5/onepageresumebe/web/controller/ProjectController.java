@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.web.controller;
 
+import com.f5.onepageresumebe.domain.mongoDB.service.MGitService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.domain.mysql.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 public class ProjectController {
 
+    private final MGitService mGitService;
     private final ProjectService projectService;
 
     @Secured("ROLE_USER")
@@ -31,6 +33,7 @@ public class ProjectController {
 
         ProjectResponseDto responseDto = projectService.createProject(requestDto, multipartFileList);
 
+        mGitService.sync(responseDto.getId());
         return ResDto.builder()
                 .result(true)
                 .data(responseDto)
@@ -116,4 +119,5 @@ public class ProjectController {
                 .data(responseDto)
                 .build();
     }
+
 }

@@ -46,12 +46,12 @@ public class MCommit {
         this.files = files;
     }
 
-    public static MCommit create(String message, String sha, MGitRequestDto requestDto, List<MFile> files){
+    public static MCommit create(String message, String sha, String repoName, String repoOwner, List<MFile> files){
         return MCommit.builder()
                 .message(message)
                 .sha(sha)
-                .repoName(requestDto.getRepoName())
-                .repoOwner(requestDto.getOwner())
+                .repoName(repoName)
+                .repoOwner(repoOwner)
                 .files(files)
                 .build();
     }

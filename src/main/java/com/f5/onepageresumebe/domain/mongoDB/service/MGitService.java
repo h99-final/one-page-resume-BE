@@ -3,6 +3,11 @@ package com.f5.onepageresumebe.domain.mongoDB.service;
 import com.f5.onepageresumebe.config.GitApiConfig;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
+import com.f5.onepageresumebe.domain.mysql.entity.Project;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import com.f5.onepageresumebe.web.dto.MGit.response.MCommitMessageResponseDto;
@@ -27,20 +32,29 @@ import java.util.List;
 public class MGitService {
 
     private final MongoTemplate mongoTemplate;
+    private final ProjectQueryRepository projectQueryRepository;
     private final GitApiConfig gitApiConfig;
 
-    public void sync(MGitRequestDto requestDto) {
-        GitHub gitHub = gitApiConfig.gitHub();
+    public void sync(Integer projectId) {
 
-        String repoName = requestDto.getAccessRepoName();
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+                new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
+
+        String repoUrl = project.getGitRepoUrl();
+        String repoName = project.getGitRepoName();
+        String repoOwner = getOwner(repoUrl);
+
+        GitHub gitHub = gitApiConfig.gitHub();
 
         GHRepository ghRepository = null;
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
-        deleteMCommits(requestDto);
+        deleteMCommits(repoName,repoOwner);
 
         try {
-            ghRepository = gitHub.getRepository(repoName);
+            ghRepository = gitHub.getRepository(makeRepoName(repoUrl, repoName));
         } catch (IOException e) {
             log.error("Repository 가져오기 실패: {}",e.getMessage());
             e.printStackTrace();
@@ -54,7 +68,7 @@ public class MGitService {
 
                 List<MFile> files = getFiles(ghRepository, curSha);
 
-                MCommit mCommit = MCommit.create(curMessage, curSha, requestDto, files);
+                MCommit mCommit = MCommit.create(curMessage, curSha, repoName,repoOwner, files);
 
                 mongoTemplate.save(mCommit);
             }
@@ -63,6 +77,7 @@ public class MGitService {
             e.printStackTrace();
         }
     }
+
     public List<MFile> getFiles(GHRepository ghRepository, String  sha) {
         List<MFile> files = new ArrayList<>();
 
@@ -82,11 +97,18 @@ public class MGitService {
         return files;
     }
 
-    public List<MCommitMessageResponseDto> getCommits(MGitRequestDto requestDto) {
-        List<MCommitMessageResponseDto> mCommitMessageResponseDtos = new ArrayList<>();
+    public List<MCommitMessageResponseDto> getCommits(Integer projectId) {
 
-        String repoName = requestDto.getRepoName();
-        String repoOwner = requestDto.getOwner();
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+                new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
+
+        String repoUrl = project.getGitRepoUrl();
+        String repoName = project.getGitRepoName();
+        String repoOwner = getOwner(repoUrl);
+
+        List<MCommitMessageResponseDto> mCommitMessageResponseDtos = new ArrayList<>();
 
         Query query = new Query(Criteria.where("repoName").is(repoName));
         query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
@@ -101,9 +123,7 @@ public class MGitService {
         return mCommitMessageResponseDtos;
     }
 
-    public void deleteMCommits(MGitRequestDto requestDto) {
-        String repoName = requestDto.getRepoName();
-        String repoOwner = requestDto.getOwner();
+    public void deleteMCommits(String repoName, String repoOwner) {
 
         Query query = new Query(Criteria.where("repoName").is(repoName));
         query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
@@ -132,6 +152,17 @@ public class MGitService {
         });
 
         return responseDtos;
+    }
+
+
+    public String makeRepoName(String gitUrl, String reName) {
+        int idx = gitUrl.indexOf(".com/");
+        return gitUrl.substring(idx+5) + "/" +  reName;
+    }
+
+    public String getOwner(String gitUrl){
+        int idx = gitUrl.indexOf(".com/");
+        return gitUrl.substring(idx+5);
     }
 
 }
