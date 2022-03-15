@@ -19,6 +19,8 @@ import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
@@ -51,6 +54,8 @@ public class UserService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final S3Uploader s3Uploader;
     private final UserQueryRepository userQueryRepository;
+    private final JavaMailSender javaMailSender;
+    private final CertificationRepository certificationRepository;
 
     @Transactional
     public Boolean registerUser(SignupRequestDto requestDto) {
@@ -287,5 +292,32 @@ public class UserService {
         String password = passwordEncoder.encode(requestDto.getPassword());
         curUser.changePassword(password);
         userRepository.save(curUser);
+    }
+
+    public void certificationEmail(CertificationRequestDto requestDto) {
+        String email = requestDto.getEmail();
+
+        Random random = new Random(); //난수 생성
+        String key=""; // 인증번호
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+
+        for(int i = 0; i < 3; ++i){
+            int index = random.nextInt(25)+65;
+
+            key+=(char)index;
+        }
+        int numIndex = random.nextInt(9999)+1000;
+
+        key += numIndex;
+        message.setSubject("인증번호 입력을 위한 메일 전송");
+        message.setText("인증 번호 : " + key);
+
+        javaMailSender.send(message);
+
+        Certification certification = Certification.create(email, key);
+
+        certificationRepository.save(certification);
     }
 }

@@ -62,6 +62,9 @@ dependencies {
 
     //mongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    //이메일 인증
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.5.4'
 }
 
 tasks.named('test') {
