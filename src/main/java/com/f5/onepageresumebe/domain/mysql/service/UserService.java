@@ -11,10 +11,7 @@ import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
+import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
@@ -271,5 +268,24 @@ public class UserService {
         headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
 
         return headers;
+    }
+
+    @Transactional
+    public void ChangePassword(ChangePasswordRequestDto requestDto) {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        User curUser = userQueryRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+
+        //비밀번호, 비밀번호 확인 체크
+        if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
+            throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
+        }
+
+        // 패스워드 암호화
+        String password = passwordEncoder.encode(requestDto.getPassword());
+        curUser.changePassword(password);
+        userRepository.save(curUser);
     }
 }

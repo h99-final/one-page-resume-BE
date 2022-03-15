@@ -2,10 +2,7 @@ package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.AddInfoRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.CheckEmailRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.LoginRequestDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.SignupRequestDto;
+import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.domain.mysql.service.UserService;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
@@ -118,6 +115,18 @@ public class UserController {
     public ResDto deleteProfile(){
 
         userService.deleteProfile();
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PutMapping("/user/password")
+    public ResDto changePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto) {
+
+        userService.ChangePassword(requestDto);
 
         return ResDto.builder()
                 .result(true)
