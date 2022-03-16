@@ -48,6 +48,6 @@ public class PortfoiloBookmark {
     }
 
     public PorfResponseDto toPorfBookmarkReadResDTO() {
-        return new PorfResponseDto(this.id,this.getUser().getName(),this.toPorfBookmarkReadResDTO().getUserStack(),this.getPortfolio().getTitle(),this.getPortfolio().getTemplateIdx());
+        return new PorfResponseDto(this.id,this.getUser().getName(),this.toPorfBookmarkReadResDTO().getUserStack(),this.getPortfolio().getTitle(),this.getPortfolio().getTemplateIdx(),this.getUser().getJob());
     }
 }

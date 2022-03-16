@@ -211,13 +211,15 @@ public class PortfolioService {
         }
 
         portfolioList.forEach(portfolio -> {
+            User user = portfolio.getUser();
             List<String> stacks = userQueryRepository.findStackNamesByPorfId(portfolio.getId());
             PorfResponseDto responseDto = PorfResponseDto.builder()
                     .porfId(portfolio.getId())
-                    .username(portfolio.getUser().getName())
+                    .username(user.getName())
                     .userStack(stacks)
                     .title(portfolio.getTitle())
                     .templateIdx(portfolio.getTemplateIdx())
+                    .job(user.getJob())
                     .build();
             responseDtoList.add(responseDto);
         });
