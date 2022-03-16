@@ -1,0 +1,166 @@
+package com.f5.onepageresumebe.domain.mongoDB.service;
+
+import com.f5.onepageresumebe.config.GitApiConfig;
+import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
+import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
+import com.f5.onepageresumebe.domain.mysql.entity.Project;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.GitUtil;
+import com.f5.onepageresumebe.web.dto.MGit.response.MCommitMessageResponseDto;
+import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class MGitService {
+
+    private final MongoTemplate mongoTemplate;
+    private final ProjectQueryRepository projectQueryRepository;
+    private final GitApiConfig gitApiConfig;
+
+    public void sync(Integer projectId) {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+                new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
+
+        String repoUrl = project.getGitRepoUrl();
+        String repoName = project.getGitRepoName();
+        String repoOwner = getOwner(repoUrl);
+
+        GitHub gitHub = gitApiConfig.gitHub();
+
+        GHRepository ghRepository = null;
+
+        //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
+        deleteMCommits(repoName,repoOwner);
+
+        try {
+            ghRepository = gitHub.getRepository(makeRepoName(repoUrl, repoName));
+        } catch (IOException e) {
+            log.error("Repository 가져오기 실패: {}",e.getMessage());
+            e.printStackTrace();
+        }
+
+        try {
+            List<GHCommit> commits = ghRepository.listCommits().toList();
+            for(GHCommit curCommit  : commits) {
+                String curSha = curCommit.getSHA1();
+                String curMessage = curCommit.getCommitShortInfo().getMessage();
+
+                List<MFile> files = getFiles(ghRepository, curSha);
+
+                MCommit mCommit = MCommit.create(curMessage, curSha, repoName,repoOwner, files);
+
+                mongoTemplate.save(mCommit);
+            }
+        } catch (IOException e) {
+            log.error("Commit 가져오기 실패: {}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public List<MFile> getFiles(GHRepository ghRepository, String  sha) {
+        List<MFile> files = new ArrayList<>();
+
+        try {
+            GHCommit commit = ghRepository.getCommit(sha);
+
+            List<GHCommit.File> curFiles = commit.getFiles();
+            for (GHCommit.File curFile : curFiles) {
+                MFile mFile = MFile.create(curFile.getFileName(), curFile.getPatch());
+                files.add(mFile);
+            }
+        } catch (IOException e) {
+            log.error("File 가져오기 실패: {}", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return files;
+    }
+
+    public List<MCommitMessageResponseDto> getCommits(Integer projectId) {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+                new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
+
+        String repoUrl = project.getGitRepoUrl();
+        String repoName = project.getGitRepoName();
+        String repoOwner = getOwner(repoUrl);
+
+        List<MCommitMessageResponseDto> mCommitMessageResponseDtos = new ArrayList<>();
+
+        Query query = new Query(Criteria.where("repoName").is(repoName));
+        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
+
+        List<MCommit> mCommits = mongoTemplate.find(query, MCommit.class);
+
+        for(MCommit curCommit: mCommits) {
+            MCommitMessageResponseDto mCommitMessageResponseDto = new MCommitMessageResponseDto(curCommit.getSha(), curCommit.getMessage());
+            mCommitMessageResponseDtos.add(mCommitMessageResponseDto);
+        }
+
+        return mCommitMessageResponseDtos;
+    }
+
+    public void deleteMCommits(String repoName, String repoOwner) {
+
+        Query query = new Query(Criteria.where("repoName").is(repoName));
+        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
+
+        mongoTemplate.remove(query, MCommit.class);
+    }
+
+    public List<FilesResponseDto> findFilesBySha(String sha){
+
+        MCommit gitCommit = mongoTemplate.findOne(
+                Query.query(Criteria.where("sha").is(sha)),
+                MCommit.class
+        );
+
+        if(gitCommit==null){
+            //todo: 오류 처리
+        }
+
+        List<FilesResponseDto> responseDtos = new ArrayList<>();
+        gitCommit.getFiles().forEach(gitFile -> {
+
+            String patchCode = gitFile.getPatchCode();
+            if(patchCode!=null){
+                responseDtos.add(new FilesResponseDto(gitFile.getName(), GitUtil.parsePatchCode(patchCode)));
+            }
+        });
+
+        return responseDtos;
+    }
+
+
+    public String makeRepoName(String gitUrl, String reName) {
+        int idx = gitUrl.indexOf(".com/");
+        return gitUrl.substring(idx+5) + "/" +  reName;
+    }
+
+    public String getOwner(String gitUrl){
+        int idx = gitUrl.indexOf(".com/");
+        return gitUrl.substring(idx+5);
+    }
+
+}
