@@ -1,7 +1,5 @@
 package com.f5.onepageresumebe.domain.mongoDB.entity;
 
-import com.f5.onepageresumebe.domain.mysql.entity.GitFile;
-import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;

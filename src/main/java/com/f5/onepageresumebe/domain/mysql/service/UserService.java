@@ -226,18 +226,20 @@ public class UserService {
         //스택 내용 불러오기
         List<String> stackNames = userQueryRepository.findStackNamesByUserId(user.getId());
 
+        Portfolio portfolio = user.getPortfolio();
         return UserInfoResponseDto.builder()
                 .userId(user.getId())
                 .name(user.getName())
                 .projectId(projectIds)
                 .stack(stackNames)
-                .porfId(user.getPortfolio().getId())
+                .porfId(portfolio.getId())
                 .email(user.getEmail())
                 .phoneNum(user.getPhoneNum())
                 .gitUrl(user.getGithubUrl())
                 .blogUrl(user.getBlogUrl())
                 .profileImage(user.getProfileImgUrl())
                 .job(user.getJob())
+                .porfShow(!portfolio.getIsTemp())
                 .build();
     }
 
