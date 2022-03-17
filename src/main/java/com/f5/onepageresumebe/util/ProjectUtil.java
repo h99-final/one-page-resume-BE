@@ -84,17 +84,17 @@ public class ProjectUtil {
 
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
 
-
             User user = project.getUser();
 
             ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
                     .title(project.getTitle())
                     .content(project.getIntroduce())
-                    .imageUrl(projectImgs.stream().map(ProjectImg::getImageUrl).collect(Collectors.toList()))
+                    .img(projectImgs.stream().map(ProjectImg::toProjectImgResponseDto).collect(Collectors.toList()))
                     .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .userJob(user.getJob())
                     .username(user.getName())
+                    .gitRepoUrl(project.getGitRepoUrl())
                     .build();
 
         return projectDetailResponseDto;

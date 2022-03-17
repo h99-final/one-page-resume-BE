@@ -97,16 +97,11 @@ public class Portfolio extends TimeEntity{
         this.templateIdx = templateIdx;
     }
 
-    public String changeStatus(String status){
-        if (status.equals("public")){
-            this.isTemp = false;
-        }else if(status.equals("private")){
-            this.isTemp = true;
-        }else{
-            throw new IllegalArgumentException("상태값은 public, private만 넣을 수 있습니다");
-        }
+    public boolean changeStatus(boolean show){
 
-        return status;
+        this.isTemp = !show;
+
+        return show;
     }
 
     public void increaseViewCount(){

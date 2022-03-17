@@ -42,21 +42,19 @@ public class GitService {
 
         Project project = projectService.getProjectIfMyProject(projectId);
 
-        if(project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
+        if (project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
 
         //이미 등록한 커밋이랑 중복되는지 체크
-        GitCommit tempCommit = gitCommitRepository.findBySha(request.getSha());
+        GitCommit gitCommit = gitCommitRepository.findBySha(request.getSha());
 
         //이미 등록된 커밋
-        if(tempCommit != null) {
-            return new CommitIdResponseDto(-1);
+        if (gitCommit == null) {
+            gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
         }
-
-        GitCommit gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
 
         List<FileRequestDto> fileRequestDtoList = request.getTsFile();
 
-        for(FileRequestDto curFile : fileRequestDtoList) {
+        for (FileRequestDto curFile : fileRequestDtoList) {
             GitFile gitFile = GitFile.create(curFile.getFileName(), GitUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }

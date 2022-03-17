@@ -101,15 +101,11 @@ public class PortfolioService {
         Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
-        String status = dto.getStatus();
-        if(!("public".equals(status) || "private".equals(status)) ){
-            throw new CustomException("포트폴리오 상태값은 public 이거나 private 입니다.", INVALID_INPUT_ERROR);
-        }
 
-        String changedStatus = portfolio.changeStatus(status);
+        boolean changedStatus = portfolio.changeStatus(dto.isShow());
 
         return ChangeStatusDto.builder()
-                .status(changedStatus)
+                .show(changedStatus)
                 .build();
     }
 

@@ -23,7 +23,7 @@ public class PorfController {
     private final PortfolioService portfolioService;
 
     @Secured("ROLE_USER")
-    @PostMapping("/porf/status")
+    @PostMapping("/porf/show")
     public ResDto changeStatus(@Valid @RequestBody ChangeStatusDto requestDto){
 
         ChangeStatusDto changeStatusDto = portfolioService.changeStatus(requestDto);

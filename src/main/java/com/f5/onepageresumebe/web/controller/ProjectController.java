@@ -42,8 +42,8 @@ public class ProjectController {
 
     @Secured("ROLE_USER")
     @PutMapping("/project/{projectId}")
-    public ResDto updateProjectIntro(@PathVariable("projectId") Integer projectId,
-                                     @Valid @RequestBody ProjectUpdateRequestDto requestDto){
+    public ResDto updateProjectIntro(@Valid @RequestBody ProjectRequestDto requestDto,
+                                     @PathVariable("projectId") Integer projectId){
 
         projectService.updateProjectInfo(projectId,requestDto);
 
@@ -54,11 +54,24 @@ public class ProjectController {
     }
 
     @Secured("ROLE_USER")
-    @PutMapping("/project/{projectId}/image")
+    @PostMapping("/project/{projectId}/image")
     public ResDto updateImages(@RequestPart("images") List<MultipartFile> multipartFiles,
                                @PathVariable("projectId") Integer projectId){
 
         projectService.updateProjectImages(projectId, multipartFiles);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/project/{projectId}/image/{imageId}")
+    public ResDto deleteProjectImg(@PathVariable("projectId") Integer projectId,
+                                   @PathVariable("imageId") Integer imageId){
+
+        projectService.deleteProjectImg(projectId, imageId);
 
         return ResDto.builder()
                 .result(true)

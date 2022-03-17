@@ -13,6 +13,5 @@ import javax.validation.constraints.NotBlank;
 @Builder
 public class ChangeStatusDto {
 
-    @NotBlank(message = "public, private 중 어느 상태로 바꿀것인지 선택해 주세요.")
-    private String status;
+    private boolean show;
 }
