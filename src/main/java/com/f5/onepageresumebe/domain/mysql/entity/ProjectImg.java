@@ -15,7 +15,7 @@ public class ProjectImg {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "varchar(300)")
+    @Column(nullable = false, columnDefinition = "varchar(500)")
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
