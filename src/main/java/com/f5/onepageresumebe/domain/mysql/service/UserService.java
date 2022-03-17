@@ -11,6 +11,8 @@ import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
+import com.f5.onepageresumebe.web.dto.user.requestDto.*;
+import com.f5.onepageresumebe.web.dto.user.responseDto.*;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
@@ -20,6 +22,8 @@ import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -31,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
@@ -52,6 +57,8 @@ public class UserService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final S3Uploader s3Uploader;
     private final UserQueryRepository userQueryRepository;
+    private final JavaMailSender javaMailSender;
+    private final CertificationRepository certificationRepository;
 
     @Transactional
     public Boolean registerUser(SignupRequestDto requestDto) {
@@ -278,5 +285,135 @@ public class UserService {
         headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
 
         return headers;
+    }
+
+    @Transactional
+    public void ChangePassword(ChangePasswordRequestDto requestDto) {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        User curUser = userQueryRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+
+        //비밀번호, 비밀번호 확인 체크
+        if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
+            throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
+        }
+
+        // 패스워드 암호화
+        String password = passwordEncoder.encode(requestDto.getPassword());
+        curUser.changePassword(password);
+        userRepository.save(curUser);
+    }
+
+    @Transactional
+    public void certificationEmail(CertificationRequestDto requestDto) {
+        String email = requestDto.getEmail();
+        String key = makeRandomString();
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+
+        message.setSubject("인증번호 입력을 위한 메일 전송");
+        message.setText("인증 번호 : " + key);
+
+        javaMailSender.send(message);
+
+        Certification certification = certificationRepository.findCertificationByEmail(email);
+
+        //만약 기존의 이메일을 가진 certification 엔티티가 있으면
+        if(certification != null) {
+            //인증코드만 수정
+            certification.changeCode(key);
+        } else {
+            //없으면, 새로 생성
+            certification = Certification.create(email, key);
+        }
+
+        certificationRepository.save(certification);
+    }
+
+    @Transactional
+    public boolean checkCertification(CheckCertificationRequestDto requestDto) {
+        boolean isCertificated = false;
+
+        String email = requestDto.getEmail();
+        String code = requestDto.getCode();
+
+        Certification certification = certificationRepository.findCertificationByEmailAndCode(email, code);
+
+        //해당 테이블이 있으면, return 데이터에 true 넣고 테이블 삭제
+        if(certification != null) {
+            isCertificated = true;
+            certificationRepository.delete(certification);
+        }
+        return isCertificated;
+    }
+
+    public String makeRandomString() {
+        Random random = new Random(); //난수 생성
+        String key=""; // 인증번호
+
+        for(int i = 0; i < 3; ++i){
+            int index = random.nextInt(25)+65;
+
+            key+=(char)index;
+        }
+        int numIndex = random.nextInt(9999)+1000;
+        key += numIndex;
+
+        return key;
+    }
+
+    @Transactional
+    public void findPassword(CertificationRequestDto requestDto) {
+        String newPassword = makeRandomString();
+        String email = requestDto.getEmail();
+
+        User user = userQueryRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomAuthenticationException("해당 이메일이 존재하지 않습니다."));
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+
+        message.setSubject("임시 비밀번호 발송");
+        message.setText("임시 비밀번호 : " + newPassword);
+
+        javaMailSender.send(message);
+
+        user.changePassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
+        String name = requestDto.getName();
+        String phoneNum = requestDto.getPhoneNum();
+
+        User user = userRepository.findUserByNameAndPhoneNum(name,phoneNum);
+
+        FindEmailResponseDto findEmailResponseDto = new FindEmailResponseDto();
+
+        if(user == null) {
+            findEmailResponseDto.setEmail(null);
+        }
+        else {
+            String email = user.getEmail();
+            int idx = email.indexOf("@");
+
+            //@기준으로, 이메일을 나눈다
+            String emailFront = email.substring(0,idx);
+            String emailBack = email.substring(idx);
+
+            int frontHalfLength = emailFront.length()/2;
+
+            StringBuilder blindFront = new StringBuilder(emailFront);
+
+            for(int i = 0; i < frontHalfLength; ++i) {
+                blindFront.setCharAt(i, '*');
+            }
+
+            findEmailResponseDto.setEmail(blindFront.toString() + emailBack);
+        }
+        return findEmailResponseDto;
     }
 }

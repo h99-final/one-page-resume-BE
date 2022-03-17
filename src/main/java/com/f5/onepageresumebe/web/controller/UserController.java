@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.domain.mysql.service.UserService;
+import com.f5.onepageresumebe.web.dto.user.responseDto.FindEmailResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -133,6 +134,58 @@ public class UserController {
         return ResDto.builder()
                 .result(true)
                 .data(null)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PutMapping("/user/password")
+    public ResDto changePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto) {
+
+        userService.ChangePassword(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @PostMapping("/user/auth/email")
+    public ResDto certificationEmail(@RequestBody CertificationRequestDto requestDto) {
+
+        userService.certificationEmail(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @PostMapping("/user/auth/email/valid")
+    public ResDto checkCertification(@RequestBody CheckCertificationRequestDto requestDto) {
+
+        return ResDto.builder()
+                .result(userService.checkCertification(requestDto))
+                .data(null)
+                .build();
+    }
+
+    @PostMapping("/user/password/find")
+    public ResDto findPassword(@RequestBody CertificationRequestDto requestDto) {
+
+        userService.findPassword(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
+
+    @PostMapping("/user/email/find")
+    public ResDto findEmail(@RequestBody FindEmailRequestDto requestDto) {
+
+        return ResDto.builder()
+                .result(true)
+                .data(userService.findEmail(requestDto))
                 .build();
     }
 }
