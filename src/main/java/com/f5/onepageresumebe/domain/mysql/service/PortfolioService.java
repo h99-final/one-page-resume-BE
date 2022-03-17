@@ -121,6 +121,11 @@ public class PortfolioService {
             throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
         }
 
+        //기존에 포함되어있던 프로젝트 모두 연결 끊음
+        List<Project> existProjects = projectRepository.findAllByPorfId(portfolio.getId());
+        existProjects.forEach(project -> project.removePortfolio(portfolio));
+
+        //새로 들어온 프로젝트 모두 연결
         List<Project> projects = projectRepository.findAllByIds(projectIds);
 
         projects.forEach(project -> {

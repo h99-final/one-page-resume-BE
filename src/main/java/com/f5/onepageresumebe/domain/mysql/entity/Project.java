@@ -27,6 +27,8 @@ public class Project extends TimeEntity{
     @Column(columnDefinition = "varchar(30)")
     private String gitRepoName;
 
+
+    //github.com/{username or organizationName}
     @Column(columnDefinition = "varchar(100)")
     private String gitRepoUrl;
 
@@ -97,6 +99,7 @@ public class Project extends TimeEntity{
         this.gitRepoUrl = requestDto.getGitRepoUrl();
         this.gitRepoName = requestDto.getGitRepoName();
     }
+    
     public void updateBookmarkCount(Integer value) {
         this.bookmarkCount += value;
     }

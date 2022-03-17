@@ -26,7 +26,6 @@ public class BookmarkService {
 
     private final ProjectRepository projectRepository;
     private final ProjectBookmarkRepository projectBookmarkRepository;
-    private final UserRepository userRepository;
     private final ProjectImgRepository projectImgRepository;
     private final ProjectStackRepository projectStackRepository;
     private final UserQueryRepository userQueryRepository;
@@ -118,11 +117,7 @@ public class BookmarkService {
             portfolios.add(item.getPortfolio());
         }
 
-
-
         dto.setPortfolios(portfolios);
         return  dto;
-
-
     }
 }
