@@ -6,24 +6,21 @@ import com.f5.onepageresumebe.domain.mysql.entity.GitFile;
 import com.f5.onepageresumebe.domain.mysql.entity.Project;
 import com.f5.onepageresumebe.domain.mysql.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.GitFileRepository;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.GitQueryRepository;
 import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
-import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
-import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.github.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -35,6 +32,7 @@ public class GitService {
     private final ProjectService projectService;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
+    private final GitQueryRepository gitQueryRepository;
     private final GitApiConfig gitApiConfig;
 
     @Transactional
@@ -44,8 +42,9 @@ public class GitService {
 
         if (project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
 
-        //이미 등록한 커밋이랑 중복되는지 체크
-        GitCommit gitCommit = gitCommitRepository.findBySha(request.getSha());
+        //프로젝트에 이미 등록된 커밋인지 체크
+        GitCommit gitCommit = gitCommitRepository.findByShaAndProjectId(request.getSha(),projectId)
+                .orElse(null);
 
         //이미 등록된 커밋
         if (gitCommit == null) {
@@ -59,7 +58,32 @@ public class GitService {
             gitFileRepository.save(gitFile);
         }
 
+        gitCommitRepository.save(gitCommit);
+
         return new CommitIdResponseDto(gitCommit.getId());
+    }
+
+    @Transactional
+    public void deleteFile(Integer projectId, Integer commitId, Integer fileId){
+
+        Project project = projectService.getProjectIfMyProject(projectId);
+
+        if (project == null) throw new CustomAuthorizationException("나의 프로젝트의 파일만 삭제할 수 있습니다.");
+
+        GitFile gitFile = gitQueryRepository.findFileByIdFetchAll(fileId).orElseThrow(() ->
+                new CustomException("존재하지 않는 파일입니다.", ErrorCode.INVALID_INPUT_ERROR));
+
+        GitCommit gitCommit = gitFile.getCommit();
+        Integer gitCommitId = gitCommit.getId();
+        Integer gitProjectId = gitCommit.getProject().getId();
+
+        if(gitCommitId != commitId || gitProjectId != projectId){
+            System.out.println("commitId"+gitCommitId+"/"+commitId);
+            System.out.println("projectId"+gitProjectId+"/"+projectId);
+            throw new CustomException("현재 프로젝트의 파일만 삭제할 수 있습니다.",ErrorCode.INVALID_INPUT_ERROR);
+        }
+
+        gitFileRepository.deleteById(fileId);
     }
 
 //    public List<CommitMessageResponseDto> getCommitMessages(Integer projectId) {
