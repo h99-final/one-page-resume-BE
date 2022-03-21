@@ -1,6 +1,5 @@
 package com.f5.onepageresumebe.domain.mysql.service;
 
-import com.f5.onepageresumebe.config.GitApiConfig;
 import com.f5.onepageresumebe.domain.mysql.entity.GitCommit;
 import com.f5.onepageresumebe.domain.mysql.entity.GitFile;
 import com.f5.onepageresumebe.domain.mysql.entity.Project;
@@ -33,7 +32,6 @@ public class GitService {
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
     private final GitQueryRepository gitQueryRepository;
-    private final GitApiConfig gitApiConfig;
 
     @Transactional
     public CommitIdResponseDto createTroubleShooting(Integer projectId, CommitRequestDto request) {

@@ -1,9 +1,16 @@
 package com.f5.onepageresumebe.util;
 
+import com.f5.onepageresumebe.security.SecurityUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.kohsuke.github.GitHub;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GitUtil {
+
     //String -> List
     public static List<String> parsePatchCode(String patchCode) {
         List<String> res = new ArrayList<>();

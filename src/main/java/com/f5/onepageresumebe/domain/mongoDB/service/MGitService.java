@@ -1,22 +1,24 @@
 package com.f5.onepageresumebe.domain.mongoDB.service;
 
-import com.f5.onepageresumebe.config.GitApiConfig;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
+import com.f5.onepageresumebe.domain.mysql.entity.User;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.exception.customException.CustomException;
+import com.f5.onepageresumebe.security.SecurityUtil;
+import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.domain.mysql.entity.Project;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
-import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
-import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import com.f5.onepageresumebe.web.dto.MGit.response.MCommitMessageResponseDto;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
+import org.kohsuke.github.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -26,14 +28,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class MGitService {
 
     private final MongoTemplate mongoTemplate;
+    private final UserQueryRepository userQueryRepository;
     private final ProjectQueryRepository projectQueryRepository;
-    private final GitApiConfig gitApiConfig;
+    private final AES256 aes256;
 
     public void sync(Integer projectId) {
 
@@ -46,15 +51,13 @@ public class MGitService {
         String repoName = project.getGitRepoName();
         String repoOwner = getOwner(repoUrl);
 
-        GitHub gitHub = gitApiConfig.gitHub();
-
         GHRepository ghRepository = null;
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
         deleteMCommits(repoName,repoOwner);
 
         try {
-            ghRepository = gitHub.getRepository(makeRepoName(repoUrl, repoName));
+            ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
         } catch (IOException e) {
             log.error("Repository 가져오기 실패: {}",e.getMessage());
             e.printStackTrace();
@@ -154,6 +157,35 @@ public class MGitService {
         return responseDtos;
     }
 
+    private GitHub getGitHub() {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+        String rawToken = null;
+        String encryptToken = user.getGitToken();
+        if(encryptToken==null){
+            throw new CustomException("먼저 토큰을 등록해 주세요", INVALID_INPUT_ERROR);
+        }
+
+        try {
+            rawToken = aes256.decrypt(user.getGitToken());
+        } catch (Exception e) {
+            log.error("git Token 복호화에 실패하였습니다.");
+            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.",INVALID_INPUT_ERROR);
+        }
+
+        try {
+            GitHub gitHub = new GitHubBuilder().withOAuthToken(rawToken).build();
+            gitHub.checkApiUrlValidity();
+
+            return gitHub;
+        } catch (IOException e) {
+            log.error("깃허브 연결 실패 : {}", e.getMessage());
+            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.",INVALID_INPUT_ERROR);
+        }
+
+    }
 
     public String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");

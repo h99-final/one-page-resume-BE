@@ -42,6 +42,9 @@ public class User extends TimeEntity{
     @Column(columnDefinition = "varchar(300)")
     private String profileImgUrl;
 
+    @Column(columnDefinition = "varchar(300)")
+    private String gitToken;
+
     @OneToMany(mappedBy = "user")
     private List<UserStack> userStackList = new ArrayList<>();
 
@@ -110,6 +113,12 @@ public class User extends TimeEntity{
     public void setPortfolio(Portfolio portfolio){
         this.portfolio = portfolio;
     }
+    
+    public void setGitToken(String gitToken){
+
+        this.gitToken = gitToken;
+    }
+
 
     public void changePassword(String password) {
         this.password = password;

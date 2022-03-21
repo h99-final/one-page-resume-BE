@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.exception.customException.CustomException;
+import com.f5.onepageresumebe.web.dto.MGit.request.MGitTokenDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
@@ -67,6 +68,28 @@ public class UserController {
     public ResDto addInfo(@Valid @RequestBody AddInfoRequestDto requestDto) {
 
         userService.addInfo(requestDto);
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PutMapping("/user/git/token")
+    public ResDto updateToken(@RequestBody MGitTokenDto requestDto){
+
+        userService.updateGitToken(requestDto.getToken());
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/user/git/token")
+    public ResDto deleteToken(){
+
+        userService.deleteToken();
 
         return ResDto.builder()
                 .result(true)

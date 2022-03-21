@@ -52,7 +52,7 @@ public class ProjectService {
     private final UserQueryRepository userQueryRepository;
     private final ProjectBookmarkRepository projectBookmarkRepository;
 
-    @Transactional//프로젝트 생성
+    @Transactional(rollbackFor = Exception.class)//프로젝트 생성
     public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
@@ -350,7 +350,7 @@ public class ProjectService {
                 Optional<ProjectBookmark> optionalProjectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId);
                 isBookmarking = optionalProjectBookmark.isPresent();
             }
-        } catch (CustomAuthenticationException ce) {
+        } catch (CustomAuthenticationException e) {
             project = projectRepository.getById(projectId);
             isMyProject = false;
             isBookmarking = false;
