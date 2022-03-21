@@ -9,12 +9,10 @@ import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomImageException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
-import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.web.dto.user.responseDto.*;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
@@ -148,7 +146,11 @@ public class UserService {
         //사용자가 추가기입 시, 입력한 stack이 기존 stack테이블에 있으면 stack을 가져옴
         // 기존 stack 테이블이 없으면 새로 생성해 가져옴
         for (String curStackName : stacks) {
-            Stack stack = StackUtil.createStack(curStackName, stackRepository);
+            Stack stack = stackRepository.findFirstByName(curStackName).orElse(null);
+            if (stack == null) {
+                stack = Stack.create(curStackName);
+                stackRepository.save(stack);
+            }
             UserStack userStack = UserStack.create(curUser, stack);
 
             userstackRepository.save(userStack);
@@ -208,7 +210,11 @@ public class UserService {
         stackNames = stackNames.stream().distinct().collect(Collectors.toList());
         //입력으로 들어온 스택 추가
         stackNames.forEach(name -> {
-            Stack stack = StackUtil.createStack(name, stackRepository);
+            Stack stack = stackRepository.findFirstByName(name).orElse(null);
+            if (stack == null) {
+                stack = Stack.create(name);
+                stackRepository.save(stack);
+            }
             UserStack userStack = UserStack.create(curUser, stack);
             userstackRepository.save(userStack);
         });

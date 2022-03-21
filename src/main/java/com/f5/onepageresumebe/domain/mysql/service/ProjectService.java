@@ -11,9 +11,7 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthenticationExce
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
-import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
@@ -232,7 +230,11 @@ public class ProjectService {
         stackNames = stackNames.stream().distinct().collect(Collectors.toList());
 
         stackNames.forEach(name-> {
-            Stack stack = StackUtil.createStack(name, stackRepository);
+            Stack stack = stackRepository.findFirstByName(name).orElse(null);
+            if (stack == null) {
+                stack = Stack.create(name);
+                stackRepository.save(stack);
+            }
             ProjectStack projectStack = ProjectStack.create(project, stack);
             projectStackRepository.save(projectStack);
         });

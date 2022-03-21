@@ -9,7 +9,6 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthenticationExce
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
-import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
 import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfProjectRequestDto;
@@ -335,7 +334,11 @@ public class PortfolioService {
         stackNames = stackNames.stream().distinct().collect(Collectors.toList());
 
         stackNames.forEach(name -> {
-            Stack stack = StackUtil.createStack(name, stackRepository);
+            Stack stack = stackRepository.findFirstByName(name).orElse(null);
+            if (stack == null) {
+                stack = Stack.create(name);
+                stackRepository.save(stack);
+            }
             PortfolioStack portfolioStack = PortfolioStack.create(portfolio, stack);
             portfolioStackRepository.save(portfolioStack);
         });
