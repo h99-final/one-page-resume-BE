@@ -325,7 +325,7 @@ public class ProjectService {
         }
 
         ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDetailResponseDto(project,
-                projectImgRepository,
+                projectQueryRepository,
                 projectStackRepository);
 
         projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);
