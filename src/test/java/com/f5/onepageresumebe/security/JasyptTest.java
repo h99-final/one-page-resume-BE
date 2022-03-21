@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JasyptTest {
     @Test
     public void jasypt_test() {
-        String plainText = "hello";
+        String plainText = "poug";
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         SimpleStringPBEConfig config = new SimpleStringPBEConfig();
         config.setPassword("poug");

@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
+# start.sh
+# 서버 구동을 위한 스크립트
 
+# 절대경로를 이용하여 profile.sh 경로 찾은 후 import
 ABSPATH=$(readlink -f $0)
 ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
+source /etc/profile.d/scopekey.sh
 
-REPOSITORY=/home/ubuntu/app/step3
+# 현재 프로젝트 경로 지정
+REPOSITORY=/home/ubuntu/scope
 IDLE_PORT=$(find_idle_port)
 IDLE_PROFILE=$(find_idle_profile)
-IMAGEPATH=/home/ubuntu/app
 
-
+echo "> JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_ENCRYPTOR_PASSWORD}"
 echo "> IDLE_PORT : $IDLE_PORT"
 echo "> IDLE_PROFILE : $IDLE_PROFILE"
 
 echo "> Build 파일 복사"
 echo "> cp $REPOSITORY/zip/*.jar $REPOSITORY/"
 
+# 새로운 jar file 덮어쓰기
 cp $REPOSITORY/zip/*.jar $REPOSITORY
 
 echo "> 새 어플리케이션 배포"
