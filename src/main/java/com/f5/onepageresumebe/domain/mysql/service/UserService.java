@@ -9,6 +9,7 @@ import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomImageException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
+import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
 import com.f5.onepageresumebe.web.dto.user.requestDto.*;
@@ -21,6 +22,8 @@ import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
 import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -48,6 +51,7 @@ import static com.f5.onepageresumebe.security.jwt.TokenProvider.AUTHORIZATION_HE
 @Slf4j
 public class UserService {
 
+    private final AES256 aes256;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
@@ -214,6 +218,29 @@ public class UserService {
         });
     }
 
+    @Transactional
+    public void updateGitToken(String token){
+
+        //깃허브와 연결 테스트
+        gitConnectionTest(token);
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+
+        String encryptedToken = null;
+
+        try {
+            encryptedToken = aes256.encrypt(token);
+        }catch (Exception e){
+            log.error("git token 암호화에 실패하였습니다.");
+        }
+
+        user.setGitToken(encryptedToken);
+
+    }
+
     public UserInfoResponseDto getUserInfo() {
 
         String email = SecurityUtil.getCurrentLoginUserId();
@@ -288,6 +315,20 @@ public class UserService {
         headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
 
         return headers;
+    }
+
+    private void gitConnectionTest(String gitToken){
+
+        try{
+            GitHub gitHub = new GitHubBuilder().withOAuthToken(gitToken).build();
+            gitHub.checkApiUrlValidity();
+
+        }catch (IOException e){
+            log.error("깃허브 연결 실패 : {}",e.getMessage());
+            throw new CustomException("입력하신 깃허브 토큰이 유효하지 않습니다. 확인후 다시 입력해 주세요.",INVALID_INPUT_ERROR);
+        }
+
+
     }
 
     @Transactional

@@ -318,7 +318,7 @@ public class ProjectService {
                 Optional<ProjectBookmark> optionalProjectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId);
                 isBookmarking = optionalProjectBookmark.isPresent();
             }
-        } catch (CustomAuthenticationException ce) {
+        } catch (CustomAuthenticationException e) {
             project = projectRepository.getById(projectId);
             isMyProject = false;
             isBookmarking = false;

@@ -8,6 +8,8 @@ import com.f5.onepageresumebe.domain.mysql.repository.ProjectStackRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProjectUtil {
 
     public static List<ProjectResponseDto> projectToResponseDtos(List<Project> projects,
