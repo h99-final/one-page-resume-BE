@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -151,7 +152,22 @@ public class ProjectService {
 
         List<Project> projects = projectQueryRepository.findAllByUserEmail(email);
 
-        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
+        HashMap<Integer, List<String>> stackMap = new HashMap<>();
+        HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
+
+        for(Project project : projects) {
+            Integer projectId = project.getId();
+
+            stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
+            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+            if(projectImg != null) {
+                imageMap.put(projectId, projectImg);}
+            else {
+                imageMap.put(projectId, null);
+            }
+        }
+
+        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
     }
 
     public Page<ProjectResponseDto> getAllByStacks(StackDto requestDto, Pageable pageable){

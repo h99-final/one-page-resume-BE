@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -301,7 +302,22 @@ public class PortfolioService {
 
         if (isMyPorf || !(portfolio.getIsTemp())) {
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
-            return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
+            HashMap<Integer, List<String>> stackMap = new HashMap<>();
+            HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
+
+            for(Project project : projects) {
+                Integer projectId = project.getId();
+
+                stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
+                ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+                if(projectImg != null) {
+                    imageMap.put(projectId, projectImg);}
+                else {
+                    imageMap.put(projectId, null);
+                }
+            }
+
+            return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
         } else {
             return null;
         }

@@ -63,8 +63,22 @@ public class BookmarkService {
         for(ProjectBookmark projectBookmark : projectBookmarkList) {
             projects.add(projectBookmark.getProject());
         }
+        HashMap<Integer, List<String>> stackMap = new HashMap<>();
+        HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
 
-        return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
+        for(Project project : projects) {
+            Integer projectId = project.getId();
+
+            stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
+            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+            if(projectImg != null) {
+                imageMap.put(projectId, projectImg);}
+            else {
+                imageMap.put(projectId, null);
+            }
+        }
+
+        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
 
     }
 

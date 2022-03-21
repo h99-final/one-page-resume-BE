@@ -21,14 +21,12 @@ import java.util.stream.Collectors;
 public class ProjectUtil {
 
     public static List<ProjectResponseDto> projectToResponseDtos(List<Project> projects,
-                                                                 ProjectImgRepository projectImgRepository,
-                                                                 ProjectStackRepository projectStackRepository) {
-
-        // m <projectId, List stack>
+                                                                  HashMap<Integer, ProjectImg> imageMap,
+                                                                  HashMap<Integer, List<String>> stackMap) {
 
         List<ProjectResponseDto> projectResponseDtos = new ArrayList<>();
         projects.forEach(project -> {
-            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
+            ProjectImg projectImg = imageMap.get(project.getId());
             String projectImgUrl = null;
             if(projectImg!=null){
                 projectImgUrl = projectImg.getImageUrl();
@@ -41,7 +39,7 @@ public class ProjectUtil {
                     .content(project.getIntroduce())
                     .imageUrl(projectImgUrl)
                     .bookmarkCount(project.getBookmarkCount())
-                    .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                    .stack(stackMap.get(project.getId()))
                     .userJob(user.getJob())
                     .username(user.getName())
                     .build();
