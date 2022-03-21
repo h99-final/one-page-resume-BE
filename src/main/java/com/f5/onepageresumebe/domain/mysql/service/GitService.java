@@ -8,6 +8,7 @@ import com.f5.onepageresumebe.domain.mysql.repository.GitFileRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.GitQueryRepository;
 import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
 import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
