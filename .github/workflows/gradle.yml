@@ -15,9 +15,11 @@ on:
 
 jobs:
   build:
-    name: porf_build
-
+    #build 이름 설정 (빌드 체크위해서 설정함)
+    name : build
     runs-on: ubuntu-18.04
+    env:
+      JASYPT_ENCRYPTOR_PASSWORD : ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
 
     steps:
     - uses: actions/checkout@v2
