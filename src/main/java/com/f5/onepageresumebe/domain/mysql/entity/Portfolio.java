@@ -56,7 +56,7 @@ public class Portfolio extends TimeEntity{
     private List<PortfolioStack> portfolioStackList = new ArrayList<>();
 
     @OneToMany(mappedBy = "portfolio")
-    private List<PortfoiloBookmark> portfoiloBookmarkList =new ArrayList<>();
+    private List<PortfoiloBookmark> portfolioBookmarkList =new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     public Portfolio(String title, String introContents, String githubUrl, String blogUrl, User user) {

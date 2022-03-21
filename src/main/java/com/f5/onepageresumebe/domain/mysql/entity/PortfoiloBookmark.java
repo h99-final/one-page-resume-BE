@@ -42,7 +42,7 @@ public class PortfoiloBookmark {
                 .build();
 
         user.getPortfoiloBookmarkList().add(portfolioBookmark);
-        portfolio.getPortfoiloBookmarkList().add(portfolioBookmark);
+        portfolio.getPortfolioBookmarkList().add(portfolioBookmark);
 
         return portfolioBookmark;
     }
