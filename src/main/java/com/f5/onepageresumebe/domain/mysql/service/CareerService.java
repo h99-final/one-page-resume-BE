@@ -6,9 +6,9 @@ import com.f5.onepageresumebe.domain.mysql.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.PortfolioRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.CareerQueryRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.PortfolioQueryRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
-import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
 import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -101,14 +101,29 @@ public class CareerService {
 
     public List<CareerResponseDto> getCareer(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
-
-        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+        
+        boolean isMyPorf = false;
+        
+        Portfolio portfolio = null;
+        
+        try {
+            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+            if(portfolio.getId() == porfId) isMyPorf = true;
+        } catch (CustomAuthenticationException e) {
+            isMyPorf = false;
+        }
+        
+        if(portfolio == null)
+        {
+            portfolio = portfolioRepository.findById(porfId).orElseThrow(() -> 
+                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        }         
 
         List<CareerResponseDto> careerResponseDtos = new ArrayList<>();
 
-        if (myPorf || !(portfolio.getIsTemp())) {
+        if (isMyPorf || !(portfolio.getIsTemp())) {
 
             List<Career> careers = careerRepository.findAllByPorfIdOrderByEndTimeDesc(porfId);
             careers.forEach(career -> {

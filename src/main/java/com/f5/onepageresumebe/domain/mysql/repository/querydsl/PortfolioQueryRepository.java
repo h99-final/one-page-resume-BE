@@ -82,4 +82,16 @@ public class PortfolioQueryRepository {
         if (projectImgs.isEmpty()) return Optional.empty();
         else return Optional.of(projectImgs.get(0));
     }
+
+    public Optional<Portfolio> findFirstPorfByPorfIdAndUserEmail(Integer porfId,String userEmail){
+
+        List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
+                .innerJoin(portfolio.user, user).fetchJoin()
+                .where(portfolio.id.eq(porfId).and(user.email.eq(userEmail)))
+                .limit(1)
+                .fetch();
+
+        if(portfolios.isEmpty()) return Optional.empty();
+        else return Optional.of(portfolios.get(0));
+    }
 }

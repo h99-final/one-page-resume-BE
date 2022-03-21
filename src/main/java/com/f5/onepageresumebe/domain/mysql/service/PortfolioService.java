@@ -8,7 +8,6 @@ import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryReposito
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
-import com.f5.onepageresumebe.util.PorfUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.util.StackUtil;
 import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
@@ -156,12 +155,26 @@ public class PortfolioService {
     @Transactional
     public PorfIntroResponseDto getIntro(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        boolean isMyPorf = false;
 
-        if (myPorf || !(portfolio.getIsTemp())) {
+        Portfolio portfolio = null;
+
+        try {
+            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+            if(portfolio.getId() == porfId) isMyPorf = true;
+        } catch (CustomAuthenticationException e) {
+            isMyPorf = false;
+        }
+
+        if(portfolio == null)
+        {
+            portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        }
+        if (isMyPorf || !(portfolio.getIsTemp())) {
             try {
                 String email = SecurityUtil.getCurrentLoginUserId();
                 Portfolio myPortfolio = portfolioQueryRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
@@ -230,11 +243,26 @@ public class PortfolioService {
 
     public PorfStackReponseDto getStackContents(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        if (myPorf || !(portfolio.getIsTemp())) {
+        boolean isMyPorf = false;
+
+        Portfolio portfolio = null;
+
+        try {
+            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+            if(portfolio.getId() == porfId) isMyPorf = true;
+        } catch (CustomAuthenticationException e) {
+            isMyPorf = false;
+        }
+
+        if(portfolio == null)
+        {
+            portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        }
+        if (isMyPorf || !(portfolio.getIsTemp())) {
 
             List<String> porfStacks = portfolioQueryRepository.findStackNamesByPorfId(porfId);
             List<String> userStacks = userQueryRepository.findStackNamesByPorfId(porfId);
@@ -250,23 +278,35 @@ public class PortfolioService {
 
     }
 
-
-
     public List<ProjectResponseDto> getProject(Integer porfId) {
 
-        boolean myPorf = PorfUtil.isMyPorf(porfId,portfolioQueryRepository);
-        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        if (myPorf || !(portfolio.getIsTemp())) {
+        boolean isMyPorf = false;
+
+        Portfolio portfolio = null;
+
+        try {
+            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+            if(portfolio.getId() == porfId) isMyPorf = true;
+        } catch (CustomAuthenticationException e) {
+            isMyPorf = false;
+        }
+
+        if(portfolio == null)
+        {
+            portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+        }
+
+        if (isMyPorf || !(portfolio.getIsTemp())) {
             List<Project> projects = projectRepository.findAllByPorfId(porfId);
             return ProjectUtil.projectToResponseDtos(projects, projectImgRepository, projectStackRepository);
         } else {
             return null;
         }
     }
-
-
 
     @Transactional
     public void reset() {

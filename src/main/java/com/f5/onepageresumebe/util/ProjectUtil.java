@@ -5,13 +5,16 @@ import com.f5.onepageresumebe.domain.mysql.entity.ProjectImg;
 import com.f5.onepageresumebe.domain.mysql.entity.User;
 import com.f5.onepageresumebe.domain.mysql.repository.ProjectImgRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.ProjectStackRepository;
+import com.f5.onepageresumebe.domain.mysql.repository.StackRepository;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,9 @@ public class ProjectUtil {
     public static List<ProjectResponseDto> projectToResponseDtos(List<Project> projects,
                                                                  ProjectImgRepository projectImgRepository,
                                                                  ProjectStackRepository projectStackRepository) {
+
+        // m <projectId, List stack>
+
         List<ProjectResponseDto> projectResponseDtos = new ArrayList<>();
         projects.forEach(project -> {
             ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
