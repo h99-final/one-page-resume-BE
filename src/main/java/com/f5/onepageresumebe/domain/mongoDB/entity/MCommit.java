@@ -20,7 +20,7 @@ public class MCommit {
     private ObjectId id;
 
     @Field(targetType = FieldType.STRING, write = Field.Write.NON_NULL)
-    @Indexed
+    @Indexed(unique = true)
     private String sha;
 
     @Field(targetType = FieldType.STRING, write = Field.Write.NON_NULL)
