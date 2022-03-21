@@ -5,6 +5,8 @@ import com.f5.onepageresumebe.domain.mysql.entity.GitFile;
 import com.f5.onepageresumebe.domain.mysql.entity.Project;
 import com.f5.onepageresumebe.domain.mysql.repository.GitCommitRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.GitFileRepository;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.GitQueryRepository;
+import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -27,32 +30,57 @@ public class GitService {
     private final ProjectService projectService;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
+    private final GitQueryRepository gitQueryRepository;
 
     @Transactional
     public CommitIdResponseDto createTroubleShooting(Integer projectId, CommitRequestDto request) {
 
         Project project = projectService.getProjectIfMyProject(projectId);
 
-        if(project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
+        if (project == null) throw new CustomAuthorizationException("나의 프로젝트에만 작성할 수 있습니다.");
 
-        //이미 등록한 커밋이랑 중복되는지 체크
-        GitCommit tempCommit = gitCommitRepository.findBySha(request.getSha());
+        //프로젝트에 이미 등록된 커밋인지 체크
+        GitCommit gitCommit = gitCommitRepository.findByShaAndProjectId(request.getSha(),projectId)
+                .orElse(null);
 
         //이미 등록된 커밋
-        if(tempCommit != null) {
-            return new CommitIdResponseDto(-1);
+        if (gitCommit == null) {
+            gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
         }
-
-        GitCommit gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
 
         List<FileRequestDto> fileRequestDtoList = request.getTsFile();
 
-        for(FileRequestDto curFile : fileRequestDtoList) {
+        for (FileRequestDto curFile : fileRequestDtoList) {
             GitFile gitFile = GitFile.create(curFile.getFileName(), GitUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }
 
+        gitCommitRepository.save(gitCommit);
+
         return new CommitIdResponseDto(gitCommit.getId());
+    }
+
+    @Transactional
+    public void deleteFile(Integer projectId, Integer commitId, Integer fileId){
+
+        Project project = projectService.getProjectIfMyProject(projectId);
+
+        if (project == null) throw new CustomAuthorizationException("나의 프로젝트의 파일만 삭제할 수 있습니다.");
+
+        GitFile gitFile = gitQueryRepository.findFileByIdFetchAll(fileId).orElseThrow(() ->
+                new CustomException("존재하지 않는 파일입니다.", ErrorCode.INVALID_INPUT_ERROR));
+
+        GitCommit gitCommit = gitFile.getCommit();
+        Integer gitCommitId = gitCommit.getId();
+        Integer gitProjectId = gitCommit.getProject().getId();
+
+        if(gitCommitId != commitId || gitProjectId != projectId){
+            System.out.println("commitId"+gitCommitId+"/"+commitId);
+            System.out.println("projectId"+gitProjectId+"/"+projectId);
+            throw new CustomException("현재 프로젝트의 파일만 삭제할 수 있습니다.",ErrorCode.INVALID_INPUT_ERROR);
+        }
+
+        gitFileRepository.deleteById(fileId);
     }
 
 //    public List<CommitMessageResponseDto> getCommitMessages(Integer projectId) {
@@ -153,10 +181,6 @@ public class GitService {
 //        return filesResponseDtoList;
 //    }
 
-//    public String makeRepoName(String gitUrl, String reName) {
-//        int idx = gitUrl.indexOf(".com/");
-//        return gitUrl.substring(idx+5) + "/" +  reName;
-//    }
 
     @Transactional
     public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {

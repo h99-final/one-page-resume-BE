@@ -60,6 +60,10 @@ public class User extends TimeEntity{
     @OneToMany(mappedBy = "user")
     private List<ProjectBookmark> projectBookmarkList = new ArrayList<>();
 
+
+    @OneToMany(mappedBy = "user")
+    private List<PortfoiloBookmark> portfoiloBookmarkList = new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
     public User(String email, String password, String name, String githubUrl, String blogUrl) {
         this.email = email;
@@ -81,7 +85,7 @@ public class User extends TimeEntity{
                 .blogUrl(blogUrl)
                 .build();
     }
-  
+
     public void addInfo(String name, String githubUrl, String blogUrl, String phoneNum,String job) {
         this.name = name;
         this.githubUrl = githubUrl;
@@ -89,7 +93,7 @@ public class User extends TimeEntity{
         this.phoneNum = phoneNum;
         this.job = job;
     }
-  
+
     public void updateInfo(String name, String phoneNum, String githubUrl, String blogUrl,String job) {
         this.name = name;
         this.phoneNum = phoneNum;
@@ -113,5 +117,10 @@ public class User extends TimeEntity{
     public void setGitToken(String gitToken){
 
         this.gitToken = gitToken;
+    }
+
+
+    public void changePassword(String password) {
+        this.password = password;
     }
 }

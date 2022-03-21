@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
+import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -38,6 +39,9 @@ public class Portfolio extends TimeEntity{
     @Column(nullable = false,columnDefinition = "TINYINT")
     private Boolean isTemp;
 
+    @Column(nullable = false,  columnDefinition = "SMALLINT")
+    private Integer portBookmarkCount=0;
+
     @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
@@ -51,6 +55,9 @@ public class Portfolio extends TimeEntity{
     @OneToMany(mappedBy = "portfolio")
     private List<PortfolioStack> portfolioStackList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "portfolio")
+    private List<PortfoiloBookmark> portfoiloBookmarkList =new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
     public Portfolio(String title, String introContents, String githubUrl, String blogUrl, User user) {
 
@@ -63,7 +70,7 @@ public class Portfolio extends TimeEntity{
         this.isTemp = true;
         this.user = user;
     }
-  
+
     public static Portfolio create(User user){
 
         Portfolio portfolio = Portfolio.builder()
@@ -90,16 +97,11 @@ public class Portfolio extends TimeEntity{
         this.templateIdx = templateIdx;
     }
 
-    public String changeStatus(String status){
-        if (status.equals("public")){
-            this.isTemp = false;
-        }else if(status.equals("private")){
-            this.isTemp = true;
-        }else{
-            throw new IllegalArgumentException("상태값은 public, private만 넣을 수 있습니다");
-        }
+    public boolean changeStatus(boolean show){
 
-        return status;
+        this.isTemp = !show;
+
+        return show;
     }
 
     public void increaseViewCount(){
@@ -115,4 +117,10 @@ public class Portfolio extends TimeEntity{
         this.blogUrl = null;
         this.isTemp = true;
     }
+
+    public void updatePortPolioBookmarkCount(Integer value) {
+        this.portBookmarkCount += value;
+    }
+
+
 }

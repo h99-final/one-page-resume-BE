@@ -13,12 +13,16 @@ import java.util.List;
 @Data
 public class TroubleShootingsResponseDto {
     private Integer commitId;
+    private String commitMsg;
+    private String sha;
     private String tsName;
     private List<TroubleShootingFileResponseDto> tsFiles;
 
-    public TroubleShootingsResponseDto(Integer commitId, String tsName, List<TroubleShootingFileResponseDto> tsFiles) {
+    public TroubleShootingsResponseDto(Integer commitId,String sha,String commitMsg, String tsName, List<TroubleShootingFileResponseDto> tsFiles) {
         this.commitId = commitId;
         this.tsName = tsName;
+        this.sha = sha;
+        this.commitMsg = commitMsg;
         this.tsFiles = new ArrayList<>(tsFiles);
     }
 }

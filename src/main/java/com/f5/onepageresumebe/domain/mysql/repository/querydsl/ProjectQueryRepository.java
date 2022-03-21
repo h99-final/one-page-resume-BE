@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
 import static com.f5.onepageresumebe.domain.mysql.entity.QProject.project;
+import static com.f5.onepageresumebe.domain.mysql.entity.QProjectImg.projectImg;
 import static com.f5.onepageresumebe.domain.mysql.entity.QProjectStack.projectStack;
 import static com.f5.onepageresumebe.domain.mysql.entity.QStack.stack;
 import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
@@ -62,5 +63,14 @@ public class ProjectQueryRepository {
         return new PageImpl<>(projects,pageable, projects.size());
     }
 
+    public List<ProjectImg> findByProjectIdLimit4(Integer projectId){
+
+        List<ProjectImg> projectImgs = queryFactory.selectFrom(projectImg)
+                .where(projectImg.project.id.eq(projectId))
+                .limit(4)
+                .fetch();
+
+        return projectImgs;
+    }
 
 }

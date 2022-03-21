@@ -11,6 +11,7 @@ public class UserInfoResponseDto {
 
     Integer userId;
     Integer porfId;
+    boolean porfShow;
     List<Integer> projectId;
     String email;
     String name;

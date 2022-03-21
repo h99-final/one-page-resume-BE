@@ -15,12 +15,13 @@ import java.util.List;
 public class ProjectDetailResponseDto {
     private Integer id;
     private String title;
-    private String imageUrl;
+    private List<ProjectImgResponseDto> img;
     private List<String> stack;
     private Integer bookmarkCount;
     private String content;
     private String username;
     private String userJob;
+    private String gitRepoUrl;
     private Boolean isMyProject;
     private Boolean isBookmarking;
 

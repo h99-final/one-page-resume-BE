@@ -1,17 +1,14 @@
-package com.f5.onepageresumebe.web.dto.porf;
+package com.f5.onepageresumebe.web.dto.user.responseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class ChangeStatusDto {
-
-    private boolean show;
+public class FindEmailResponseDto {
+    private String email;
 }

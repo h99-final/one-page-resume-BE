@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.domain.mysql.entity.ProjectImg;
 import com.f5.onepageresumebe.domain.mysql.entity.User;
 import com.f5.onepageresumebe.domain.mysql.repository.ProjectImgRepository;
 import com.f5.onepageresumebe.domain.mysql.repository.ProjectStackRepository;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
 import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
 import lombok.AccessLevel;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProjectUtil {
@@ -81,24 +83,23 @@ public class ProjectUtil {
     }
   
     public static ProjectDetailResponseDto projectToDetailResponseDto(Project project,
-                                                                      ProjectImgRepository projectImgRepository,
+                                                                      ProjectQueryRepository projectQueryRepository,
                                                                       ProjectStackRepository projectStackRepository) {
 
-        ProjectImg projectImg = projectImgRepository.findFirstByProjectId(project.getId()).orElse(null);
-        String projectImgUrl = null;
-        if (projectImg != null) {
-            projectImgUrl = projectImg.getImageUrl();
-        }
-            User user = project.getUser();
+        //List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
+        List<ProjectImg> projectImgs = projectQueryRepository.findByProjectIdLimit4(project.getId());
+
+        User user = project.getUser();
 
             ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
                     .title(project.getTitle())
                     .content(project.getIntroduce())
-                    .imageUrl(projectImgUrl)
+                    .img(projectImgs.stream().map(ProjectImg::toProjectImgResponseDto).collect(Collectors.toList()))
                     .bookmarkCount(project.getBookmarkCount())
                     .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                     .userJob(user.getJob())
                     .username(user.getName())
+                    .gitRepoUrl(project.getGitRepoUrl())
                     .build();
 
         return projectDetailResponseDto;

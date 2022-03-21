@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
+import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectImgResponseDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,7 +15,7 @@ public class ProjectImg {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "varchar(300)")
+    @Column(nullable = false, columnDefinition = "varchar(1000)")
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -36,5 +37,10 @@ public class ProjectImg {
         project.getProjectImgList().add(projectImg);
 
         return projectImg;
+    }
+
+    public ProjectImgResponseDto toProjectImgResponseDto(){
+
+        return new ProjectImgResponseDto(this.id,this.imageUrl);
     }
 }

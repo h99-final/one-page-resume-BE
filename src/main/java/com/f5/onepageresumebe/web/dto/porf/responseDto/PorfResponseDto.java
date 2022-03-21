@@ -18,4 +18,5 @@ public class PorfResponseDto {
     private List<String> userStack;
     private String title;
     private Integer templateIdx;
+    private String job;
 }

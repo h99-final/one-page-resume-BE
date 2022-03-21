@@ -99,20 +99,25 @@ public class ProjectService {
             throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다.");
         }
 
-        //연결되어 있는 모든 사진들 삭제
-        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
-      
-        s3Uploader.deleteProjectImages(projectImgs);
-
-        projectImgRepository.deleteAllInBatch(projectImgs);
-
         //새로운 사진 모두 추가
         addImages(project,multipartFiles);
+    }
+
+    @Transactional
+    public void deleteProjectImg(Integer projectId, Integer imageId){
+
+        Project project = getProjectIfMyProject(projectId);
+
+        if(project==null){
+            throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다.");
+        }
+
+        projectImgRepository.deleteById(imageId);
 
     }
 
     @Transactional
-    public void updateProjectInfo(Integer projectId,ProjectUpdateRequestDto requestDto){
+    public void updateProjectInfo(Integer projectId,ProjectRequestDto requestDto){
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -194,6 +199,8 @@ public class ProjectService {
 
             Integer commitId = curGitCommit.getId();
             String tsName = curGitCommit.getTsName();
+            String sha = curGitCommit.getSha();
+            String commitMsg = curGitCommit.getMessage();
 
             //커밋이 가지고있는 파일들
             List<GitFile> gitFileList = curGitCommit.getFileList();
@@ -210,7 +217,7 @@ public class ProjectService {
                 tsFiles.add(fileDto);
             }
             //각각의 커밋데이터 추가
-            TroubleShootingsResponseDto curDto = new TroubleShootingsResponseDto(commitId,tsName, tsFiles);
+            TroubleShootingsResponseDto curDto = new TroubleShootingsResponseDto(commitId,sha,commitMsg,tsName, tsFiles);
             //curDto에 데이터 넣고, 리스트 clear
             tsFiles.clear();
 
@@ -318,7 +325,7 @@ public class ProjectService {
         }
 
         ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDetailResponseDto(project,
-                projectImgRepository,
+                projectQueryRepository,
                 projectStackRepository);
 
         projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);

@@ -1,7 +1,5 @@
 package com.f5.onepageresumebe.domain.mongoDB.entity;
 
-import com.f5.onepageresumebe.domain.mysql.entity.GitFile;
-import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -22,7 +20,7 @@ public class MCommit {
     private ObjectId id;
 
     @Field(targetType = FieldType.STRING, write = Field.Write.NON_NULL)
-    @Indexed
+    @Indexed(unique = true)
     private String sha;
 
     @Field(targetType = FieldType.STRING, write = Field.Write.NON_NULL)
@@ -46,12 +44,12 @@ public class MCommit {
         this.files = files;
     }
 
-    public static MCommit create(String message, String sha, MGitRequestDto requestDto, List<MFile> files){
+    public static MCommit create(String message, String sha, String repoName, String repoOwner, List<MFile> files){
         return MCommit.builder()
                 .message(message)
                 .sha(sha)
-                .repoName(requestDto.getRepoName())
-                .repoOwner(requestDto.getOwner())
+                .repoName(repoName)
+                .repoOwner(repoOwner)
                 .files(files)
                 .build();
     }

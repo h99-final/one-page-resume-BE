@@ -23,7 +23,7 @@ public class PorfController {
     private final PortfolioService portfolioService;
 
     @Secured("ROLE_USER")
-    @PostMapping("/porf/status")
+    @PostMapping("/porf/show")
     public ResDto changeStatus(@Valid @RequestBody ChangeStatusDto requestDto){
 
         ChangeStatusDto changeStatusDto = portfolioService.changeStatus(requestDto);
@@ -34,27 +34,38 @@ public class PorfController {
                 .build();
     }
 
+//    @Secured("ROLE_USER")
+//    @PostMapping("/porf/project")
+//    public ResDto inputProjectInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
+//
+//        portfolioService.inputProjectInPorf(requestDto);
+//
+//        return ResDto.builder()
+//                .result(true)
+//                .data(null)
+//                .build();
+//    }
+//
+//    @Secured("ROLE_USER")
+//    @DeleteMapping("/porf/project")
+//    public ResDto deleteProjectInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
+//
+//        portfolioService.deleteProjectInPorf(requestDto);
+//
+//        return ResDto.builder()
+//                .result(true)
+//                .data(null)
+//                .build();
+//    }
+
     @Secured("ROLE_USER")
-    @PostMapping("/porf/project")
-    public ResDto inputProjectInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
+    @PutMapping("/porf/project")
+    public ResDto addProjectsInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
 
         portfolioService.inputProjectInPorf(requestDto);
 
         return ResDto.builder()
                 .result(true)
-                .data(null)
-                .build();
-    }
-
-    @Secured("ROLE_USER")
-    @DeleteMapping("/porf/project")
-    public ResDto deleteProjectInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
-
-        portfolioService.deleteProjectInPorf(requestDto);
-
-        return ResDto.builder()
-                .result(true)
-                .data(null)
                 .build();
     }
 

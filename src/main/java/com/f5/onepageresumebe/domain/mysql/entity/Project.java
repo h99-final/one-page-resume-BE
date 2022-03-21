@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
+import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
 import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
 import lombok.*;
 
@@ -26,6 +27,8 @@ public class Project extends TimeEntity{
     @Column(columnDefinition = "varchar(30)")
     private String gitRepoName;
 
+
+    //github.com/{username or organizationName}
     @Column(columnDefinition = "varchar(100)")
     private String gitRepoUrl;
 
@@ -90,10 +93,13 @@ public class Project extends TimeEntity{
         portfolio.getProjectList().remove(this);
     }
 
-    public void updateIntro(ProjectUpdateRequestDto requestDto){
+    public void updateIntro(ProjectRequestDto requestDto){
         this.title = requestDto.getTitle();
         this.introduce = requestDto.getContent();
+        this.gitRepoUrl = requestDto.getGitRepoUrl();
+        this.gitRepoName = requestDto.getGitRepoName();
     }
+    
     public void updateBookmarkCount(Integer value) {
         this.bookmarkCount += value;
     }
