@@ -324,12 +324,31 @@ public class ProjectService {
             isBookmarking = false;
         }
 
-        ProjectDetailResponseDto projectDetailResponseDto = ProjectUtil.projectToDetailResponseDto(project,
-                projectImgRepository,
-                projectStackRepository);
+        ProjectDetailResponseDto projectDetailResponseDto = projectToDetailResponseDto(project);
 
         projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);
 
         return projectDetailResponseDto;
      }
+
+
+    public ProjectDetailResponseDto projectToDetailResponseDto(Project project) {
+
+        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
+
+        User user = project.getUser();
+
+        ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
+                .title(project.getTitle())
+                .content(project.getIntroduce())
+                .img(projectImgs.stream().map(ProjectImg::toProjectImgResponseDto).collect(Collectors.toList()))
+                .bookmarkCount(project.getBookmarkCount())
+                .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
+                .userJob(user.getJob())
+                .username(user.getName())
+                .gitRepoUrl(project.getGitRepoUrl())
+                .build();
+
+        return projectDetailResponseDto;
+    }
 }
