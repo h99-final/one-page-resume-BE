@@ -75,10 +75,21 @@ public class UserController {
     }
 
     @Secured("ROLE_USER")
-    @PostMapping("/user/git/token")
+    @PutMapping("/user/git/token")
     public ResDto updateToken(@RequestBody MGitTokenDto requestDto){
 
         userService.updateGitToken(requestDto.getToken());
+
+        return ResDto.builder()
+                .result(true)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/user/git/token")
+    public ResDto deleteToken(){
+
+        userService.deleteToken();
 
         return ResDto.builder()
                 .result(true)

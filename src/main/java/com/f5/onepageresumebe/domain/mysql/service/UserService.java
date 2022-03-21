@@ -241,6 +241,17 @@ public class UserService {
 
     }
 
+    @Transactional
+    public void deleteToken(){
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+
+        user.setGitToken(null);
+    }
+
     public UserInfoResponseDto getUserInfo() {
 
         String email = SecurityUtil.getCurrentLoginUserId();
