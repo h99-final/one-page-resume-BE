@@ -183,8 +183,22 @@ public class ProjectService {
             projects = projectQueryRepository.findAllByStackNamesPaging(stackNames,pageable);
         }
 
+        HashMap<Integer, List<String>> stackMap = new HashMap<>();
+        HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
 
-        return ProjectUtil.projectToResponseDtosPaging(projects,pageable, projectImgRepository, projectStackRepository);
+        for(Project project : projects) {
+            Integer projectId = project.getId();
+
+            stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
+            ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+            if(projectImg != null) {
+                imageMap.put(projectId, projectImg);}
+            else {
+                imageMap.put(projectId, null);
+            }
+        }
+
+        return ProjectUtil.projectToResponseDtosPaging(projects, pageable, imageMap, stackMap);
     }
 
     public Project getProjectIfMyProject(Integer projectId) {
