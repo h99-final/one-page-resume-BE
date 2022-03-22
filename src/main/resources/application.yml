@@ -1,0 +1,70 @@
+#spring:
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://tubu-db.cphupoegyqrb.ap-northeast-2.rds.amazonaws.com:3306/tubu?serverTimezone=UTC&characterEncoding=UTF-8
+#    username: tubu
+#    password: tubu1234
+
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: ENC(qMFrIfHYnIhhYs9isTkJm5XTRSrhnY14ZfiCBifH6IV7G5oZshLXxQ==)
+
+  jpa:
+    database: mysql #database 종류 선택
+    hibernate:
+      ddl-auto: create-drop #update # none, create, update, validate
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: final
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ENC(ovDHs+VE57x6Q62IHHErzCsgz1CvQhqz0HGA3McSOsM=)
+    password: ENC(FFdGJuCBRwsR+Ggg6oYoFWGnESVxK6hoDx4osX4jC2Y=)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+logging.level:
+  org.apache.coyote.http11: debug #http 요청 메시지 보기
+
+server:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+cloud:
+  aws:
+    credentials:
+      accesskey: ENC(V/xsLbAMKevFy/B5WJ4w++GB9Bi5wks3ErsDO8hHiyQ=)
+      secretkey: ENC(QFDapwKpZLAdHLkINlNjFmNVjp/eyhz0nDrQ7oX/oBOgMBgNK/mNjeRIIcbXN9o7pgmV0NAkUGU=)
+    s3:
+      bucket: mini-project
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+git:
+  oauthToken: ENC(naGnsYXIvns+uIc+AyazD1CuirEWW38innVIfK1kQQX4PR1w/DhghnTX6HhNN3el7SAz6UE95Dk=)
+
+jwt:
+  secret: ENC(sFXhpWuRXgXH0JMqBT23LRuXek2l6jwrk57pIvq5AfNaTttBt2xBGYrLhDx50hi0OTGn+yyuWkQ2JWpOknr1LQ==)
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    password : ENC(FGrhG1KN2Le9iKsKusXmDQ==)
