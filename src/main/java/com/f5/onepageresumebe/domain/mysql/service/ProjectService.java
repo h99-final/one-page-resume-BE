@@ -252,7 +252,7 @@ public class ProjectService {
                     .sha(sha)
                     .commitMsg(commitMsg)
                     .tsName(tsName)
-                    .tsFiles(tsFiles)
+                    .tsFiles(new ArrayList<>(tsFiles))
                     .build();
             //curDto에 데이터 넣고, 리스트 clear
             tsFiles.clear();
