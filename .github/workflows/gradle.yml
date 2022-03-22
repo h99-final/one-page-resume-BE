@@ -77,8 +77,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{SECRETS.AWS_SECRET_ACCESS_KEY}}
       run: |
         aws deploy create-deployment \
-        --application-name poug-project \
-        --deployment-group-name pp \
+        --application-name pougg \
+        --deployment-group-name 11 \
         --file-exists-behavior OVERWRITE \
         --s3-location bucket=poug-springboot-builds,bundleType=zip,key=poug/poug-build.zip \
         --region ap-northeast-2
