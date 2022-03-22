@@ -45,6 +45,8 @@ public class MGitService {
         Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
 
+        if(project.getUser().getGitToken()==null) return;
+
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
         String repoOwner = getOwner(repoUrl);
@@ -166,9 +168,6 @@ public class MGitService {
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
         String rawToken = null;
         String encryptToken = user.getGitToken();
-        if (encryptToken == null) {
-            throw new CustomException("먼저 토큰을 등록해 주세요", INVALID_INPUT_ERROR);
-        }
 
         try {
             rawToken = aes256.decrypt(user.getGitToken());
