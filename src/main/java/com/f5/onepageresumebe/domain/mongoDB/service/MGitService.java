@@ -50,12 +50,10 @@ public class MGitService {
 
         User user = project.getUser();
 
-        if(!memoryDbService.callAvailability(user.getId())){
-            throw new CustomException("깃허브 불러오기는 5초에 1번 가능합니다. 5초 후에 다시 시도해 주세요",TOO_MANY_CALL);
-        }else{
-            memoryDbService.call(user.getId());
-        }
+        //api를 호출할 수 있는지 체크한다.
+        syncCallCheck(user.getId());
 
+        //토큰이 없으면 바로 RETURN
         if(user.getGitToken()==null) return;
 
         String repoUrl = project.getGitRepoUrl();
@@ -207,6 +205,14 @@ public class MGitService {
     public String getOwner(String gitUrl) {
         int idx = gitUrl.indexOf(".com/");
         return gitUrl.substring(idx + 5);
+    }
+
+    public void syncCallCheck(Integer userId){
+        if(!memoryDbService.callAvailability(userId)){
+            throw new CustomException("깃허브 불러오기는 5초에 1번 가능합니다. 5초 후에 다시 시도해 주세요",TOO_MANY_CALL);
+        }else{
+            memoryDbService.call(userId);
+        }
     }
 
 }
