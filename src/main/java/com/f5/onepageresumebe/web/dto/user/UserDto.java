@@ -122,6 +122,9 @@ public class UserDto {
     @Builder
     public static class PasswordRequest{
 
+        @NotBlank(message = "현재 비밀번호를 입력해 주세요")
+        private String curPassword;
+
         @NotBlank(message = "비밀번호를 입력해 주세요")
         private String password;
 

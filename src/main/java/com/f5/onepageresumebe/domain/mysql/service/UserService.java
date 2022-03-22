@@ -351,6 +351,11 @@ public class UserService {
         User curUser = userQueryRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
+        String inputCurPassword = requestDto.getCurPassword();
+
+        UsernamePasswordAuthenticationToken  usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userEmail,inputCurPassword);
+        authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
+        
         //비밀번호, 비밀번호 확인 체크
         if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
             throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
