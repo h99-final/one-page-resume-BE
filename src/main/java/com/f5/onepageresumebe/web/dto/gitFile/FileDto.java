@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.web.dto.gitFile;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ public class FileDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Request{
         @NotBlank(message = "파일 이름이 필요합니다.")
@@ -26,6 +28,7 @@ public class FileDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Response{
         private String name;
@@ -34,6 +37,7 @@ public class FileDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class TroubleShooting{
         private Integer fileId;

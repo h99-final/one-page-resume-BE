@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.web.dto.porf;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class IntroRequest{
         @NotBlank(message = "포트폴리오 소개 제목이 필요합니다.")
@@ -23,6 +25,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class ProjectRequest{
 
@@ -32,6 +35,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class TemplateRequest{
 
@@ -41,6 +45,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Status {
 
@@ -49,6 +54,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Response{
         private Integer porfId;
@@ -61,6 +67,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class IntroResponse{
 
@@ -81,6 +88,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class BookmarkResponse{
 
@@ -93,6 +101,7 @@ public class PorfDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class StackResponse{
 

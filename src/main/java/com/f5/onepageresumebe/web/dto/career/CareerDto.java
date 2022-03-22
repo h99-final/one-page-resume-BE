@@ -4,6 +4,7 @@ package com.f5.onepageresumebe.web.dto.career;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ public class CareerDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Request{
         @NotBlank(message = "제목이 필요합니다.")
@@ -33,6 +35,7 @@ public class CareerDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Response{
         private Integer id;

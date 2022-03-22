@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.validation.constraints.Email;
@@ -15,6 +16,7 @@ public class UserDto {
     @Data
     @AllArgsConstructor
     @Builder
+    @NoArgsConstructor
     public static class AddInfoRequest{
 
         @NotBlank(message = "이름을 입력해 주세요")
@@ -35,6 +37,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class UpdateInfoRequest{
         @NotBlank(message = "이름을 입력해 주세요")
@@ -53,6 +56,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class SignUpRequest{
 
@@ -68,6 +72,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class LoginRequest{
         @Email(message = "이메일 형식으로 입력해 주세요")
@@ -82,6 +87,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class GitTokenRequest{
         private String token;
@@ -89,6 +95,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class FindEmailRequest{
         private String name;
@@ -97,6 +104,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class EmailRequest{
 
@@ -106,6 +114,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class CertificationRequest{
 
@@ -119,6 +128,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class PasswordRequest{
 
@@ -134,6 +144,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class EmailResponse{
         private String email;
@@ -141,6 +152,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class LoginResponse{
         private Boolean isFirstLogin;
@@ -148,6 +160,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class LoginResult{
         private TokenDto tokenDto;
@@ -156,6 +169,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class ImgResponse{
         private String img;
@@ -163,6 +177,7 @@ public class UserDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class InfoResponse{
         Integer userId;

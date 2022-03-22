@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -13,6 +14,7 @@ public class ProjectDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Request{
 
@@ -34,6 +36,7 @@ public class ProjectDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Response{
 
@@ -49,6 +52,7 @@ public class ProjectDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class DetailResponse{
         private Integer id;
@@ -71,6 +75,7 @@ public class ProjectDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class TroubleShootingsResponse{
         private Integer commitId;
@@ -82,6 +87,7 @@ public class ProjectDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class ImgResponse{
 

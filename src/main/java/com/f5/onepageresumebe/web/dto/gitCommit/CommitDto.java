@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -15,6 +16,7 @@ public class CommitDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class Request{
         @NotBlank(message = "sha 코드가 필요합니다.")
@@ -29,6 +31,7 @@ public class CommitDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class IdResponse{
         private Integer commitId;
@@ -36,6 +39,7 @@ public class CommitDto {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     @Builder
     public static class MessageResponse{
         private String sha;
