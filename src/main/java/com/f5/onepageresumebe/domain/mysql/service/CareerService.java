@@ -100,13 +100,14 @@ public class CareerService {
 
     public List<CareerDto.Response> getCareer(Integer porfId) {
 
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
         
         boolean isMyPorf = false;
         
         Portfolio portfolio = null;
         
         try {
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;

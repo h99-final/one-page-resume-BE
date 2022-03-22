@@ -150,13 +150,12 @@ public class PortfolioService {
     @Transactional
     public PorfDto.IntroResponse getIntro(Integer porfId) {
 
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
         boolean isMyPorf = false;
 
         Portfolio portfolio = null;
 
         try {
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
@@ -238,13 +237,12 @@ public class PortfolioService {
 
     public PorfStackReponseDto getStackContents(Integer porfId) {
 
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
         boolean isMyPorf = false;
 
         Portfolio portfolio = null;
 
         try {
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
@@ -274,13 +272,12 @@ public class PortfolioService {
 
     public List<ProjectDto.Response> getProject(Integer porfId) {
 
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
         boolean isMyPorf = false;
 
         Portfolio portfolio = null;
 
         try {
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
