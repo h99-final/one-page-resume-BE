@@ -8,7 +8,7 @@ ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
 source /etc/profile.d/scopekey.sh
 
-# 현재 프로젝트 경로 지정
+# 현재 프로젝트 경로 지정#
 REPOSITORY=/home/ubuntu/scope
 IDLE_PORT=$(find_idle_port)
 IDLE_PROFILE=$(find_idle_profile)
