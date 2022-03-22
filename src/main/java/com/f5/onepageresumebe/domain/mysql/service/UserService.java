@@ -279,6 +279,7 @@ public class UserService {
                 .profileImage(user.getProfileImgUrl())
                 .job(user.getJob())
                 .porfShow(!portfolio.getIsTemp())
+                .isToken(user.getGitToken()!=null)
                 .build();
     }
 

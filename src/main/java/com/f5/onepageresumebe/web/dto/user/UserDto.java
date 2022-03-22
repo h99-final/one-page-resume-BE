@@ -177,5 +177,6 @@ public class UserDto {
         List<String> stack;
         String job;
         String profileImage;
+        Boolean isToken;
     }
 }

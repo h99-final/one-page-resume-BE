@@ -188,7 +188,7 @@ public class PortfolioService {
                     .githubUrl(portfolio.getGithubUrl())
                     .blogUrl(portfolio.getBlogUrl())
                     .contents(portfolio.getIntroContents())
-                    .bgImage(user.getProfileImgUrl()) // 유저의 프로필 이미지
+                    .profileImage(user.getProfileImgUrl()) // 유저의 프로필 이미지
                     .viewCount(portfolio.getViewCount())
                     .modifiedAt(portfolio.getUpdatedAt().toString())
                     .templateIdx(portfolio.getTemplateIdx())

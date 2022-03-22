@@ -70,7 +70,7 @@ public class PorfDto {
         private String githubUrl;
         private String blogUrl;
         private Integer viewCount;
-        private String bgImage;
+        private String profileImage;
         private String modifiedAt;
         private Integer templateIdx;
         private String job;
