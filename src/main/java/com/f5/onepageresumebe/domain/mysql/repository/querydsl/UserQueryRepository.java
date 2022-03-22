@@ -11,7 +11,7 @@ import java.util.Optional;
 import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
 import static com.f5.onepageresumebe.domain.mysql.entity.QStack.stack;
 import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUserStack.*;
+import static com.f5.onepageresumebe.domain.mysql.entity.QUserStack.userStack;
 
 
 @RequiredArgsConstructor

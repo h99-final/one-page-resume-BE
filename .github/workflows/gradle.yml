@@ -19,7 +19,7 @@ jobs:
     name : build
     runs-on: ubuntu-18.04
     env:
-      JASYPT_ENCRYPTOR_PASSWORD : ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+      JASYPT_ENCRYPTOR_PASSWORD : ${{ SECRETS.JASYPT_ENCRYPTOR_PASSWORD }}
 
     steps:
     - uses: actions/checkout@v2
@@ -55,7 +55,7 @@ jobs:
       
       # 압축파일 형태로 전달(codedeploy는 zip형식만 읽을 수 있음)
     - name: Make zip file
-      run: zip -r -qq -j ./porf-build.zip ./deploy
+      run: zip -r -qq -j ./poug-build.zip ./deploy
       
       
       # AWS credentials
@@ -68,7 +68,7 @@ jobs:
         
       # S3로 업로드
     - name: Upload to AWS S3
-      run: aws s3 cp --region ap-northeast-2 --acl private ./porf-build.zip s3://crawler-springboot-builds/porf/porf-build.zip
+      run: aws s3 cp --region ap-northeast-2 --acl private ./poug-build.zip s3://poug-springboot-builds/poug/poug-build.zip
 ###
       # Deploy
     - name: Deploy
@@ -77,8 +77,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{SECRETS.AWS_SECRET_ACCESS_KEY}}
       run: |
         aws deploy create-deployment \
-        --application-name porf-project \
+        --application-name poug-project \
         --deployment-group-name pp \
         --file-exists-behavior OVERWRITE \
-        --s3-location bucket=crawler-springboot-builds,bundleType=zip,key=porf/porf-build.zip \
+        --s3-location bucket=poug-springboot-builds,bundleType=zip,key=poug/poug-build.zip \
         --region ap-northeast-2
