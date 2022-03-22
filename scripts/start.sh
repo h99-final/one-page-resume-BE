@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
-
+# start.sh
+# 서버 구동을 위한 스크립트
 ABSPATH=$(readlink -f $0)
 ABSDIR=$(dirname $ABSPATH)
 source ${ABSDIR}/profile.sh
+source /etc/profile.d/poug.sh
 
 REPOSITORY=/home/ubuntu/app/step3
 IDLE_PORT=$(find_idle_port)
 IDLE_PROFILE=$(find_idle_profile)
 IMAGEPATH=/home/ubuntu/app
 
+
 # shellcheck disable=SC1068
-export JASYPT_ENCRYPTOR_PASSWORD = "poug"
+
 echo "> JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_ENCRYPTOR_PASSWORD}"
 echo "> IDLE_PORT : $IDLE_PORT"
 echo "> IDLE_PROFILE : $IDLE_PROFILE"
