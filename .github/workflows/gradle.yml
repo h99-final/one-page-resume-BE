@@ -71,7 +71,7 @@ jobs:
       run: aws s3 cp --region ap-northeast-2 --acl private ./poug-build.zip s3://poug-springboot-builds/poug/poug-build.zip
 ###
       # Deploy
-    - name: Deploy
+    - name: poug-project
       env:
         AWS_ACCESS_KEY_ID: ${{SECRETS.AWS_ACCESS_KEY_ID}}
         AWS_SECRET_ACCESS_KEY: ${{SECRETS.AWS_SECRET_ACCESS_KEY}}
