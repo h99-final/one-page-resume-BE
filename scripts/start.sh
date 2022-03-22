@@ -11,7 +11,7 @@ IMAGEPATH=/home/ubuntu/app
 
 # shellcheck disable=SC1068
 export JASYPT_ENCRYPTOR_PASSWORD = poug
-echo "> JASYPT_ENCRYPTOR_PASSWORD: $JASYPT_ENCRYPTOR_PASSWORD"
+echo "> JASYPT_ENCRYPTOR_PASSWORD: ${JASYPT_ENCRYPTOR_PASSWORD}"
 echo "> IDLE_PORT : $IDLE_PORT"
 echo "> IDLE_PROFILE : $IDLE_PROFILE"
 
@@ -37,7 +37,7 @@ cd /home/ubuntu/app/step3
 
 #java -jar -Dspring.profiles.active=$IDLE_PROFILE one-page-resume-BE-0.0.1-SNAPSHOT.jar
 #java -jar -Dspring.profiles.active=real1 one-page-resume-BE-0.0.1-SNAPSHOT.jar
-java -jar -Dspring.profiles.active=real1 -Djasypt.encryptor.password=${JASYPT_ENCRYPTOR_PASSWORD} one-page-resume-BE-0.0.1-SNAPSHOT.jar
+java -jar -Dspring.profiles.active=real1 -Djasypt.encryptor.password=$JASYPT_ENCRYPTOR_PASSWORD one-page-resume-BE-0.0.1-SNAPSHOT.jar
 # > nohup.out 2>&1 &
 #nohup java -jar /home/ubuntu/app/step3/aws-exercise-0.0.1-SNAPSHOT.jar /dev/null 2> /dev/null < /dev/null
 #java -jar
