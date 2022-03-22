@@ -156,18 +156,17 @@ public class PortfolioService {
 
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+            portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
         }
 
-        if(portfolio == null)
-        {
-            portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+
+        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        }
+
         if (isMyPorf || !(portfolio.getIsTemp())) {
             try {
                 String email = SecurityUtil.getCurrentLoginUserId();
@@ -243,18 +242,17 @@ public class PortfolioService {
 
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+            portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
         }
 
-        if(portfolio == null)
-        {
-            portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+
+        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        }
+
         if (isMyPorf || !(portfolio.getIsTemp())) {
 
             List<String> porfStacks = portfolioQueryRepository.findStackNamesByPorfId(porfId);
@@ -278,18 +276,17 @@ public class PortfolioService {
 
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+            portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
         }
 
-        if(portfolio == null)
-        {
-            portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+
+        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        }
+
 
         if (isMyPorf || !(portfolio.getIsTemp())) {
             List<Project> projects = projectRepository.findAllByPorfId(porfId);

@@ -108,18 +108,15 @@ public class CareerService {
         
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioQueryRepository.findFirstPorfByPorfIdAndUserEmail(porfId, userEmail).orElseThrow(()->
+            portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
         }
-        
-        if(portfolio == null)
-        {
-            portfolio = portfolioRepository.findById(porfId).orElseThrow(() -> 
+
+        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
-        }         
 
         List<CareerDto.Response> careerResponseDtos = new ArrayList<>();
 
