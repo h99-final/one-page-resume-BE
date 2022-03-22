@@ -9,15 +9,10 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthenticationExce
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
-import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
-import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfIntroRequestDto;
-import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.porf.requestDto.PorfTemplateRequestDto;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import com.f5.onepageresumebe.web.dto.porf.PorfDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
-import com.f5.onepageresumebe.web.dto.stack.response.PorfStackReponseDto;
+import com.f5.onepageresumebe.web.dto.stack.PorfStackReponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +41,7 @@ public class PortfolioService {
     private final UserQueryRepository userQueryRepository;
 
     @Transactional
-    public void updateIntro(PorfIntroRequestDto requestDto) {
+    public void updateIntro(PorfDto.IntroRequest requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -59,7 +54,7 @@ public class PortfolioService {
     }
 
     @Transactional //템플릿 테마 지정
-    public void updateTemplate(PorfTemplateRequestDto porfTemplateRequestDto) {
+    public void updateTemplate(PorfDto.TemplateRequest porfTemplateRequestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -93,7 +88,7 @@ public class PortfolioService {
     }
 
     @Transactional
-    public ChangeStatusDto changeStatus(ChangeStatusDto dto) {
+    public PorfDto.Status changeStatus(PorfDto.Status dto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -101,15 +96,15 @@ public class PortfolioService {
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
 
-        boolean changedStatus = portfolio.changeStatus(dto.isShow());
+        boolean changedStatus = portfolio.changeStatus(dto.getShow());
 
-        return ChangeStatusDto.builder()
+        return PorfDto.Status.builder()
                 .show(changedStatus)
                 .build();
     }
 
     @Transactional
-    public void inputProjectInPorf(PorfProjectRequestDto requestDto) {
+    public void inputProjectInPorf(PorfDto.ProjectRequest requestDto) {
         String email = SecurityUtil.getCurrentLoginUserId();
         Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
@@ -136,7 +131,7 @@ public class PortfolioService {
     }
 
     @Transactional
-    public void deleteProjectInPorf(PorfProjectRequestDto requestDto) {
+    public void deleteProjectInPorf(PorfDto.ProjectRequest requestDto) {
         String email = SecurityUtil.getCurrentLoginUserId();
         Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
                 new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
@@ -153,7 +148,7 @@ public class PortfolioService {
     }
 
     @Transactional
-    public PorfIntroResponseDto getIntro(Integer porfId) {
+    public PorfDto.IntroResponse getIntro(Integer porfId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -187,7 +182,7 @@ public class PortfolioService {
             User user = portfolio.getUser();
 
             portfolioRepository.save(portfolio);
-            return PorfIntroResponseDto.builder()
+            return PorfDto.IntroResponse.builder()
                     .id(porfId)
                     .title(portfolio.getTitle())
                     .githubUrl(portfolio.getGithubUrl())
@@ -210,10 +205,10 @@ public class PortfolioService {
     }
 
     //전체 조회
-    public List<PorfResponseDto> getIntrosByStacks(StackDto requestDto) {
+    public List<PorfDto.Response> getIntrosByStacks(StackDto requestDto) {
 
         List<String> stackNames = requestDto.getStack();
-        List<PorfResponseDto> responseDtoList = new ArrayList<>();
+        List<PorfDto.Response> responseDtoList = new ArrayList<>();
         List<Portfolio> portfolioList;
         if (stackNames.size() == 0) {
             //특정 조건이 없을 때
@@ -227,7 +222,7 @@ public class PortfolioService {
         portfolioList.forEach(portfolio -> {
             User user = portfolio.getUser();
             List<String> stacks = userQueryRepository.findStackNamesByPorfId(portfolio.getId());
-            PorfResponseDto responseDto = PorfResponseDto.builder()
+            PorfDto.Response responseDto = PorfDto.Response.builder()
                     .porfId(portfolio.getId())
                     .username(user.getName())
                     .userStack(stacks)
@@ -275,10 +270,9 @@ public class PortfolioService {
             return null;
         }
 
-
     }
 
-    public List<ProjectResponseDto> getProject(Integer porfId) {
+    public List<ProjectDto.Response> getProject(Integer porfId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 

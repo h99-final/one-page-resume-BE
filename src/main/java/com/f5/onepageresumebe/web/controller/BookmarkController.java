@@ -45,38 +45,38 @@ public class BookmarkController {
     }
 
 
-    @Secured("ROLE_USER")
-    @PostMapping("/bookmark/porf/{porfId}") //북마크 추가
-    public ResDto addPortPolioBookmark(@PathVariable("porfId") Integer projectId) {
-
-        bookmarkService.addPortPolioBookmark(projectId);
-
-        return ResDto.builder()
-                .result(true)
-                .build();
-    }
-
-
-
-    @Secured("ROLE_USER")
-    @DeleteMapping("/bookmark/porf/{porfId}")
-    public ResDto deletePortPolioBookmark(@PathVariable("porfId") Integer projectId) {
-
-        bookmarkService.deletePortPolioBookmark(projectId);
-
-        return ResDto.builder()
-                .result(true)
-                .build();
-    }
+//    @Secured("ROLE_USER")
+//    @PostMapping("/bookmark/porf/{porfId}") //북마크 추가
+//    public ResDto addPortPolioBookmark(@PathVariable("porfId") Integer projectId) {
+//
+//        bookmarkService.addPortPolioBookmark(projectId);
+//
+//        return ResDto.builder()
+//                .result(true)
+//                .build();
+//    }
 
 
-    @Secured("ROLE_USER")
-    @GetMapping("/bookmark/porf")
-    public ResDto getPortPolioBookmark() {
 
-        return ResDto.builder()
-                .result(true)
-                .data(bookmarkService.getPortPolioBookmark())
-                .build();
-    }
+//    @Secured("ROLE_USER")
+//    @DeleteMapping("/bookmark/porf/{porfId}")
+//    public ResDto deletePortPolioBookmark(@PathVariable("porfId") Integer projectId) {
+//
+//        bookmarkService.deletePortPolioBookmark(projectId);
+//
+//        return ResDto.builder()
+//                .result(true)
+//                .build();
+//    }
+
+
+//    @Secured("ROLE_USER")
+//    @GetMapping("/bookmark/porf")
+//    public ResDto getPortPolioBookmark() {
+//
+//        return ResDto.builder()
+//                .result(true)
+//                .data(bookmarkService.getPortPolioBookmark())
+//                .build();
+//    }
 }

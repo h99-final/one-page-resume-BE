@@ -1,8 +1,7 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.domain.mysql.service.CareerService;
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
-import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
+import com.f5.onepageresumebe.web.dto.career.CareerDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -20,7 +19,7 @@ public class CareerController {
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/career")
-    public ResDto createCareer(@Valid @RequestBody CareerRequestDto dto) {
+    public ResDto createCareer(@Valid @RequestBody CareerDto.Request dto) {
 
         Integer id = careerService.createCareer(dto);
 
@@ -33,7 +32,7 @@ public class CareerController {
     @GetMapping("/porf/{porfId}/career")
     public ResDto getCareer(@PathVariable("porfId") Integer porfId){
 
-        List<CareerResponseDto>  responseDto = careerService.getCareer(porfId);
+        List<CareerDto.Response>  responseDto = careerService.getCareer(porfId);
 
         return ResDto.builder()
                 .result(true)
@@ -43,7 +42,7 @@ public class CareerController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/career/{careerId}")
-    public ResDto updateCareer(@Valid @RequestBody CareerRequestDto requestDto,
+    public ResDto updateCareer(@Valid @RequestBody CareerDto.Request requestDto,
                                @PathVariable("careerId") Integer careerId){
 
         careerService.updateCareer(careerId, requestDto);

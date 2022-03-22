@@ -1,7 +1,7 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
 
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
+import com.f5.onepageresumebe.web.dto.porf.PorfDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -47,7 +47,7 @@ public class PortfoiloBookmark {
         return portfolioBookmark;
     }
 
-    public PorfResponseDto toPorfBookmarkReadResDTO() {
-        return new PorfResponseDto(this.id,this.getUser().getName(),this.toPorfBookmarkReadResDTO().getUserStack(),this.getPortfolio().getTitle(),this.getPortfolio().getTemplateIdx(),this.getUser().getJob());
-    }
+//    public PorfDto.BookmarkResponse toPorfBookmarkReadResDTO() {
+//        return new PorfResponseDto(this.id,this.getUser().getName(),this.toPorfBookmarkReadResDTO().getUserStack(),this.getPortfolio().getTitle(),this.getPortfolio().getTemplateIdx(),this.getUser().getJob());
+//    }
 }

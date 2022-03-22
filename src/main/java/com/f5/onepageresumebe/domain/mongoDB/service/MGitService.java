@@ -4,7 +4,6 @@ import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
 import com.f5.onepageresumebe.domain.mysql.entity.User;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
-import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
@@ -13,9 +12,8 @@ import com.f5.onepageresumebe.domain.mysql.entity.Project;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.GitUtil;
-import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
-import com.f5.onepageresumebe.web.dto.MGit.response.MCommitMessageResponseDto;
-import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
+import com.f5.onepageresumebe.web.dto.gitCommit.CommitDto;
+import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
@@ -54,24 +52,24 @@ public class MGitService {
         GHRepository ghRepository = null;
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
-        deleteMCommits(repoName,repoOwner);
+        deleteMCommits(repoName, repoOwner);
 
         try {
             ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
         } catch (IOException e) {
-            log.error("Repository 가져오기 실패: {}",e.getMessage());
+            log.error("Repository 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
         }
 
         try {
             List<GHCommit> commits = ghRepository.listCommits().toList();
-            for(GHCommit curCommit  : commits) {
+            for (GHCommit curCommit : commits) {
                 String curSha = curCommit.getSHA1();
                 String curMessage = curCommit.getCommitShortInfo().getMessage();
 
                 List<MFile> files = getFiles(ghRepository, curSha);
 
-                MCommit mCommit = MCommit.create(curMessage, curSha, repoName,repoOwner, files);
+                MCommit mCommit = MCommit.create(curMessage, curSha, repoName, repoOwner, files);
 
                 mongoTemplate.save(mCommit);
             }
@@ -81,7 +79,7 @@ public class MGitService {
         }
     }
 
-    public List<MFile> getFiles(GHRepository ghRepository, String  sha) {
+    public List<MFile> getFiles(GHRepository ghRepository, String sha) {
         List<MFile> files = new ArrayList<>();
 
         try {
@@ -100,7 +98,7 @@ public class MGitService {
         return files;
     }
 
-    public List<MCommitMessageResponseDto> getCommits(Integer projectId) {
+    public List<CommitDto.MessageResponse> getCommits(Integer projectId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -111,15 +109,15 @@ public class MGitService {
         String repoName = project.getGitRepoName();
         String repoOwner = getOwner(repoUrl);
 
-        List<MCommitMessageResponseDto> mCommitMessageResponseDtos = new ArrayList<>();
+        List<CommitDto.MessageResponse> mCommitMessageResponseDtos = new ArrayList<>();
 
         Query query = new Query(Criteria.where("repoName").is(repoName));
         query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
 
         List<MCommit> mCommits = mongoTemplate.find(query, MCommit.class);
 
-        for(MCommit curCommit: mCommits) {
-            MCommitMessageResponseDto mCommitMessageResponseDto = new MCommitMessageResponseDto(curCommit.getSha(), curCommit.getMessage());
+        for (MCommit curCommit : mCommits) {
+            CommitDto.MessageResponse mCommitMessageResponseDto = new CommitDto.MessageResponse(curCommit.getSha(), curCommit.getMessage());
             mCommitMessageResponseDtos.add(mCommitMessageResponseDto);
         }
 
@@ -134,23 +132,27 @@ public class MGitService {
         mongoTemplate.remove(query, MCommit.class);
     }
 
-    public List<FilesResponseDto> findFilesBySha(String sha){
+    public List<FileDto.Response> findFilesBySha(String sha) {
 
         MCommit gitCommit = mongoTemplate.findOne(
                 Query.query(Criteria.where("sha").is(sha)),
                 MCommit.class
         );
 
-        if(gitCommit==null){
+        if (gitCommit == null) {
             //todo: 오류 처리
         }
 
-        List<FilesResponseDto> responseDtos = new ArrayList<>();
+        List<FileDto.Response> responseDtos = new ArrayList<>();
         gitCommit.getFiles().forEach(gitFile -> {
 
             String patchCode = gitFile.getPatchCode();
-            if(patchCode!=null){
-                responseDtos.add(new FilesResponseDto(gitFile.getName(), GitUtil.parsePatchCode(patchCode)));
+            if (patchCode != null) {
+                responseDtos.add(
+                        FileDto.Response.builder()
+                                .name(gitFile.getName())
+                                .patchCode(GitUtil.parsePatchCode(patchCode))
+                                .build());
             }
         });
 
@@ -164,7 +166,7 @@ public class MGitService {
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
         String rawToken = null;
         String encryptToken = user.getGitToken();
-        if(encryptToken==null){
+        if (encryptToken == null) {
             throw new CustomException("먼저 토큰을 등록해 주세요", INVALID_INPUT_ERROR);
         }
 
@@ -172,7 +174,7 @@ public class MGitService {
             rawToken = aes256.decrypt(user.getGitToken());
         } catch (Exception e) {
             log.error("git Token 복호화에 실패하였습니다.");
-            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.",INVALID_INPUT_ERROR);
+            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.", INVALID_INPUT_ERROR);
         }
 
         try {
@@ -182,19 +184,19 @@ public class MGitService {
             return gitHub;
         } catch (IOException e) {
             log.error("깃허브 연결 실패 : {}", e.getMessage());
-            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.",INVALID_INPUT_ERROR);
+            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.", INVALID_INPUT_ERROR);
         }
 
     }
 
     public String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");
-        return gitUrl.substring(idx+5) + "/" +  reName;
+        return gitUrl.substring(idx + 5) + "/" + reName;
     }
 
-    public String getOwner(String gitUrl){
+    public String getOwner(String gitUrl) {
         int idx = gitUrl.indexOf(".com/");
-        return gitUrl.substring(idx+5);
+        return gitUrl.substring(idx + 5);
     }
 
 }

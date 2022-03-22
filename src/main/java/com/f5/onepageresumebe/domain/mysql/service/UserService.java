@@ -11,13 +11,8 @@ import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.*;
-import com.f5.onepageresumebe.web.dto.user.responseDto.*;
+import com.f5.onepageresumebe.web.dto.user.UserDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResponseDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.UserImageResponseDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GitHub;
@@ -64,7 +59,7 @@ public class UserService {
     private final CertificationRepository certificationRepository;
 
     @Transactional
-    public Boolean registerUser(SignupRequestDto requestDto) {
+    public Boolean registerUser(UserDto.SignUpRequest requestDto) {
 
         String email = requestDto.getEmail();
         //비밀번호, 비밀번호 확인 체크
@@ -89,7 +84,7 @@ public class UserService {
         return res;
     }
 
-    public boolean checkEmail(CheckEmailRequestDto request) {
+    public boolean checkEmail(UserDto.EmailRequest request) {
         boolean res = false;
 
         Optional<User> found = userQueryRepository.findByEmail(request.getEmail());
@@ -100,7 +95,7 @@ public class UserService {
 
     //로그인 서비스
     //존재하지 않거나 비밀번호가 맞지 않을시 오류를 내주고 그렇지 않을경우 토큰을 발행합니다.
-    public LoginResultDto login(LoginRequestDto loginDto) {
+    public UserDto.LoginResult login(UserDto.LoginRequest loginDto) {
 
         // login ID/Password를 기반으로 Authentication 생성
         UsernamePasswordAuthenticationToken authenticationToken = loginDto.toAuthentication();
@@ -122,9 +117,9 @@ public class UserService {
         boolean isFirstLogin = user.getCreatedAt().equals(user.getUpdatedAt());
 
 
-        return LoginResultDto.builder()
+        return UserDto.LoginResult.builder()
                 .tokenDto(tokenDto)
-                .loginResponseDto(LoginResponseDto.builder()
+                .loginResponseDto(UserDto.LoginResponse.builder()
                         .isFirstLogin(isFirstLogin)
                         .build())
                 .build();
@@ -133,7 +128,7 @@ public class UserService {
 
     // 추가기입
     @Transactional
-    public void addInfo(AddInfoRequestDto requestDto) {
+    public void addInfo(UserDto.AddInfoRequest requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(userEmail)
@@ -178,7 +173,7 @@ public class UserService {
     }
 
     @Transactional
-    public void updateInfo(UpdateInfoRequestDto request) {
+    public void updateInfo(UserDto.UpdateInfoRequest request) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userQueryRepository.findByEmail(userEmail)
@@ -258,7 +253,7 @@ public class UserService {
         user.setGitToken(null);
     }
 
-    public UserInfoResponseDto getUserInfo() {
+    public UserDto.InfoResponse getUserInfo() {
 
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
@@ -271,7 +266,7 @@ public class UserService {
         List<String> stackNames = userQueryRepository.findStackNamesByUserId(user.getId());
 
         Portfolio portfolio = user.getPortfolio();
-        return UserInfoResponseDto.builder()
+        return UserDto.InfoResponse.builder()
                 .userId(user.getId())
                 .name(user.getName())
                 .projectId(projectIds)
@@ -288,9 +283,9 @@ public class UserService {
     }
 
     @Transactional
-    public UserImageResponseDto updateProfile(MultipartFile multipartFile) {
+    public UserDto.ImgResponse updateProfile(MultipartFile multipartFile) {
 
-        UserImageResponseDto userImageResponseDto = new UserImageResponseDto();
+        UserDto.ImgResponse userImageResponseDto = UserDto.ImgResponse.builder().build();
 
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
@@ -349,7 +344,7 @@ public class UserService {
     }
 
     @Transactional
-    public void ChangePassword(ChangePasswordRequestDto requestDto) {
+    public void ChangePassword(UserDto.PasswordRequest requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -368,7 +363,7 @@ public class UserService {
     }
 
     @Transactional
-    public void certificationEmail(CertificationRequestDto requestDto) {
+    public void certificationEmail(UserDto.EmailRequest requestDto) {
         String email = requestDto.getEmail();
         String key = makeRandomString();
 
@@ -395,7 +390,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean checkCertification(CheckCertificationRequestDto requestDto) {
+    public boolean checkCertification(UserDto.CertificationRequest requestDto) {
         boolean isCertificated = false;
 
         String email = requestDto.getEmail();
@@ -427,7 +422,7 @@ public class UserService {
     }
 
     @Transactional
-    public void findPassword(CertificationRequestDto requestDto) {
+    public void findPassword(UserDto.EmailRequest requestDto) {
         String newPassword = makeRandomString();
         String email = requestDto.getEmail();
 
@@ -446,13 +441,13 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public FindEmailResponseDto findEmail(FindEmailRequestDto requestDto) {
+    public UserDto.EmailResponse findEmail(UserDto.FindEmailRequest requestDto) {
         String name = requestDto.getName();
         String phoneNum = requestDto.getPhoneNum();
 
         User user = userRepository.findUserByNameAndPhoneNum(name,phoneNum);
 
-        FindEmailResponseDto findEmailResponseDto = new FindEmailResponseDto();
+        UserDto.EmailResponse findEmailResponseDto = UserDto.EmailResponse.builder().build();
 
         if(user == null) {
             findEmailResponseDto.setEmail(null);

@@ -1,9 +1,8 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.domain.mongoDB.service.MGitService;
-import com.f5.onepageresumebe.web.dto.MGit.request.MGitRequestDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
-import com.f5.onepageresumebe.web.dto.gitFile.responseDto.FilesResponseDto;
+import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +40,7 @@ public class MGitController {
     @GetMapping("/project/{projectId}/git/commit/{sha1}/file")
     public ResDto getFiles(@PathVariable("sha1") String sha1){
 
-        List<FilesResponseDto> responseDtos = mGitService.findFilesBySha(sha1);
+        List<FileDto.Response> responseDtos = mGitService.findFilesBySha(sha1);
 
         return ResDto.builder()
                 .result(true)

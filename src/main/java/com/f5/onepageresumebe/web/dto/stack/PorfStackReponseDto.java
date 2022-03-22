@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.web.dto.stack.response;
+package com.f5.onepageresumebe.web.dto.stack;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

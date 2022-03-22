@@ -10,17 +10,14 @@ import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.util.GitUtil;
-import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
-import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
-import com.f5.onepageresumebe.web.dto.gitFile.requestDto.FileRequestDto;
+import com.f5.onepageresumebe.web.dto.gitCommit.CommitDto;
+import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +31,7 @@ public class GitService {
     private final GitQueryRepository gitQueryRepository;
 
     @Transactional
-    public CommitIdResponseDto createTroubleShooting(Integer projectId, CommitRequestDto request) {
+    public CommitDto.IdResponse createTroubleShooting(Integer projectId, CommitDto.Request request) {
 
         Project project = projectService.getProjectIfMyProject(projectId);
 
@@ -49,16 +46,18 @@ public class GitService {
             gitCommit = gitCommitRepository.save(new GitCommit(request.getCommitMessage(), request.getSha(), request.getTsName(), project));
         }
 
-        List<FileRequestDto> fileRequestDtoList = request.getTsFile();
+        List<FileDto.Request> fileRequestDtoList = request.getTsFile();
 
-        for (FileRequestDto curFile : fileRequestDtoList) {
+        for (FileDto.Request curFile : fileRequestDtoList) {
             GitFile gitFile = GitFile.create(curFile.getFileName(), GitUtil.combinePatchCode(curFile.getPatchCode()), curFile.getTsContent(), gitCommit);
             gitFileRepository.save(gitFile);
         }
 
         gitCommitRepository.save(gitCommit);
 
-        return new CommitIdResponseDto(gitCommit.getId());
+        return CommitDto.IdResponse.builder()
+                .commitId(gitCommit.getId())
+                .build();
     }
 
     @Transactional
@@ -184,7 +183,7 @@ public class GitService {
 
 
     @Transactional
-    public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitRequestDto request) {
+    public void updateProjectTroubleShootings(Integer projectId, Integer commitId, CommitDto.Request request) {
 
         // 프로젝트에 연결된 특정 commitId내용들 전부 삭제
         projectService.deleteProjectTroubleShootings(projectId, commitId);

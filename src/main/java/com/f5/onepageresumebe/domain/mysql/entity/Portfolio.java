@@ -1,6 +1,5 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
 import lombok.*;
 
 import javax.persistence.*;

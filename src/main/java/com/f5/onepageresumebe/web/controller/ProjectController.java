@@ -3,10 +3,7 @@ package com.f5.onepageresumebe.web.controller;
 import com.f5.onepageresumebe.domain.mongoDB.service.MGitService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.domain.mysql.service.ProjectService;
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,9 +26,9 @@ public class ProjectController {
     @Secured("ROLE_USER")
     @PostMapping("/project")
     public ResDto createProject(@RequestPart("images") List<MultipartFile> multipartFileList,
-                                @Valid @RequestPart("data") ProjectRequestDto requestDto) {
+                                @Valid @RequestPart("data") ProjectDto.Request requestDto) {
 
-        ProjectResponseDto responseDto = projectService.createProject(requestDto, multipartFileList);
+        ProjectDto.Response responseDto = projectService.createProject(requestDto, multipartFileList);
 
         mGitService.sync(responseDto.getId());
         return ResDto.builder()
@@ -42,7 +39,7 @@ public class ProjectController {
 
     @Secured("ROLE_USER")
     @PutMapping("/project/{projectId}")
-    public ResDto updateProjectIntro(@Valid @RequestBody ProjectRequestDto requestDto,
+    public ResDto updateProjectIntro(@Valid @RequestBody ProjectDto.Request requestDto,
                                      @PathVariable("projectId") Integer projectId){
 
         projectService.updateProjectInfo(projectId,requestDto);
@@ -83,7 +80,7 @@ public class ProjectController {
     @GetMapping("/user/project")
     public ResDto getProjectsByUser(){
 
-        List<ProjectResponseDto> responseDto = projectService.getShortInfos();
+        List<ProjectDto.Response> responseDto = projectService.getShortInfos();
 
         return ResDto.builder()
                 .result(true)
@@ -104,7 +101,7 @@ public class ProjectController {
     public ResDto getProjectsByStack(@RequestBody StackDto requestDto,
                                      @PageableDefault(size = 12) Pageable pageable){
 
-        Page<ProjectResponseDto> responseDtos = projectService.getAllByStacks(requestDto,pageable);
+        Page<ProjectDto.Response> responseDtos = projectService.getAllByStacks(requestDto,pageable);
 
         return ResDto.builder()
                 .result(true)
@@ -125,7 +122,7 @@ public class ProjectController {
     @GetMapping("/project/{projectId}")
     public ResDto getProjectDetail(@PathVariable("projectId") Integer projectId) {
 
-        ProjectDetailResponseDto responseDto = projectService.getProjectDetail(projectId);
+        ProjectDto.DetailResponse responseDto = projectService.getProjectDetail(projectId);
 
         return ResDto.builder()
                 .result(true)

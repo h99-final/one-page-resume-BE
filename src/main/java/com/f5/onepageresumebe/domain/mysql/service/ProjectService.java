@@ -11,11 +11,8 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthenticationExce
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
-import com.f5.onepageresumebe.web.dto.gitFile.responseDto.TroubleShootingFileResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.TroubleShootingsResponseDto;
+import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +50,7 @@ public class ProjectService {
     private final ProjectBookmarkRepository projectBookmarkRepository;
 
     @Transactional(rollbackFor = Exception.class)//프로젝트 생성
-    public ProjectResponseDto createProject(ProjectRequestDto requestDto, List<MultipartFile> multipartFiles) {
+    public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(userEmail).orElseThrow(()->
@@ -80,7 +77,7 @@ public class ProjectService {
 
         Integer projectId = project.getId();
 
-        return ProjectResponseDto.builder()
+        return ProjectDto.Response.builder()
                 .id(projectId)
                 .title(project.getTitle())
                 .imageUrl(projectImgRepository.findFirstByProjectId(projectId).get()
@@ -116,7 +113,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public void updateProjectInfo(Integer projectId,ProjectRequestDto requestDto){
+    public void updateProjectInfo(Integer projectId,ProjectDto.Request requestDto){
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -146,7 +143,7 @@ public class ProjectService {
         insertStacksInProject(project, stacks);
     }
 
-    public List<ProjectResponseDto> getShortInfos(){
+    public List<ProjectDto.Response> getShortInfos(){
 
         String email = SecurityUtil.getCurrentLoginUserId();
 
@@ -170,7 +167,7 @@ public class ProjectService {
         return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
     }
 
-    public Page<ProjectResponseDto> getAllByStacks(StackDto requestDto, Pageable pageable){
+    public Page<ProjectDto.Response> getAllByStacks(StackDto requestDto, Pageable pageable){
 
         List<String> stackNames = requestDto.getStack();
 
@@ -215,8 +212,8 @@ public class ProjectService {
         return project;
     }
 
-    public List<TroubleShootingsResponseDto> getTroubleShootings(Integer projectId) {
-        List<TroubleShootingsResponseDto> troubleShootingsResponseDtos = new ArrayList<>();
+    public List<ProjectDto.TroubleShootingsResponse> getTroubleShootings(Integer projectId) {
+        List<ProjectDto.TroubleShootingsResponse> troubleShootingsResponseDtos = new ArrayList<>();
 
         Project project = projectRepository.getById(projectId);
 
@@ -233,19 +230,30 @@ public class ProjectService {
             //커밋이 가지고있는 파일들
             List<GitFile> gitFileList = curGitCommit.getFileList();
             //파일 정보들을 저장할 공간
-            List<TroubleShootingFileResponseDto> tsFiles = new ArrayList<>();
+            List<FileDto.TroubleShooting> tsFiles = new ArrayList<>();
             for(GitFile curGitFile : gitFileList) {
                 List<String> tsPatchCodes = GitUtil.parsePatchCode(curGitFile.getPatchCode());
                 Integer fileId = curGitFile.getId();
                 String fileName = curGitFile.getName();
                 String tsContent = curGitFile.getTroubleContents();
 
-                TroubleShootingFileResponseDto fileDto = new TroubleShootingFileResponseDto(fileId, fileName,tsContent,tsPatchCodes);
+                FileDto.TroubleShooting fileDto = FileDto.TroubleShooting.builder()
+                        .fileId(fileId)
+                        .fileName(fileName)
+                        .tsContent(tsContent)
+                        .tsPatchCodes(tsPatchCodes)
+                        .build();
                 //리스트에 각각의 file 추가
                 tsFiles.add(fileDto);
             }
             //각각의 커밋데이터 추가
-            TroubleShootingsResponseDto curDto = new TroubleShootingsResponseDto(commitId,sha,commitMsg,tsName, tsFiles);
+            ProjectDto.TroubleShootingsResponse curDto = ProjectDto.TroubleShootingsResponse.builder()
+                    .commitId(commitId)
+                    .sha(sha)
+                    .commitMsg(commitMsg)
+                    .tsName(tsName)
+                    .tsFiles(tsFiles)
+                    .build();
             //curDto에 데이터 넣고, 리스트 clear
             tsFiles.clear();
 
@@ -328,7 +336,7 @@ public class ProjectService {
         gitCommitRepository.deleteById(commitId);
     }
 
-    public ProjectDetailResponseDto getProjectDetail(Integer projectId) {
+    public ProjectDto.DetailResponse getProjectDetail(Integer projectId) {
 
         Project project;
         boolean isMyProject = true;
@@ -356,7 +364,7 @@ public class ProjectService {
             isBookmarking = false;
         }
 
-        ProjectDetailResponseDto projectDetailResponseDto = projectToDetailResponseDto(project);
+        ProjectDto.DetailResponse projectDetailResponseDto = projectToDetailResponseDto(project);
 
         projectDetailResponseDto.checkBookmark(isMyProject, isBookmarking);
 
@@ -364,13 +372,13 @@ public class ProjectService {
      }
 
 
-    public ProjectDetailResponseDto projectToDetailResponseDto(Project project) {
+    public ProjectDto.DetailResponse projectToDetailResponseDto(Project project) {
 
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
 
         User user = project.getUser();
 
-        ProjectDetailResponseDto projectDetailResponseDto = ProjectDetailResponseDto.builder()
+        ProjectDto.DetailResponse projectDetailResponseDto = ProjectDto.DetailResponse.builder()
                 .title(project.getTitle())
                 .content(project.getIntroduce())
                 .img(projectImgs.stream().map(ProjectImg::toProjectImgResponseDto).collect(Collectors.toList()))

@@ -1,14 +1,10 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.exception.customException.CustomException;
-import com.f5.onepageresumebe.web.dto.MGit.request.MGitTokenDto;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
-import com.f5.onepageresumebe.web.dto.user.requestDto.*;
 import com.f5.onepageresumebe.domain.mysql.service.UserService;
-import com.f5.onepageresumebe.web.dto.user.responseDto.FindEmailResponseDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.LoginResultDto;
-import com.f5.onepageresumebe.web.dto.user.responseDto.UserInfoResponseDto;
+import com.f5.onepageresumebe.web.dto.user.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +24,7 @@ public class UserController {
 
     // 회원 가입 요청 처리
     @PostMapping("/user/signup")
-    public ResDto registerUser(@Valid @RequestBody SignupRequestDto request) {
+    public ResDto registerUser(@Valid @RequestBody UserDto.SignUpRequest request) {
 
         return ResDto.builder()
                 .result(userService.registerUser(request))
@@ -37,7 +33,7 @@ public class UserController {
 
     //이메일 중복 체크
     @PostMapping("/user/dupEmail")
-    public ResDto checkEmail(@Valid @RequestBody CheckEmailRequestDto request) {
+    public ResDto checkEmail(@Valid @RequestBody UserDto.EmailRequest request) {
 
         return ResDto.builder()
                 .result(userService.checkEmail(request))
@@ -47,9 +43,9 @@ public class UserController {
     // 로그인
 //    private static final int COOKIE_TIME = 60 * 5;
     @PostMapping("/user/login")
-    public ResponseEntity login(@Valid @RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity login(@Valid @RequestBody UserDto.LoginRequest requestDto) {
 
-        LoginResultDto loginResultDto = userService.login(requestDto);
+        UserDto.LoginResult loginResultDto = userService.login(requestDto);
         HttpHeaders headers = userService.tokenToHeader(loginResultDto.getTokenDto());
 
         return ResponseEntity.ok()
@@ -65,7 +61,7 @@ public class UserController {
     //추가 기입
     @Secured("ROLE_USER")
     @PostMapping("/user/info")
-    public ResDto addInfo(@Valid @RequestBody AddInfoRequestDto requestDto) {
+    public ResDto addInfo(@Valid @RequestBody UserDto.AddInfoRequest requestDto) {
 
         userService.addInfo(requestDto);
 
@@ -76,7 +72,7 @@ public class UserController {
 
     @Secured("ROLE_USER")
     @PutMapping("/user/git/token")
-    public ResDto updateToken(@RequestBody MGitTokenDto requestDto){
+    public ResDto updateToken(@RequestBody UserDto.GitTokenRequest requestDto){
 
         userService.updateGitToken(requestDto.getToken());
 
@@ -99,7 +95,7 @@ public class UserController {
     //개인 정보 수정
     @Secured("ROLE_USER")
     @PutMapping("/user/info")
-    public ResDto updateInfo(@Valid @RequestBody UpdateInfoRequestDto requestDto) {
+    public ResDto updateInfo(@Valid @RequestBody UserDto.UpdateInfoRequest requestDto) {
 
         userService.updateInfo(requestDto);
 
@@ -126,7 +122,7 @@ public class UserController {
     @GetMapping("/user/info")
     public ResDto getInfo(){
 
-        UserInfoResponseDto userInfo = userService.getUserInfo();
+        UserDto.InfoResponse userInfo = userService.getUserInfo();
 
         return ResDto.builder()
                 .result(true)
@@ -162,7 +158,7 @@ public class UserController {
 
     @Secured("ROLE_USER")
     @PutMapping("/user/password")
-    public ResDto changePassword(@Valid @RequestBody ChangePasswordRequestDto requestDto) {
+    public ResDto changePassword(@Valid @RequestBody UserDto.PasswordRequest requestDto) {
 
         userService.ChangePassword(requestDto);
 
@@ -173,7 +169,7 @@ public class UserController {
     }
 
     @PostMapping("/user/auth/email")
-    public ResDto certificationEmail(@RequestBody CertificationRequestDto requestDto) {
+    public ResDto certificationEmail(@RequestBody UserDto.EmailRequest requestDto) {
 
         userService.certificationEmail(requestDto);
 
@@ -184,7 +180,7 @@ public class UserController {
     }
 
     @PostMapping("/user/auth/email/valid")
-    public ResDto checkCertification(@RequestBody CheckCertificationRequestDto requestDto) {
+    public ResDto checkCertification(@RequestBody UserDto.CertificationRequest requestDto) {
 
         return ResDto.builder()
                 .result(userService.checkCertification(requestDto))
@@ -193,7 +189,7 @@ public class UserController {
     }
 
     @PostMapping("/user/password/find")
-    public ResDto findPassword(@RequestBody CertificationRequestDto requestDto) {
+    public ResDto findPassword(@RequestBody UserDto.EmailRequest requestDto) {
 
         userService.findPassword(requestDto);
 
@@ -204,7 +200,7 @@ public class UserController {
     }
 
     @PostMapping("/user/email/find")
-    public ResDto findEmail(@RequestBody FindEmailRequestDto requestDto) {
+    public ResDto findEmail(@RequestBody UserDto.FindEmailRequest requestDto) {
 
         return ResDto.builder()
                 .result(true)

@@ -5,8 +5,8 @@ import com.f5.onepageresumebe.domain.mysql.repository.*;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfreadResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import com.f5.onepageresumebe.web.dto.porf.PorfDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,7 +53,7 @@ public class BookmarkService {
         projectBookmarkRepository.deleteByUserIdAndProjectId(user.getId(), projectId);
     }
 
-    public List<ProjectResponseDto> getProjectBookmark() {
+    public List<ProjectDto.Response> getProjectBookmark() {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userQueryRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
@@ -84,50 +84,49 @@ public class BookmarkService {
 
 
 
-    @Transactional //포트폴리오 북마크 추가
-    public void addPortPolioBookmark(Integer portfoloId) {
-        String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
-                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
-
-        Portfolio portfolio = portfolioRepository.getById(portfoloId);
-        portfolio.updatePortPolioBookmarkCount(1);
-
-        PortfoiloBookmark portfoiloBookmark = PortfoiloBookmark.create(user, portfolio);
-
-        portfoiloBookmarkRepository.save(portfoiloBookmark);
-    }
-
-
-    @Transactional //포트폴리오 북마크 삭제
-    public void deletePortPolioBookmark(Integer portfoloId) {
-        String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(()->
-                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
-        Portfolio portfolio = portfolioRepository.getById(portfoloId);
-        portfolio.updatePortPolioBookmarkCount(-1);
-
-        projectBookmarkRepository.deleteByUserIdAndProjectId(user.getId(), portfoloId);
-    }
+//    @Transactional //포트폴리오 북마크 추가
+//    public void addPortPolioBookmark(Integer portfoloId) {
+//        String email = SecurityUtil.getCurrentLoginUserId();
+//        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
+//                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+//
+//        Portfolio portfolio = portfolioRepository.getById(portfoloId);
+//        portfolio.updatePortPolioBookmarkCount(1);
+//
+//        PortfoiloBookmark portfoiloBookmark = PortfoiloBookmark.create(user, portfolio);
+//
+//        portfoiloBookmarkRepository.save(portfoiloBookmark);
+//    }
 
 
-    public PorfreadResponseDto getPortPolioBookmark() { //포트폴리오 북마크 가져오기
+//    @Transactional //포트폴리오 북마크 삭제
+//    public void deletePortPolioBookmark(Integer portfoloId) {
+//        String email = SecurityUtil.getCurrentLoginUserId();
+//        User user = userQueryRepository.findByEmail(email).orElseThrow(()->
+//                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+//        Portfolio portfolio = portfolioRepository.getById(portfoloId);
+//        portfolio.updatePortPolioBookmarkCount(-1);
+//
+//        projectBookmarkRepository.deleteByUserIdAndProjectId(user.getId(), portfoloId);
+//    }
 
-        String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(()->
-                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
 
-        PorfreadResponseDto dto = new PorfreadResponseDto();
-        Portfolio portfolio = portfolioRepository.findById(user.getId()).get();
-
-        List<PortfoiloBookmark> portfoiloBookmarkList = portfoiloBookmarkRepository.findAllByPortfolio(portfolio);
-        List<Portfolio> portfolios = new ArrayList<>();
-
-        for (PortfoiloBookmark item: portfoiloBookmarkList){
-            portfolios.add(item.getPortfolio());
-        }
-
-        dto.setPortfolios(portfolios);
-        return  dto;
-    }
+//    public PorfDto.BookmarkResponse getPortPolioBookmark() { //포트폴리오 북마크 가져오기
+//
+//        String email = SecurityUtil.getCurrentLoginUserId();
+//        User user = userQueryRepository.findByEmail(email).orElseThrow(()->
+//                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+//
+//        Portfolio portfolio = portfolioRepository.findById(user.getId()).get();
+//
+//        List<PortfoiloBookmark> portfoiloBookmarkList = portfoiloBookmarkRepository.findAllByPortfolio(portfolio);
+//        List<Portfolio> portfolios = new ArrayList<>();
+//
+//        for (PortfoiloBookmark item: portfoiloBookmarkList){
+//            portfolios.add(item.getPortfolio());
+//        }
+//
+//        dto.setPortfolios(portfolios);
+//        return  dto;
+//    }
 }

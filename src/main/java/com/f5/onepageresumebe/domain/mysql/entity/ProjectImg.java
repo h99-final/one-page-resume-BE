@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectImgResponseDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -39,8 +39,11 @@ public class ProjectImg {
         return projectImg;
     }
 
-    public ProjectImgResponseDto toProjectImgResponseDto(){
+    public ProjectDto.ImgResponse toProjectImgResponseDto(){
 
-        return new ProjectImgResponseDto(this.id,this.imageUrl);
+        return ProjectDto.ImgResponse.builder()
+                .id(this.id)
+                .url(this.imageUrl)
+                .build();
     }
 }

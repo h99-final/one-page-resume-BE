@@ -3,8 +3,7 @@ package com.f5.onepageresumebe.web.controller;
 import com.f5.onepageresumebe.domain.mysql.service.GitService;
 import com.f5.onepageresumebe.domain.mysql.service.ProjectService;
 import com.f5.onepageresumebe.web.dto.common.ResDto;
-import com.f5.onepageresumebe.web.dto.gitCommit.requestDto.CommitRequestDto;
-import com.f5.onepageresumebe.web.dto.gitCommit.responseDto.CommitIdResponseDto;
+import com.f5.onepageresumebe.web.dto.gitCommit.CommitDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +19,9 @@ public class GitController {
 
     @Secured("ROLE_USER")
     @PostMapping("/project/{projectId}/troubleShooting")
-    public ResDto createTroubleShooting(@Valid @RequestBody CommitRequestDto request, @PathVariable("projectId") Integer projectId) {
+    public ResDto createTroubleShooting(@Valid @RequestBody CommitDto.Request request, @PathVariable("projectId") Integer projectId) {
  
-        CommitIdResponseDto commitIdResponseDto = gitService.createTroubleShooting(projectId, request);
+        CommitDto.IdResponse commitIdResponseDto = gitService.createTroubleShooting(projectId, request);
 
         return ResDto.builder()
                 .result(true)
@@ -35,7 +34,7 @@ public class GitController {
     @PutMapping("/project/{projectId}/troubleShooting/{commitId}")
     public ResDto updateProjectTroubleShootings(@PathVariable("projectId") Integer projectId,
                                                 @PathVariable("commitId") Integer commitId,
-                                                @Valid @RequestBody CommitRequestDto request) {
+                                                @Valid @RequestBody CommitDto.Request request) {
 
         gitService.updateProjectTroubleShootings(projectId, commitId, request);
 

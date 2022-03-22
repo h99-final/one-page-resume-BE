@@ -3,10 +3,7 @@ package com.f5.onepageresumebe.util;
 import com.f5.onepageresumebe.domain.mysql.entity.Project;
 import com.f5.onepageresumebe.domain.mysql.entity.ProjectImg;
 import com.f5.onepageresumebe.domain.mysql.entity.User;
-import com.f5.onepageresumebe.domain.mysql.repository.ProjectStackRepository;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectDetailResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
-import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,11 +17,11 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProjectUtil {
 
-    public static List<ProjectResponseDto> projectToResponseDtos(List<Project> projects,
-                                                                  HashMap<Integer, ProjectImg> imageMap,
-                                                                  HashMap<Integer, List<String>> stackMap) {
+    public static List<ProjectDto.Response> projectToResponseDtos(List<Project> projects,
+                                                           HashMap<Integer, ProjectImg> imageMap,
+                                                           HashMap<Integer, List<String>> stackMap) {
 
-        List<ProjectResponseDto> projectResponseDtos = new ArrayList<>();
+        List<ProjectDto.Response> projectResponseDtos = new ArrayList<>();
         projects.forEach(project -> {
             ProjectImg projectImg = imageMap.get(project.getId());
             String projectImgUrl = null;
@@ -33,7 +30,7 @@ public class ProjectUtil {
             }
             User user = project.getUser();
 
-            ProjectResponseDto projectResponseDto = ProjectResponseDto.builder()
+            ProjectDto.Response projectResponseDto = ProjectDto.Response.builder()
                     .id(project.getId())
                     .title(project.getTitle())
                     .content(project.getIntroduce())
@@ -51,11 +48,11 @@ public class ProjectUtil {
 
     }
 
-    public static Page<ProjectResponseDto> projectToResponseDtosPaging(Page<Project> projects,
+    public static Page<ProjectDto.Response> projectToResponseDtosPaging(Page<Project> projects,
                                                                        Pageable pageable,
                                                                        HashMap<Integer, ProjectImg> imageMap,
                                                                        HashMap<Integer, List<String>> stackMap) {
-        List<ProjectResponseDto> projectResponseDtos = new ArrayList<>();
+        List<ProjectDto.Response> projectResponseDtos = new ArrayList<>();
         projects.forEach(project -> {
             ProjectImg projectImg = imageMap.get(project.getId());
             String projectImgUrl = null;
@@ -64,7 +61,7 @@ public class ProjectUtil {
             }
             User user = project.getUser();
 
-            ProjectResponseDto projectResponseDto = ProjectResponseDto.builder()
+            ProjectDto.Response projectResponseDto = ProjectDto.Response.builder()
                     .id(project.getId())
                     .title(project.getTitle())
                     .content(project.getIntroduce())

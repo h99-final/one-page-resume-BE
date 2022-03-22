@@ -1,7 +1,6 @@
 package com.f5.onepageresumebe.domain.mysql.entity;
 
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectRequestDto;
-import com.f5.onepageresumebe.web.dto.project.requestDto.ProjectUpdateRequestDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import lombok.*;
 
 import javax.persistence.*;
@@ -93,7 +92,7 @@ public class Project extends TimeEntity{
         portfolio.getProjectList().remove(this);
     }
 
-    public void updateIntro(ProjectRequestDto requestDto){
+    public void updateIntro(ProjectDto.Request requestDto){
         this.title = requestDto.getTitle();
         this.introduce = requestDto.getContent();
         this.gitRepoUrl = requestDto.getGitRepoUrl();

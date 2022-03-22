@@ -9,8 +9,7 @@ import com.f5.onepageresumebe.domain.mysql.repository.querydsl.PortfolioQueryRep
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
-import com.f5.onepageresumebe.web.dto.career.requestDto.CareerRequestDto;
-import com.f5.onepageresumebe.web.dto.career.responseDto.CareerResponseDto;
+import com.f5.onepageresumebe.web.dto.career.CareerDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,7 @@ public class CareerService {
     private final PortfolioQueryRepository portfolioQueryRepository;
 
     @Transactional
-    public Integer createCareer(CareerRequestDto requestDto) {
+    public Integer createCareer(CareerDto.Request requestDto) {
 
         //현재 로그인한 사람
         String userEmail = SecurityUtil.getCurrentLoginUserId();
@@ -64,7 +63,7 @@ public class CareerService {
     }
 
     @Transactional
-    public void updateCareer(Integer careerId ,CareerRequestDto requestDto) {
+    public void updateCareer(Integer careerId ,CareerDto.Request requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -99,7 +98,7 @@ public class CareerService {
         careerRepository.deleteById(careerId);
     }
 
-    public List<CareerResponseDto> getCareer(Integer porfId) {
+    public List<CareerDto.Response> getCareer(Integer porfId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         
@@ -121,7 +120,7 @@ public class CareerService {
                     new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
         }         
 
-        List<CareerResponseDto> careerResponseDtos = new ArrayList<>();
+        List<CareerDto.Response> careerResponseDtos = new ArrayList<>();
 
         if (isMyPorf || !(portfolio.getIsTemp())) {
 
@@ -138,7 +137,7 @@ public class CareerService {
                     endTimeString = endTime.toString();
                 }
 
-                CareerResponseDto responseDto = CareerResponseDto.builder()
+                CareerDto.Response responseDto = CareerDto.Response.builder()
                         .id(career.getId())
                         .title(career.getTitle())
                         .subTitle(career.getSubTitle())

@@ -1,14 +1,11 @@
 package com.f5.onepageresumebe.web.controller;
 
 import com.f5.onepageresumebe.web.dto.common.ResDto;
-import com.f5.onepageresumebe.web.dto.porf.ChangeStatusDto;
-import com.f5.onepageresumebe.web.dto.porf.requestDto.*;
 import com.f5.onepageresumebe.domain.mysql.service.PortfolioService;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfIntroResponseDto;
-import com.f5.onepageresumebe.web.dto.porf.responseDto.PorfResponseDto;
-import com.f5.onepageresumebe.web.dto.project.responseDto.ProjectResponseDto;
+import com.f5.onepageresumebe.web.dto.porf.PorfDto;
+import com.f5.onepageresumebe.web.dto.project.ProjectDto;
 import com.f5.onepageresumebe.web.dto.stack.StackDto;
-import com.f5.onepageresumebe.web.dto.stack.response.PorfStackReponseDto;
+import com.f5.onepageresumebe.web.dto.stack.PorfStackReponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +21,9 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/show")
-    public ResDto changeStatus(@Valid @RequestBody ChangeStatusDto requestDto){
+    public ResDto changeStatus(@Valid @RequestBody PorfDto.Status requestDto){
 
-        ChangeStatusDto changeStatusDto = portfolioService.changeStatus(requestDto);
+        PorfDto.Status changeStatusDto = portfolioService.changeStatus(requestDto);
 
         return ResDto.builder()
                 .result(true)
@@ -60,7 +57,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/project")
-    public ResDto addProjectsInPortfolio(@Valid @RequestBody PorfProjectRequestDto requestDto){
+    public ResDto addProjectsInPortfolio(@Valid @RequestBody PorfDto.ProjectRequest requestDto){
 
         portfolioService.inputProjectInPorf(requestDto);
 
@@ -72,7 +69,7 @@ public class PorfController {
     @GetMapping("/porf/{porfId}/intro")
     public ResDto getIntro(@PathVariable("porfId") Integer porfId){
 
-        PorfIntroResponseDto responseDto = portfolioService.getIntro(porfId);
+        PorfDto.IntroResponse responseDto = portfolioService.getIntro(porfId);
 
         return ResDto.builder()
                 .result(true)
@@ -83,7 +80,7 @@ public class PorfController {
     @PostMapping("/porf/intro/recommend")
     public ResDto getIntrosByStacks(@RequestBody StackDto requestDto){
 
-        List<PorfResponseDto> responseDtos = portfolioService.getIntrosByStacks(requestDto);
+        List<PorfDto.Response> responseDtos = portfolioService.getIntrosByStacks(requestDto);
 
         return ResDto.builder()
                 .result(true)
@@ -105,7 +102,7 @@ public class PorfController {
     @GetMapping("/porf/{porfId}/project")
     public ResDto getProject(@PathVariable("porfId") Integer porfId){
 
-        List<ProjectResponseDto> responseDto = portfolioService.getProject(porfId);
+        List<ProjectDto.Response> responseDto = portfolioService.getProject(porfId);
 
         return ResDto.builder()
                 .result(true)
@@ -115,7 +112,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/intro")
-    public ResDto updateIntro(@Valid @RequestBody PorfIntroRequestDto requestDto){
+    public ResDto updateIntro(@Valid @RequestBody PorfDto.IntroRequest requestDto){
 
         portfolioService.updateIntro(requestDto);
 
@@ -127,7 +124,7 @@ public class PorfController {
 
     @Secured("ROLE_USER")
     @PutMapping("/porf/template")
-    public ResDto updateTemplate(@Valid @RequestBody PorfTemplateRequestDto requestDto){
+    public ResDto updateTemplate(@Valid @RequestBody PorfDto.TemplateRequest requestDto){
 
         portfolioService.updateTemplate(requestDto);
 
