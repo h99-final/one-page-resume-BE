@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.domain.mongoDB.service;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
 import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
 import com.f5.onepageresumebe.domain.mysql.entity.User;
+import com.f5.onepageresumebe.domain.mysql.service.MemoryDbService;
 import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +39,7 @@ public class MGitService {
     private final UserQueryRepository userQueryRepository;
     private final ProjectQueryRepository projectQueryRepository;
     private final AES256 aes256;
+    private final MemoryDbService memoryDbService;
 
     public void sync(Integer projectId) {
 
@@ -45,7 +48,15 @@ public class MGitService {
         Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
 
-        if(project.getUser().getGitToken()==null) return;
+        User user = project.getUser();
+
+        if(!memoryDbService.callAvailability(user.getId())){
+            throw new CustomException("깃허브 불러오기는 5초에 1번 가능합니다. 5초 후에 다시 시도해 주세요",TOO_MANY_CALL);
+        }else{
+            memoryDbService.call(user.getId());
+        }
+
+        if(user.getGitToken()==null) return;
 
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
