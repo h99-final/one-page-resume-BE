@@ -9,6 +9,8 @@ IDLE_PORT=$(find_idle_port)
 IDLE_PROFILE=$(find_idle_profile)
 IMAGEPATH=/home/ubuntu/app
 
+# shellcheck disable=SC1068
+export JASYPT_PASSWORD = poug
 echo "> JASYPT_ENCRYPTOR_PASSWORD: $JASYPT_ENCRYPTOR_PASSWORD"
 echo "> IDLE_PORT : $IDLE_PORT"
 echo "> IDLE_PROFILE : $IDLE_PROFILE"
