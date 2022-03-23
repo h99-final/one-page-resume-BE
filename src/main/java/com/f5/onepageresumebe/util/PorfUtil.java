@@ -1,7 +1,7 @@
 package com.f5.onepageresumebe.util;
 
-import com.f5.onepageresumebe.domain.mysql.entity.Portfolio;
-import com.f5.onepageresumebe.domain.mysql.repository.querydsl.PortfolioQueryRepository;
+import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
+import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import lombok.AccessLevel;

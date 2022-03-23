@@ -1,9 +1,9 @@
 package com.f5.onepageresumebe.util;
 
-import com.f5.onepageresumebe.domain.mysql.entity.Project;
-import com.f5.onepageresumebe.domain.mysql.entity.ProjectImg;
-import com.f5.onepageresumebe.domain.mysql.entity.User;
-import com.f5.onepageresumebe.web.dto.project.ProjectDto;
+import com.f5.onepageresumebe.domain.project.entity.Project;
+import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
+import com.f5.onepageresumebe.domain.user.entity.User;
+import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProjectUtil {

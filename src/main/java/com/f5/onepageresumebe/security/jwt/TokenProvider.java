@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.security.jwt;
 
-import com.f5.onepageresumebe.web.dto.jwt.TokenDto;
+import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;

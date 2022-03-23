@@ -6,7 +6,7 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthenticationExce
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomFieldException;
-import com.f5.onepageresumebe.web.dto.common.ResDto;
+import com.f5.onepageresumebe.web.common.dto.ResDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +14,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import static com.f5.onepageresumebe.exception.ErrorCode.INTERNAL_SERVER_ERROR;
 
 @RestControllerAdvice
 @Slf4j

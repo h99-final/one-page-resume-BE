@@ -1,7 +1,7 @@
 package com.f5.onepageresumebe.security.ExceptionHandler;
 
 import com.f5.onepageresumebe.exception.ErrorResponse;
-import com.f5.onepageresumebe.web.dto.common.ResDto;
+import com.f5.onepageresumebe.web.common.dto.ResDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;

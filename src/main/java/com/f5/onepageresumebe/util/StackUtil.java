@@ -1,6 +1,6 @@
 package com.f5.onepageresumebe.util;
-import com.f5.onepageresumebe.domain.mysql.entity.Stack;
-import com.f5.onepageresumebe.domain.mysql.repository.StackRepository;
+import com.f5.onepageresumebe.domain.stack.entity.Stack;
+import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
