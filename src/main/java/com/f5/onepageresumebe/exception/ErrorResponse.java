@@ -19,33 +19,14 @@ import java.util.stream.StreamSupport;
 @Builder(access = AccessLevel.PROTECTED)
 public class ErrorResponse<T> {
 
-
     private T errors;
     private String errorCode;
 
-
     // 객체를 생성할 때 이름을 부여하여 특정한 목적에서 구별하여 생성할 수 있도록 하자
-    // todo: 이름을 구분하여 사용하자
-    public static ErrorResponse ofField(String field, String reason, ErrorCode errorCode) {
-        return ErrorResponse.builder()
-                .errors(CustomFieldError.of(field, reason))
-                .errorCode(errorCode.getCustomErrorCode())
-                .build();
-    }
-
     public static ErrorResponse ofField(BindingResult bindingResult, ErrorCode errorCode) {
         return ErrorResponse.builder()
                 .errors(CustomFieldError.of(bindingResult))
                 .errorCode(errorCode.getCustomErrorCode())
-                .build();
-    }
-
-
-
-
-    public static ErrorResponse ofField(Set<ConstraintViolation<?>> set) {
-        return ErrorResponse.builder()
-                .errors(CustomFieldError.of(set))
                 .build();
     }
 
@@ -92,29 +73,8 @@ public class ErrorResponse<T> {
 
             return customFieldErrors;
         }
-
-        public static List<CustomFieldError> of(Set<ConstraintViolation<?>> set) {
-
-            List<CustomFieldError> customFieldErrors = new ArrayList<>();
-
-            set.stream().forEach(error -> {
-
-                Stream<Path.Node> stream = StreamSupport.stream(error.getPropertyPath().spliterator(), false);
-                List<Path.Node> list = stream.collect(Collectors.toList());
-                String field = list.get(list.size() - 1).getName();
-                String message = error.getMessage();
-
-                customFieldErrors.add(
-                        CustomFieldError.builder()
-                                .field(field)
-                                .message(message)
-                                .build()
-                );
-            });
-
-            return customFieldErrors;
-        }
     }
+
 
     @Builder(access = AccessLevel.PROTECTED)
     @Getter

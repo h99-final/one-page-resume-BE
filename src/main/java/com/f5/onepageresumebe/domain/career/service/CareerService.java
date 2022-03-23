@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.domain.career.entity.Career;
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
 import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
+import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.web.career.dto.CareerDto;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 
 @Service
 @Transactional(readOnly = true)
@@ -35,7 +37,7 @@ public class CareerService {
 
         //커리어를 저장하기 위해 필요
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
-                () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                () -> new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         List<String> contents = requestDto.getContents();
         if (contents.isEmpty()){
@@ -66,7 +68,7 @@ public class CareerService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Career career = careerRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
-                new IllegalArgumentException("내가 작성한 직무 경험만 수정할 수 있습니다"));
+                new CustomAuthorizationException("내가 작성한 직무 경험만 수정할 수 있습니다"));
 
         List<String> contents = requestDto.getContents();
         if (contents.isEmpty()){
@@ -91,15 +93,13 @@ public class CareerService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Career career = careerRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
-                new IllegalArgumentException("내가 작성한 직무 경험만 삭제할 수 있습니다"));
+                new CustomAuthorizationException("내가 작성한 직무 경험만 삭제할 수 있습니다"));
 
         careerRepository.deleteById(careerId);
     }
 
     public List<CareerDto.Response> getCareer(Integer porfId) {
 
-
-        
         boolean isMyPorf = false;
         
         Portfolio portfolio = null;
@@ -107,14 +107,14 @@ public class CareerService {
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
         }
 
         portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
         List<CareerDto.Response> careerResponseDtos = new ArrayList<>();
 

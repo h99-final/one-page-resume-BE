@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -143,7 +144,7 @@ public class MGitService {
         );
 
         if (gitCommit == null) {
-            //todo: 오류 처리
+            throw new CustomException("해당 커밋의 파일들이 존재하지 않습니다.",NOT_EXIST_ERROR);
         }
 
         List<FileDto.Response> responseDtos = new ArrayList<>();

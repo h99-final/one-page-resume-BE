@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 
 
 @RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
@@ -58,7 +59,7 @@ public class PortfolioService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 포트폴리오입니다"));
+                new CustomException("존재하지 않는 포트폴리오입니다",NOT_EXIST_ERROR));
 
         portfolio.updateIntro(requestDto.getTitle(), portfolio.getUser().getGithubUrl(), requestDto.getContents(), portfolio.getUser().getBlogUrl());
 
@@ -71,7 +72,7 @@ public class PortfolioService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
-                () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                () -> new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
 
         portfolio.updateTemplate(porfTemplateRequestDto.getIdx());
@@ -86,7 +87,7 @@ public class PortfolioService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
-                () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                () -> new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         List<String> stacks = requestDto.getStack();
         if (stacks.size()<3){
@@ -105,7 +106,7 @@ public class PortfolioService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
 
         boolean changedStatus = portfolio.changeStatus(dto.getShow());
@@ -119,7 +120,7 @@ public class PortfolioService {
     public void inputProjectInPorf(PorfDto.ProjectRequest requestDto) {
         String email = SecurityUtil.getCurrentLoginUserId();
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         List<Integer> projectIds = requestDto.getProjectId();
 
@@ -136,7 +137,7 @@ public class PortfolioService {
 
         projects.forEach(project -> {
             if (!project.getUser().getId().equals(portfolio.getUser().getId())) {
-                throw new IllegalArgumentException("내가 작성한 프로젝트만 가져올 수 있습니다");
+                throw new CustomException("내가 작성한 프로젝트만 가져올 수 있습니다",INVALID_INPUT_ERROR);
             }
             project.setPortfolio(portfolio);
         });
@@ -146,7 +147,7 @@ public class PortfolioService {
     public void deleteProjectInPorf(PorfDto.ProjectRequest requestDto) {
         String email = SecurityUtil.getCurrentLoginUserId();
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
-                new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         List<Integer> projectIds = requestDto.getProjectId();
 
@@ -169,7 +170,7 @@ public class PortfolioService {
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
@@ -177,13 +178,13 @@ public class PortfolioService {
 
 
         portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                    new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         if (isMyPorf || !(portfolio.getIsTemp())) {
             try {
                 String email = SecurityUtil.getCurrentLoginUserId();
                 Portfolio myPortfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
-                        new IllegalArgumentException("포트폴리오가 존재하지 않습니다."));
+                        new CustomException("포트폴리오가 존재하지 않습니다.",NOT_EXIST_ERROR));
                 if (myPortfolio.getId()!=portfolio.getId()) portfolio.increaseViewCount();
             } catch (CustomAuthenticationException e) {
                 portfolio.increaseViewCount();
@@ -255,7 +256,7 @@ public class PortfolioService {
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
@@ -263,7 +264,7 @@ public class PortfolioService {
 
 
         portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
         if (isMyPorf || !(portfolio.getIsTemp())) {
 
@@ -289,7 +290,7 @@ public class PortfolioService {
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
+                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {
             isMyPorf = false;
@@ -297,7 +298,7 @@ public class PortfolioService {
 
 
         portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
-                    new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
+                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
 
         if (isMyPorf || !(portfolio.getIsTemp())) {
@@ -329,7 +330,7 @@ public class PortfolioService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 포트폴리오 입니다"));
+                new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
         Integer porfId = portfolio.getId();
         portfolio.reset();

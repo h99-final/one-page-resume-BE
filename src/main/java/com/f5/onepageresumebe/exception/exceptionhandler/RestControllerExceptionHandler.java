@@ -5,7 +5,6 @@ import com.f5.onepageresumebe.exception.ErrorResponse;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
-import com.f5.onepageresumebe.exception.customException.CustomFieldException;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -41,16 +40,6 @@ public class RestControllerExceptionHandler {
                         .build());
     }
 
-    @ExceptionHandler(CustomFieldException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResDto customFieldException(CustomFieldException e) {
-
-        return ResDto.builder()
-                .result(false)
-                .data(ErrorResponse.ofField(e.getField(), e.getReason(), e.getErrorCode()))
-                .build();
-    }
-
     @ExceptionHandler(CustomAuthorizationException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResDto customAuthorizationException(CustomAuthorizationException e) {
@@ -70,17 +59,5 @@ public class RestControllerExceptionHandler {
                 .data(ErrorResponse.of(e.getMessage(), e.getErrorCode()))
                 .build();
     }
-
-//    @ExceptionHandler(Exception.class)
-//    public ResDto globalException(Exception e){
-//
-//        log.error("알수 없는 오류 : {}",e.getMessage());
-//        e.printStackTrace();
-//
-//        return ResDto.builder()
-//                .result(false)
-//                .data(ErrorResponse.of("알 수 없는 오류가 발생하였습니다. 관리자에게 문의해 주세요.", INTERNAL_SERVER_ERROR))
-//                .build();
-//    }
 
 }

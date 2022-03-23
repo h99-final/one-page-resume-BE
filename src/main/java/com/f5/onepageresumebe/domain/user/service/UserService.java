@@ -43,6 +43,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static com.f5.onepageresumebe.exception.ErrorCode.INTERNAL_SERVER_ERROR;
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.security.jwt.TokenProvider.AUTHORIZATION_HEADER;
 
@@ -248,6 +249,7 @@ public class UserService {
             encryptedToken = aes256.encrypt(token);
         }catch (Exception e){
             log.error("git token 암호화에 실패하였습니다.");
+            throw new CustomException("git token을 저장하던 중 오류가 발생하였습니다. 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
         }
 
         user.setGitToken(encryptedToken);
@@ -315,7 +317,7 @@ public class UserService {
         } catch (IOException e) {
             //log.error("updateProfile -> s3upload : {}", e.getMessage());
             e.printStackTrace();
-            throw new CustomImageException("사진 업로드에 실패하였습니다. 관리자에게 문의하세요.");
+            throw new CustomException("사진 업로드에 실패하였습니다. 다시 시도해 주세요.",INTERNAL_SERVER_ERROR);
         }
         return userImageResponseDto;
     }

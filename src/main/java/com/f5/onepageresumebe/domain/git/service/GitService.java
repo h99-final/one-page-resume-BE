@@ -67,15 +67,13 @@ public class GitService {
         if (project == null) throw new CustomAuthorizationException("나의 프로젝트의 파일만 삭제할 수 있습니다.");
 
         GitFile gitFile = gitFileRepository.findFileByIdFetchAll(fileId).orElseThrow(() ->
-                new CustomException("존재하지 않는 파일입니다.", ErrorCode.INVALID_INPUT_ERROR));
+                new CustomException("존재하지 않는 파일입니다.", ErrorCode.NOT_EXIST_ERROR));
 
         GitCommit gitCommit = gitFile.getCommit();
         Integer gitCommitId = gitCommit.getId();
         Integer gitProjectId = gitCommit.getProject().getId();
 
         if(gitCommitId != commitId || gitProjectId != projectId){
-            System.out.println("commitId"+gitCommitId+"/"+commitId);
-            System.out.println("projectId"+gitProjectId+"/"+projectId);
             throw new CustomException("현재 프로젝트의 파일만 삭제할 수 있습니다.",ErrorCode.INVALID_INPUT_ERROR);
         }
 

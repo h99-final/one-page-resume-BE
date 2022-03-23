@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.domain.project.service;
 
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
@@ -67,7 +68,7 @@ public class ProjectService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(userEmail).orElseThrow(()->
-                new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         Project project = Project.create(requestDto.getTitle(), requestDto.getContent(),
                 requestDto.getGitRepoName(), requestDto.getGitRepoUrl(), user);
@@ -105,7 +106,7 @@ public class ProjectService {
         Project project = getProjectIfMyProject(projectId);
 
         if(project==null){
-            throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다.");
+            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
         }
 
         //새로운 사진 모두 추가
@@ -118,7 +119,7 @@ public class ProjectService {
         Project project = getProjectIfMyProject(projectId);
 
         if(project==null){
-            throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다.");
+            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
         }
 
         projectImgRepository.deleteById(imageId);
@@ -131,14 +132,14 @@ public class ProjectService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 유저입니다."));
+                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
-                new IllegalArgumentException("존재하지 않는 프로젝트입니다."));
+                new CustomException("존재하지 않는 프로젝트입니다.",NOT_EXIST_ERROR));
 
         // !project.getUser.getId().equals(user.getID())
         if(!(project.getUser().getId().equals(user.getId()))){
-            throw new IllegalArgumentException("내가 작성한 프로젝트만 수정할 수 있습니다");
+            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다");
         }
 
         List<String> stacks = requestDto.getStack();
@@ -294,7 +295,7 @@ public class ProjectService {
                 projectImgRepository.save(projectImg);
             }catch (IOException e){
                 log.error("createProject -> imageUpload : {}",e.getMessage());
-                throw new IllegalArgumentException("사진 업로드에 실패하였습니다.");
+                throw new CustomException("사진 업로드에 실패하였습니다.",INTERNAL_SERVER_ERROR);
             }
         });
 
@@ -307,7 +308,7 @@ public class ProjectService {
         Project project = getProjectIfMyProject(projectId);
 
         if(project ==null){
-            throw new IllegalArgumentException("내가 작성한 프로젝트만 삭제할 수 있습니다");
+            throw new CustomAuthorizationException("내가 작성한 프로젝트만 삭제할 수 있습니다");
         }
 
         List<GitCommit> gitCommitList = gitCommitRepository.findAllByProjectId(projectId);
@@ -333,7 +334,8 @@ public class ProjectService {
 
         Project project = getProjectIfMyProject(projectId);
 
-        if(project == null) throw new IllegalArgumentException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.");
+        //todo: 나누어 예오ㅚ처리
+        if(project == null) throw new CustomException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.",INVALID_INPUT_ERROR);
 
         GitCommit gitCommit = gitCommitRepository.getById(commitId);
 
@@ -352,7 +354,7 @@ public class ProjectService {
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             User user = userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
+                    .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
             //프로젝트 주인이 조회하는지 체크
             project = projectRepository.findByUserEmailAndProjectId(userEmail, projectId).orElse(null);
