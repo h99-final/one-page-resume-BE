@@ -1,19 +1,19 @@
-package com.f5.onepageresumebe.domain.git.service;
+package com.f5.onepageresumebe.domain.mongoDB.service;
 
-import com.f5.onepageresumebe.domain.git.entity.MCommit;
-import com.f5.onepageresumebe.domain.git.entity.MFile;
-import com.f5.onepageresumebe.domain.user.entity.User;
-import com.f5.onepageresumebe.domain.user.repository.UserRepository;
+import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
+import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
+import com.f5.onepageresumebe.domain.mysql.entity.User;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.AES256;
-import com.f5.onepageresumebe.domain.project.entity.Project;
-import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepositoryImpl;
+import com.f5.onepageresumebe.domain.mysql.entity.Project;
+import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.GitUtil;
-import com.f5.onepageresumebe.web.git.dto.CommitDto;
-import com.f5.onepageresumebe.web.git.dto.FileDto;
+import com.f5.onepageresumebe.web.dto.gitCommit.CommitDto;
+import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
 import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 
 @Service
@@ -34,11 +35,11 @@ import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 @Slf4j
 public class MGitService {
 
-    private final AES256 aes256;
     private final MongoTemplate mongoTemplate;
-
+    private final AES256 aes256;
+    private final MemoryDbService memoryDbService;
+    private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
-    private final ProjectRepositoryImpl projectQueryRepository;
 
     public void sync(Integer projectId) {
 
@@ -47,7 +48,13 @@ public class MGitService {
         Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
 
-        if(project.getUser().getGitToken()==null) return;
+        User user = project.getUser();
+
+        //api를 호출할 수 있는지 체크한다.
+        syncCallCheck(user.getId());
+
+        //토큰이 없으면 바로 RETURN
+        if(user.getGitToken()==null) return;
 
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
@@ -198,6 +205,14 @@ public class MGitService {
     public String getOwner(String gitUrl) {
         int idx = gitUrl.indexOf(".com/");
         return gitUrl.substring(idx + 5);
+    }
+
+    public void syncCallCheck(Integer userId){
+        if(!memoryDbService.callAvailability(userId)){
+            throw new CustomException("깃허브 불러오기는 5초에 1번 가능합니다. 5초 후에 다시 시도해 주세요",TOO_MANY_CALL);
+        }else{
+            memoryDbService.call(userId);
+        }
     }
 
 }

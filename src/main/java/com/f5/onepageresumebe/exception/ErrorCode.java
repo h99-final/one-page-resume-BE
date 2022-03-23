@@ -10,7 +10,8 @@ public enum ErrorCode {
     DUPLICATED_INPUT_ERROR(400,"E003"),
     AUTHENTICATION_ERROR(401,"E004"),
     AUTHORIZATION_ERROR(403,"E005"),
-    NOT_EXIST_ERROR(400,"E006");
+    NOT_EXIST_ERROR(400,"E006"),
+    TOO_MANY_CALL(400,"E007");
 
     private int httpStatus;
     private String customErrorCode;
