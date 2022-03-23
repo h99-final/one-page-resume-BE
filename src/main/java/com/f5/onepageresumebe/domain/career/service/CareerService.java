@@ -1,11 +1,9 @@
 package com.f5.onepageresumebe.domain.career.service;
 
-import com.f5.onepageresumebe.domain.career.repository.CareerQueryRepository;
 import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.career.entity.Career;
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioRepository;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioQueryRepository;
+import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
@@ -28,8 +26,6 @@ public class CareerService {
 
     private final CareerRepository careerRepository;
     private final PortfolioRepository portfolioRepository;
-    private final CareerQueryRepository careerQueryRepository;
-    private final PortfolioQueryRepository portfolioQueryRepository;
 
     @Transactional
     public Integer createCareer(CareerDto.Request requestDto) {
@@ -38,7 +34,7 @@ public class CareerService {
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         //커리어를 저장하기 위해 필요
-        Portfolio portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
+        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new IllegalArgumentException("포트폴리오가 존재하지 않습니다"));
 
         List<String> contents = requestDto.getContents();
@@ -69,7 +65,7 @@ public class CareerService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Career career = careerQueryRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
+        Career career = careerRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new IllegalArgumentException("내가 작성한 직무 경험만 수정할 수 있습니다"));
 
         List<String> contents = requestDto.getContents();
@@ -94,7 +90,7 @@ public class CareerService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Career career = careerQueryRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
+        Career career = careerRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new IllegalArgumentException("내가 작성한 직무 경험만 삭제할 수 있습니다"));
 
         careerRepository.deleteById(careerId);
@@ -110,7 +106,7 @@ public class CareerService {
         
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioQueryRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
+            portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
                     new IllegalArgumentException("존재하지 않는 포트폴리오입니다."));
             if(portfolio.getId() == porfId) isMyPorf = true;
         } catch (CustomAuthenticationException e) {

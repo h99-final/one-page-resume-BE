@@ -1,26 +1,23 @@
-package com.f5.onepageresumebe.domain.user.repository;
+package com.f5.onepageresumebe.domain.user.repository.stack;
 
-import com.f5.onepageresumebe.domain.user.entity.User;
+import com.f5.onepageresumebe.domain.user.repository.stack.UserStackRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
-import static com.f5.onepageresumebe.domain.mysql.entity.QStack.stack;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUserStack.*;
-
+import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolio.portfolio;
+import static com.f5.onepageresumebe.domain.stack.entity.QStack.stack;
+import static com.f5.onepageresumebe.domain.user.entity.QUser.user;
+import static com.f5.onepageresumebe.domain.user.entity.QUserStack.userStack;
 
 @RequiredArgsConstructor
-@Repository
-public class UserQueryRepository {
+public class UserStackRepositoryImpl implements UserStackRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
     //유저 id로 유저를 찾아 유저의 스택을 모두 반환
+    @Override
     public List<String> findStackNamesByUserId(Integer userId){
 
         List<String> stacks = queryFactory.select(stack.name).from(userStack)
@@ -32,6 +29,7 @@ public class UserQueryRepository {
     }
 
     //포트폴리오 id로 유저를 찾아 유저의 스택을 모두 반환
+    @Override
     public List<String> findStackNamesByPorfId(Integer porfId){
 
         List<String> stacks = queryFactory.selectDistinct(stack.name).from(userStack)
@@ -42,16 +40,5 @@ public class UserQueryRepository {
                 .fetch();
 
         return stacks;
-    }
-
-    public Optional<User> findByEmail(String email){
-        List<User> users = queryFactory.selectFrom(user)
-                .innerJoin(user.portfolio, portfolio).fetchJoin()
-                .where(user.email.eq(email))
-                .limit(1)
-                .fetch();
-
-        if(users.isEmpty()) return Optional.empty();
-        else return Optional.of(users.get(0));
     }
 }

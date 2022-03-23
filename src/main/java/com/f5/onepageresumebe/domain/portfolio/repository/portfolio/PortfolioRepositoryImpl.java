@@ -1,7 +1,7 @@
-package com.f5.onepageresumebe.domain.portfolio.repository;
+package com.f5.onepageresumebe.domain.portfolio.repository.portfolio;
 
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
-import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
+import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -9,20 +9,19 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
-import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolioStack.portfolioStack;
-import static com.f5.onepageresumebe.domain.mysql.entity.QProject.project;
-import static com.f5.onepageresumebe.domain.mysql.entity.QProjectImg.projectImg;
-import static com.f5.onepageresumebe.domain.mysql.entity.QStack.stack;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
+import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolio.portfolio;
+import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolioStack.portfolioStack;
+import static com.f5.onepageresumebe.domain.stack.entity.QStack.stack;
+import static com.f5.onepageresumebe.domain.user.entity.QUser.user;
+
 
 @RequiredArgsConstructor
 @Repository
-public class PortfolioQueryRepository {
+public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-
+    @Override
     public Optional<Portfolio> findByUserEmailFetchUser(String email) {
 
         List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
@@ -35,6 +34,7 @@ public class PortfolioQueryRepository {
         else return Optional.of(portfolios.get(0));
     }
 
+    @Override
     public List<Portfolio> findAllByStackNamesIfPublicLimit(List<String> stacks) {
 
         List<Portfolio> portfolios = queryFactory.select(portfolio).from(portfolioStack)
@@ -49,7 +49,9 @@ public class PortfolioQueryRepository {
         return portfolios;
     }
 
+
     //공개된 포트폴리오만 가져온다
+    @Override
     public List<Portfolio> findAllFetchUserIfPublicLimit() {
 
         List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
@@ -62,6 +64,7 @@ public class PortfolioQueryRepository {
         return portfolios;
     }
 
+    @Override
     public List<String> findStackNamesByPorfId(Integer porfId) {
 
         List<String> stackNames = queryFactory.select(stack.name).from(portfolioStack)
@@ -72,27 +75,4 @@ public class PortfolioQueryRepository {
         return stackNames;
     }
 
-    public Optional<ProjectImg> findFirstProjectImgByProjectId(Integer projectId) {
-
-        List<ProjectImg> projectImgs = queryFactory.selectFrom(projectImg)
-                .innerJoin(projectImg.project, project).fetchJoin()
-                .where(project.id.eq(projectId))
-                .limit(1)
-                .fetch();
-
-        if (projectImgs.isEmpty()) return Optional.empty();
-        else return Optional.of(projectImgs.get(0));
-    }
-
-//    public Optional<Portfolio> findFirstPorfByUserEmail(String userEmail){
-//
-//        List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
-//                .innerJoin(portfolio.user, user).fetchJoin()
-//                .where(portfolio.id.eq(porfId).and(user.email.eq(userEmail)))
-//                .limit(1)
-//                .fetch();
-//
-//        if(portfolios.isEmpty()) return Optional.empty();
-//        else return Optional.of(portfolios.get(0));
-//    }
 }

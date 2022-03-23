@@ -2,13 +2,11 @@ package com.f5.onepageresumebe.domain.project.service;
 
 import com.f5.onepageresumebe.domain.project.entity.ProjectBookmark;
 import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
-import com.f5.onepageresumebe.domain.user.repository.UserQueryRepository;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfoiloBookmarkRepository;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioRepository;
+import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.domain.project.entity.Project;
 import com.f5.onepageresumebe.domain.project.repository.ProjectBookmarkRepository;
 import com.f5.onepageresumebe.domain.project.repository.ProjectImgRepository;
-import com.f5.onepageresumebe.domain.project.repository.ProjectRepository;
+import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.project.repository.ProjectStackRepository;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.security.SecurityUtil;
@@ -31,14 +29,13 @@ public class ProjectBookmarkService {
     private final ProjectBookmarkRepository projectBookmarkRepository;
     private final ProjectImgRepository projectImgRepository;
     private final ProjectStackRepository projectStackRepository;
-    private final UserQueryRepository userQueryRepository;
-    private final PortfolioRepository portfolioRepository;
-    private final PortfoiloBookmarkRepository portfoiloBookmarkRepository;
+
+    private final UserRepository userRepository;
 
     @Transactional
     public void addProjectBookmark(Integer projectId) {
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
 
         Project project = projectRepository.getById(projectId);
@@ -52,7 +49,7 @@ public class ProjectBookmarkService {
     @Transactional
     public void deleteProjectBookmark(Integer projectId) {
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(()->
+        User user = userRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
         Project project = projectRepository.getById(projectId);
         project.updateBookmarkCount(-1);
@@ -62,7 +59,7 @@ public class ProjectBookmarkService {
 
     public List<ProjectDto.Response> getProjectBookmark() {
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(()->
+        User user = userRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
 
         List<Project> projects = new ArrayList<>();

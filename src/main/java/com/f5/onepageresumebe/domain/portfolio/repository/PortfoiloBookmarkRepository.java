@@ -14,9 +14,9 @@ public interface PortfoiloBookmarkRepository extends JpaRepository<PortfoiloBook
 
     @Modifying
     @Query("delete from PortfoiloBookmark pb where pb.user.id = :userId and pb.portfolio.id = :portfoloId")
-    void deleteByUserIdAndPortfolioId(@Param("userId") Integer userId, @Param("portfoloId") Integer portfoloId);
+    void deleteByUserIdAndPortfolioId(@Param("userId") Integer userId, @Param("portfolioId") Integer portfolioId);
 
-    Optional<PortfoiloBookmark> findFirstByUserIdAndPortfolioId(Integer userId, Integer portfoloId);
+    Optional<PortfoiloBookmark> findFirstByUserIdAndPortfolioId(Integer userId, Integer portfolioId);
 
 
     List<PortfoiloBookmark> findAllByPortfolio(Portfolio portfolio);

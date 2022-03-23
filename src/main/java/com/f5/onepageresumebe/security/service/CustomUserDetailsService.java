@@ -1,7 +1,7 @@
 package com.f5.onepageresumebe.security.service;
 
 import com.f5.onepageresumebe.domain.user.entity.User;
-import com.f5.onepageresumebe.domain.user.repository.UserQueryRepository;
+import com.f5.onepageresumebe.domain.user.repository.UserRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +15,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserQueryRepository userQueryRepository;
+    private final UserRepositoryImpl userQueryRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

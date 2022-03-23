@@ -3,9 +3,8 @@ package com.f5.onepageresumebe.domain.git.service;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
 import com.f5.onepageresumebe.domain.project.entity.Project;
-import com.f5.onepageresumebe.domain.git.repository.GitCommitRepository;
-import com.f5.onepageresumebe.domain.git.repository.GitFileRepository;
-import com.f5.onepageresumebe.domain.git.repository.GitQueryRepository;
+import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
+import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
 import com.f5.onepageresumebe.domain.project.service.ProjectService;
 import com.f5.onepageresumebe.exception.ErrorCode;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
@@ -29,7 +28,6 @@ public class GitService {
     private final ProjectService projectService;
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
-    private final GitQueryRepository gitQueryRepository;
 
     @Transactional
     public CommitDto.IdResponse createTroubleShooting(Integer projectId, CommitDto.Request request) {
@@ -68,7 +66,7 @@ public class GitService {
 
         if (project == null) throw new CustomAuthorizationException("나의 프로젝트의 파일만 삭제할 수 있습니다.");
 
-        GitFile gitFile = gitQueryRepository.findFileByIdFetchAll(fileId).orElseThrow(() ->
+        GitFile gitFile = gitFileRepository.findFileByIdFetchAll(fileId).orElseThrow(() ->
                 new CustomException("존재하지 않는 파일입니다.", ErrorCode.INVALID_INPUT_ERROR));
 
         GitCommit gitCommit = gitFile.getCommit();

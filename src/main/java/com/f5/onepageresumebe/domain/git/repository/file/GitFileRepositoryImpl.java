@@ -1,23 +1,23 @@
-package com.f5.onepageresumebe.domain.git.repository;
+package com.f5.onepageresumebe.domain.git.repository.file;
 
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.mysql.entity.QGitCommit.gitCommit;
-import static com.f5.onepageresumebe.domain.mysql.entity.QGitFile.gitFile;
-import static com.f5.onepageresumebe.domain.mysql.entity.QProject.project;
+import static com.f5.onepageresumebe.domain.git.entity.QGitCommit.gitCommit;
+import static com.f5.onepageresumebe.domain.git.entity.QGitFile.gitFile;
+import static com.f5.onepageresumebe.domain.project.entity.QProject.project;
 
-@Repository
+
 @RequiredArgsConstructor
-public class GitQueryRepository {
+public class GitFileRepositoryImpl implements GitFileRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
 
+    @Override
     public Optional<GitFile> findFileByIdFetchAll(Integer fileId){
 
         List<GitFile> files = queryFactory.selectFrom(gitFile)

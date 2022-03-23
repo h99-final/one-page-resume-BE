@@ -3,13 +3,13 @@ package com.f5.onepageresumebe.domain.git.service;
 import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.git.entity.MFile;
 import com.f5.onepageresumebe.domain.user.entity.User;
-import com.f5.onepageresumebe.domain.user.repository.UserQueryRepository;
+import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.domain.project.entity.Project;
-import com.f5.onepageresumebe.domain.project.repository.ProjectQueryRepository;
+import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepositoryImpl;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.git.dto.CommitDto;
@@ -33,10 +33,11 @@ import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 @Slf4j
 public class MGitService {
 
-    private final MongoTemplate mongoTemplate;
-    private final UserQueryRepository userQueryRepository;
-    private final ProjectQueryRepository projectQueryRepository;
     private final AES256 aes256;
+    private final MongoTemplate mongoTemplate;
+
+    private final UserRepository userRepository;
+    private final ProjectRepositoryImpl projectQueryRepository;
 
     public void sync(Integer projectId) {
 
@@ -164,7 +165,7 @@ public class MGitService {
     private GitHub getGitHub() {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
         String rawToken = null;
         String encryptToken = user.getGitToken();

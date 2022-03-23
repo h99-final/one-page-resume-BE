@@ -1,11 +1,13 @@
 package com.f5.onepageresumebe.domain.project.service;
 
 
+import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
+import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
-import com.f5.onepageresumebe.domain.git.repository.GitCommitRepository;
-import com.f5.onepageresumebe.domain.git.repository.GitFileRepository;
+import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
+import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
 import com.f5.onepageresumebe.domain.project.entity.Project;
 import com.f5.onepageresumebe.domain.project.entity.ProjectBookmark;
 import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
@@ -13,7 +15,7 @@ import com.f5.onepageresumebe.domain.project.entity.ProjectStack;
 import com.f5.onepageresumebe.domain.project.repository.*;
 import com.f5.onepageresumebe.domain.stack.entity.Stack;
 import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
-import com.f5.onepageresumebe.domain.user.repository.UserQueryRepository;
+import com.f5.onepageresumebe.domain.user.repository.UserRepositoryImpl;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
@@ -40,29 +42,31 @@ import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 
-@RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
+@RequiredArgsConstructor
 @Service
 @Slf4j
 @Transactional(readOnly = true)
 public class ProjectService {
 
+    private final S3Uploader s3Uploader;
 
     private final ProjectRepository projectRepository;
-    private final StackRepository stackRepository;
     private final ProjectStackRepository projectStackRepository;
-    private final S3Uploader s3Uploader;
     private final ProjectImgRepository projectImgRepository;
+    private final ProjectBookmarkRepository projectBookmarkRepository;
+
+    private final StackRepository stackRepository;
+
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
-    private final ProjectQueryRepository projectQueryRepository;
-    private final UserQueryRepository userQueryRepository;
-    private final ProjectBookmarkRepository projectBookmarkRepository;
+
+    private final UserRepository userRepository;
 
     @Transactional(rollbackFor = Exception.class)//프로젝트 생성
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(()->
+        User user = userRepository.findByEmail(userEmail).orElseThrow(()->
                 new IllegalArgumentException("유저 정보가 존재하지 않습니다."));
 
         Project project = Project.create(requestDto.getTitle(), requestDto.getContent(),
@@ -126,7 +130,7 @@ public class ProjectService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         Project project = projectRepository.findById(projectId).orElseThrow(() ->
@@ -156,7 +160,7 @@ public class ProjectService {
 
         String email = SecurityUtil.getCurrentLoginUserId();
 
-        List<Project> projects = projectQueryRepository.findAllByUserEmail(email);
+        List<Project> projects = projectRepository.findAllByUserEmail(email);
 
         HashMap<Integer, List<String>> stackMap = new HashMap<>();
         HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
@@ -186,7 +190,7 @@ public class ProjectService {
             projects = projectRepository.findAllByOrderByBookmarkCountDesc(pageable);
         }
         else {
-            projects = projectQueryRepository.findAllByStackNamesPaging(stackNames,pageable);
+            projects = projectRepository.findAllByStackNamesPaging(stackNames,pageable);
         }
 
         HashMap<Integer, List<String>> stackMap = new HashMap<>();
@@ -210,13 +214,7 @@ public class ProjectService {
     public Project getProjectIfMyProject(Integer projectId) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        Project project = projectQueryRepository.findByUserEmailAndProjectId(email, projectId).orElse(null);
-//        List<Project> projects = projectRepository.findAllByUserEmail(email);
-//        Project project = null;
-//
-//        for(Project curProject : projects) {
-//            if(curProject.getId().equals( projectId)) project = curProject;
-//        }
+        Project project = projectRepository.findByUserEmailAndProjectId(email, projectId).orElse(null);
 
         return project;
     }
@@ -353,11 +351,11 @@ public class ProjectService {
 
         try {
             String userEmail = SecurityUtil.getCurrentLoginUserId();
-            User user = userQueryRepository.findByEmail(userEmail)
+            User user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 email 입니다."));
 
             //프로젝트 주인이 조회하는지 체크
-            project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElse(null);
+            project = projectRepository.findByUserEmailAndProjectId(userEmail, projectId).orElse(null);
 
             //본 주인이 아니라면, isMyProject : false, 프로젝트 가져오기
             if(project == null) {

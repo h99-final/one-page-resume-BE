@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface CareerRepository extends JpaRepository<Career, Integer> {
+public interface CareerRepository extends JpaRepository<Career, Integer>, CareerRepositoryCustom {
 
     @Query("select c from Career c inner join fetch c.portfolio p where p.id = :porfId order by c.endTime desc")
     List<Career> findAllByPorfIdOrderByEndTimeDesc(@Param("porfId") Integer porfId);

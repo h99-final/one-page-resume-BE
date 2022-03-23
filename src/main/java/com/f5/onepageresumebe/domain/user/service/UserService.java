@@ -5,14 +5,13 @@ import com.f5.onepageresumebe.domain.stack.entity.Stack;
 import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
 import com.f5.onepageresumebe.domain.user.entity.Certification;
 import com.f5.onepageresumebe.domain.user.repository.CertificationRepository;
-import com.f5.onepageresumebe.domain.user.repository.UserQueryRepository;
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioRepository;
-import com.f5.onepageresumebe.domain.project.repository.ProjectRepository;
+import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepository;
+import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.domain.user.entity.UserStack;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
-import com.f5.onepageresumebe.domain.user.repository.UserStackRepository;
+import com.f5.onepageresumebe.domain.user.repository.stack.UserStackRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomImageException;
@@ -55,16 +54,20 @@ public class UserService {
 
     private final AES256 aes256;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
-    private final ProjectRepository projectRepository;
-    private final PortfolioRepository portfolioRepository;
     private final TokenProvider tokenProvider;
-    private final StackRepository stackRepository;
-    private final UserStackRepository userstackRepository;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final S3Uploader s3Uploader;
-    private final UserQueryRepository userQueryRepository;
     private final JavaMailSender javaMailSender;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    private final UserRepository userRepository;
+    private final UserStackRepository userstackRepository;
+
+    private final ProjectRepository projectRepository;
+
+    private final PortfolioRepository portfolioRepository;
+
+    private final StackRepository stackRepository;
+
     private final CertificationRepository certificationRepository;
 
     @Transactional
@@ -96,7 +99,7 @@ public class UserService {
     public boolean checkEmail(UserDto.EmailRequest request) {
         boolean res = false;
 
-        Optional<User> found = userQueryRepository.findByEmail(request.getEmail());
+        Optional<User> found = userRepository.findByEmail(request.getEmail());
         if (found.isPresent()) res = true;
 
         return res;
@@ -119,7 +122,7 @@ public class UserService {
 
         //유저 정보 가져오기
         //아이디가 잘못된 값이면 여기까지 안오지만..
-        User user = userQueryRepository.findByEmail(loginDto.getEmail())
+        User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new CustomAuthenticationException("Email을 확인해 주세요"));
 
         //첫 로그인 유저가 아닐때
@@ -140,7 +143,7 @@ public class UserService {
     public void addInfo(UserDto.AddInfoRequest requestDto) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(userEmail)
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         List<String> stacks = requestDto.getStack();
@@ -185,7 +188,7 @@ public class UserService {
     public void updateInfo(UserDto.UpdateInfoRequest request) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User curUser = userQueryRepository.findByEmail(userEmail)
+        User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
@@ -202,7 +205,7 @@ public class UserService {
     public void updateStacks(StackDto request){
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User curUser = userQueryRepository.findByEmail(userEmail)
+        User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         List<String> stackNames = request.getStack();
@@ -236,7 +239,7 @@ public class UserService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         String encryptedToken = null;
@@ -256,7 +259,7 @@ public class UserService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        User user = userQueryRepository.findByEmail(userEmail).orElseThrow(() ->
+        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         user.setGitToken(null);
@@ -265,14 +268,14 @@ public class UserService {
     public UserDto.InfoResponse getUserInfo() {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //프로젝트 아이디 불러오기
         List<Integer> projectIds = projectRepository.findProjectIdByUserId(user.getId());
 
         //스택 내용 불러오기
-        List<String> stackNames = userQueryRepository.findStackNamesByUserId(user.getId());
+        List<String> stackNames = userstackRepository.findStackNamesByUserId(user.getId());
 
         Portfolio portfolio = user.getPortfolio();
         return UserDto.InfoResponse.builder()
@@ -298,7 +301,7 @@ public class UserService {
         UserDto.ImgResponse userImageResponseDto = UserDto.ImgResponse.builder().build();
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
@@ -320,7 +323,7 @@ public class UserService {
     @Transactional
     public void deleteProfile() {
         String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userQueryRepository.findByEmail(email).orElseThrow(() ->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //s3에서 삭제
@@ -358,7 +361,7 @@ public class UserService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        User curUser = userQueryRepository.findByEmail(userEmail)
+        User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         String inputCurPassword = requestDto.getCurPassword();
@@ -441,7 +444,7 @@ public class UserService {
         String newPassword = makeRandomString();
         String email = requestDto.getEmail();
 
-        User user = userQueryRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomAuthenticationException("해당 이메일이 존재하지 않습니다."));
 
         SimpleMailMessage message = new SimpleMailMessage();
