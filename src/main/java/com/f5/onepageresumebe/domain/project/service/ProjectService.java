@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.domain.project.service;
 
 
+import com.f5.onepageresumebe.domain.git.service.MGitService;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
@@ -57,6 +58,7 @@ public class ProjectService {
     private final ProjectQueryRepository projectQueryRepository;
     private final UserQueryRepository userQueryRepository;
     private final ProjectBookmarkRepository projectBookmarkRepository;
+    private final MGitService mGitService;
 
     @Transactional(rollbackFor = Exception.class)//프로젝트 생성
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
@@ -86,11 +88,14 @@ public class ProjectService {
 
         Integer projectId = project.getId();
 
+        Long expectEndTime = mGitService.order(projectId);
+
         return ProjectDto.Response.builder()
                 .id(projectId)
                 .title(project.getTitle())
                 .imageUrl(projectImgRepository.findFirstByProjectId(projectId).get()
                         .getImageUrl())
+                .expectEndTime(expectEndTime)
                 .stack(stacks)
                 .build();
     }
