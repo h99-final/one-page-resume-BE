@@ -63,7 +63,7 @@ public class ProjectService {
 
     private final UserRepository userRepository;
 
-    @Transactional(rollbackFor = Exception.class)//프로젝트 생성
+    @Transactional
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();

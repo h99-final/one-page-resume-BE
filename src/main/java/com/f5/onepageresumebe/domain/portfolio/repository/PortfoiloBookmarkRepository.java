@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface PortfoiloBookmarkRepository extends JpaRepository<PortfoiloBookmark,Integer> {
 
     @Modifying
-    @Query("delete from PortfoiloBookmark pb where pb.user.id = :userId and pb.portfolio.id = :portfoloId")
+    @Query("delete from PortfoiloBookmark pb where pb.user.id = :userId and pb.portfolio.id = :portfolioId")
     void deleteByUserIdAndPortfolioId(@Param("userId") Integer userId, @Param("portfolioId") Integer portfolioId);
 
     Optional<PortfoiloBookmark> findFirstByUserIdAndPortfolioId(Integer userId, Integer portfolioId);

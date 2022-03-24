@@ -1,19 +1,20 @@
-package com.f5.onepageresumebe.domain.mongoDB.service;
+package com.f5.onepageresumebe.domain.git.service;
 
-import com.f5.onepageresumebe.domain.mongoDB.entity.MCommit;
-import com.f5.onepageresumebe.domain.mongoDB.entity.MFile;
-import com.f5.onepageresumebe.domain.mysql.entity.User;
-import com.f5.onepageresumebe.domain.mysql.repository.querydsl.UserQueryRepository;
+import com.f5.onepageresumebe.domain.git.entity.MCommit;
+import com.f5.onepageresumebe.domain.git.entity.MFile;
+import com.f5.onepageresumebe.domain.project.entity.Project;
+import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
+import com.f5.onepageresumebe.domain.project.service.MemoryDbService;
+import com.f5.onepageresumebe.domain.user.entity.User;
+import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.AES256;
-import com.f5.onepageresumebe.domain.mysql.entity.Project;
-import com.f5.onepageresumebe.domain.mysql.repository.querydsl.ProjectQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.GitUtil;
-import com.f5.onepageresumebe.web.dto.gitCommit.CommitDto;
-import com.f5.onepageresumebe.web.dto.gitFile.FileDto;
+import com.f5.onepageresumebe.web.git.dto.CommitDto;
+import com.f5.onepageresumebe.web.git.dto.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
@@ -38,14 +40,14 @@ public class MGitService {
     private final MongoTemplate mongoTemplate;
     private final AES256 aes256;
     private final MemoryDbService memoryDbService;
-    private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
 
     public void sync(Integer projectId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+        Project project = projectRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
 
         User user = project.getUser();
@@ -113,7 +115,7 @@ public class MGitService {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+        Project project = projectRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
 
         String repoUrl = project.getGitRepoUrl();
