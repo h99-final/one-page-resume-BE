@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.domain.mysql.service;
+package com.f5.onepageresumebe.domain.project.service;
 
 import com.f5.onepageresumebe.domain.mysql.repository.inmemory.MemoryDbRepository;
 import lombok.RequiredArgsConstructor;
