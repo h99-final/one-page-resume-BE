@@ -4,12 +4,13 @@ import com.f5.onepageresumebe.domain.git.entity.GitFile;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.git.entity.QGitCommit.gitCommit;
-import static com.f5.onepageresumebe.domain.git.entity.QGitFile.gitFile;
-import static com.f5.onepageresumebe.domain.project.entity.QProject.project;
+import static com.f5.onepageresumebe.domain.mysql.entity.QGitCommit.gitCommit;
+import static com.f5.onepageresumebe.domain.mysql.entity.QGitFile.gitFile;
+import static com.f5.onepageresumebe.domain.mysql.entity.QProject.project;
 
 @Repository
 @RequiredArgsConstructor
