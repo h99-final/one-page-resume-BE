@@ -4,14 +4,13 @@ import com.f5.onepageresumebe.domain.user.entity.User;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
-import static com.f5.onepageresumebe.domain.mysql.entity.QStack.stack;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUserStack.*;
+import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolio.portfolio;
+import static com.f5.onepageresumebe.domain.stack.entity.QStack.stack;
+import static com.f5.onepageresumebe.domain.user.entity.QUser.user;
+import static com.f5.onepageresumebe.domain.user.entity.QUserStack.userStack;
 
 
 @RequiredArgsConstructor
