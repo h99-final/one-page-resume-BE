@@ -11,12 +11,14 @@ import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.domain.project.entity.Project;
 import com.f5.onepageresumebe.domain.project.repository.ProjectQueryRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.util.GitRunnable;
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.git.dto.CommitDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -37,15 +39,16 @@ public class MGitService {
     private final UserQueryRepository userQueryRepository;
     private final ProjectQueryRepository projectQueryRepository;
     private final AES256 aes256;
+    private final TaskExecutor taskExecutor;
 
-    public void sync(Integer projectId) {
+    public Long order(Integer projectId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
         Project project = projectQueryRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
 
-        if(project.getUser().getGitToken()==null) return;
+        if(project.getUser().getGitToken()==null) return 0L;
 
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
@@ -55,30 +58,51 @@ public class MGitService {
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
         deleteMCommits(repoName, repoOwner);
-
         try {
             ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
         } catch (IOException e) {
             log.error("Repository 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
         }
+        List<GHCommit> commits = null;
 
         try {
-            List<GHCommit> commits = ghRepository.listCommits().toList();
-            for (GHCommit curCommit : commits) {
-                String curSha = curCommit.getSHA1();
-                String curMessage = curCommit.getCommitShortInfo().getMessage();
-
-                List<MFile> files = getFiles(ghRepository, curSha);
-
-                MCommit mCommit = MCommit.create(curMessage, curSha, repoName, repoOwner, files);
-
-                mongoTemplate.save(mCommit);
-            }
-        } catch (IOException e) {
+            commits = ghRepository.listCommits().toList();
+        }
+        catch (IOException e) {
             log.error("Commit 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
         }
+        Integer commitsSize = commits.size();
+
+        Integer modeValue = commitsSize/ 5;
+
+        Integer firstStart = 0;
+        Integer firstEnd = firstStart + modeValue;
+
+        Integer secondStart = firstEnd;
+        Integer secondEnd = firstEnd + modeValue;
+
+        Integer thirdStart = secondEnd;
+        Integer thirdEnd = secondEnd + modeValue;
+
+        Integer fourthStart = thirdEnd;
+        Integer fourthEnd = thirdEnd + modeValue;
+
+        Integer fifthStart = fourthEnd;
+        Integer fifthEnd = commitsSize;
+
+        taskExecutor.execute(new GitRunnable(firstStart, firstEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
+        taskExecutor.execute(new GitRunnable(secondStart, secondEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
+        taskExecutor.execute(new GitRunnable(thirdStart, thirdEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
+        taskExecutor.execute(new GitRunnable(fourthStart, fourthEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
+        taskExecutor.execute(new GitRunnable(fifthStart, fifthEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
+
+        Double endTime = commitsSize * 0.3;
+
+        Long expectEndTime = Math.round(endTime / 5);
+
+        return expectEndTime;
     }
 
     public List<MFile> getFiles(GHRepository ghRepository, String sha) {

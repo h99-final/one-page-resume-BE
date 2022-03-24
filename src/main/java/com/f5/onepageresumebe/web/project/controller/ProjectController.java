@@ -20,7 +20,6 @@ import java.util.List;
 @RestController
 public class ProjectController {
 
-    private final MGitService mGitService;
     private final ProjectService projectService;
 
     @Secured("ROLE_USER")
@@ -30,7 +29,6 @@ public class ProjectController {
 
         ProjectDto.Response responseDto = projectService.createProject(requestDto, multipartFileList);
 
-        mGitService.sync(responseDto.getId());
         return ResDto.builder()
                 .result(true)
                 .data(responseDto)

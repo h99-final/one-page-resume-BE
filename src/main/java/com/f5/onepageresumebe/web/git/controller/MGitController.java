@@ -18,7 +18,7 @@ public class MGitController {
     @GetMapping("/project/{projectId}/git/sync")
     public ResDto sync(@PathVariable("projectId") Integer projectId){
 
-        mGitService.sync(projectId);
+        mGitService.order(projectId);
         return ResDto.builder()
                 .result(true)
                 .data(null)
