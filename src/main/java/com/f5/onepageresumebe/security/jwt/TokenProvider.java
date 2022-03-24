@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class TokenProvider {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer";
+    public static final String BEARER_PREFIX = "Bearer ";
     private static final String AUTHORITY_KEY = "auth";
     private static final String BEARER_TYPE = "bearer ";
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 3 ;

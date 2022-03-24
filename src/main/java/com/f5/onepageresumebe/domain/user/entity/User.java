@@ -30,6 +30,9 @@ public class User extends TimeEntity {
     private String password;
 
     @Column(columnDefinition = "varchar(10)")
+    private Boolean isKakao;
+
+    @Column(columnDefinition = "varchar(10)")
     private String name;
 
     @Column(columnDefinition = "varchar(100)")
@@ -70,7 +73,8 @@ public class User extends TimeEntity {
     private List<PortfoiloBookmark> portfoiloBookmarkList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public User(String email, String password, String name, String githubUrl, String blogUrl) {
+    public User(String email, String password, String name, String githubUrl, String blogUrl,Boolean isKakao) {
+        this.isKakao = isKakao;
         this.email = email;
         this.password = password;
         this.name = name;
@@ -84,6 +88,19 @@ public class User extends TimeEntity {
 
         return User.builder()
                 .email(email)
+                .password(password)
+                .name(name)
+                .githubUrl(githubUrl)
+                .blogUrl(blogUrl)
+                .isKakao(false)
+                .build();
+    }
+
+    public static User createKakao(String email, String password, String name, String githubUrl, String blogUrl){
+
+        return User.builder()
+                .email(email)
+                .isKakao(true)
                 .password(password)
                 .name(name)
                 .githubUrl(githubUrl)
