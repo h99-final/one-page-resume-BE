@@ -19,6 +19,10 @@ public class MCommit {
     @Id
     private ObjectId id;
 
+    @Field(targetType = FieldType.INT32, write = Field.Write.NON_NULL)
+    @Indexed(unique = true)
+    private Integer index;
+
     @Field(targetType = FieldType.STRING, write = Field.Write.NON_NULL)
     @Indexed(unique = true)
     private String sha;
@@ -36,7 +40,8 @@ public class MCommit {
     private List<MFile> files = new ArrayList();
 
     @Builder
-    public MCommit(String sha, String message, String repoName, String repoOwner, List<MFile> files) {
+    public MCommit(Integer index, String sha, String message, String repoName, String repoOwner, List<MFile> files) {
+        this.index = index;
         this.sha = sha;
         this.message = message;
         this.repoName = repoName;
@@ -44,8 +49,9 @@ public class MCommit {
         this.files = files;
     }
 
-    public static MCommit create(String message, String sha, String repoName, String repoOwner, List<MFile> files){
+    public static MCommit create(Integer index, String message, String sha, String repoName, String repoOwner, List<MFile> files){
         return MCommit.builder()
+                .index(index)
                 .message(message)
                 .sha(sha)
                 .repoName(repoName)

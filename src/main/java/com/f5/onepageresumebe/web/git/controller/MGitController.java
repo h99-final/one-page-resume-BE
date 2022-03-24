@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -18,10 +19,14 @@ public class MGitController {
     @GetMapping("/project/{projectId}/git/sync")
     public ResDto sync(@PathVariable("projectId") Integer projectId){
 
-        mGitService.sync(projectId);
+        Long expectEndTime = mGitService.order(projectId);
+
+        HashMap<String, Long> response = new HashMap<>();
+        response.put("expectEndTime", expectEndTime);
+
         return ResDto.builder()
                 .result(true)
-                .data(null)
+                .data(response)
                 .build();
     }
 

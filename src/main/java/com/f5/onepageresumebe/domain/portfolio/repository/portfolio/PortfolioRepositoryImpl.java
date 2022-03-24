@@ -49,7 +49,6 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
         return portfolios;
     }
 
-
     //공개된 포트폴리오만 가져온다
     @Override
     public List<Portfolio> findAllFetchUserIfPublicLimit() {

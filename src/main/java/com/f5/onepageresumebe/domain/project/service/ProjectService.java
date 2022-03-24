@@ -4,6 +4,7 @@ package com.f5.onepageresumebe.domain.project.service;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.domain.git.service.MGitService;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
@@ -60,6 +61,7 @@ public class ProjectService {
 
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
+    private final MGitService mGitService;
 
     private final UserRepository userRepository;
 
@@ -91,11 +93,14 @@ public class ProjectService {
 
         Integer projectId = project.getId();
 
+        Long expectEndTime = mGitService.order(projectId);
+
         return ProjectDto.Response.builder()
                 .id(projectId)
                 .title(project.getTitle())
                 .imageUrl(projectImgRepository.findFirstByProjectId(projectId).get()
                         .getImageUrl())
+                .expectEndTime(expectEndTime)
                 .stack(stacks)
                 .build();
     }
