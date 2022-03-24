@@ -8,16 +8,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
-import static com.f5.onepageresumebe.domain.mysql.entity.QProject.project;
-import static com.f5.onepageresumebe.domain.mysql.entity.QProjectImg.projectImg;
-import static com.f5.onepageresumebe.domain.mysql.entity.QProjectStack.projectStack;
-import static com.f5.onepageresumebe.domain.mysql.entity.QStack.stack;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
+import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolio.portfolio;
+import static com.f5.onepageresumebe.domain.project.entity.QProject.project;
+import static com.f5.onepageresumebe.domain.project.entity.QProjectImg.projectImg;
+import static com.f5.onepageresumebe.domain.project.entity.QProjectStack.projectStack;
+import static com.f5.onepageresumebe.domain.stack.entity.QStack.stack;
+import static com.f5.onepageresumebe.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
 @Repository

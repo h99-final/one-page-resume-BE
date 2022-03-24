@@ -4,13 +4,12 @@ import com.f5.onepageresumebe.domain.career.entity.Career;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.mysql.entity.QCareer.career;
-import static com.f5.onepageresumebe.domain.mysql.entity.QPortfolio.portfolio;
-import static com.f5.onepageresumebe.domain.mysql.entity.QUser.user;
+import static com.f5.onepageresumebe.domain.career.entity.QCareer.career;
+import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolio.portfolio;
+import static com.f5.onepageresumebe.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
 @Repository
