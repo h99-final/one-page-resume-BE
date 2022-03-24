@@ -1,7 +1,9 @@
 package com.f5.onepageresumebe.web.user.controller;
 
+import com.f5.onepageresumebe.domain.user.service.KakaoService;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
+import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import com.f5.onepageresumebe.domain.user.service.UserService;
 import com.f5.onepageresumebe.web.user.dto.UserDto;
@@ -12,6 +14,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
@@ -21,6 +24,7 @@ import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 public class UserController {
 
     private final UserService userService;
+    private final KakaoService kakaoService;
 
     // 회원 가입 요청 처리
     @PostMapping("/user/signup")
@@ -54,8 +58,20 @@ public class UserController {
                         .result(true)
                         .data(loginResultDto.getLoginResponseDto())
                         .build());
+    }
 
+    @GetMapping("/user/kakao/callback")
+    public ResponseEntity kakaoLogin(@RequestParam String code){
 
+        UserDto.LoginResult loginResult = kakaoService.forceLogin(code);
+        HttpHeaders headers = kakaoService.tokenToHeader(loginResult.getTokenDto());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(ResDto.builder()
+                        .result(true)
+                        .data(loginResult.getLoginResponseDto())
+                        .build());
     }
 
     //추가 기입
