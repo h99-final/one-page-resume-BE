@@ -59,7 +59,6 @@ public class MGitService {
         syncCallCheck(user.getId());
 
         //토큰이 없으면 바로 RETURN
-        if(user.getGitToken()==null) return;
         if(project.getUser().getGitToken()==null) return 0L;
 
         String repoUrl = project.getGitRepoUrl();
