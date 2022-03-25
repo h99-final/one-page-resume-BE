@@ -108,11 +108,7 @@ public class ProjectService {
     @Transactional
     public void updateProjectImages(Integer projectId,List<MultipartFile> multipartFiles){
 
-        Project project = getProjectIfMyProject(projectId);
-
-        if(project==null){
-            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
-        }
+        Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 수정할 수 있습니다.");
 
         //새로운 사진 모두 추가
         addImages(project,multipartFiles);
@@ -121,11 +117,7 @@ public class ProjectService {
     @Transactional
     public void deleteProjectImg(Integer projectId, Integer imageId){
 
-        Project project = getProjectIfMyProject(projectId);
-
-        if(project==null){
-            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
-        }
+        Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트의 이미지만 삭제할 수 있습니다.");
 
         projectImgRepository.deleteById(imageId);
 
@@ -217,12 +209,11 @@ public class ProjectService {
         return ProjectUtil.projectToResponseDtosPaging(projects, pageable, imageMap, stackMap);
     }
 
-    public Project getProjectIfMyProject(Integer projectId) {
+    public Project getProjectIfMyProject(Integer projectId,String errorMsg) {
 
         String email = SecurityUtil.getCurrentLoginUserId();
-        Project project = projectRepository.findByUserEmailAndProjectId(email, projectId).orElse(null);
-
-        return project;
+        return projectRepository.findByUserEmailAndProjectId(email, projectId)
+                .orElseThrow(()->new CustomAuthorizationException(errorMsg));
     }
 
     public List<ProjectDto.TroubleShootingsResponse> getTroubleShootings(Integer projectId) {
@@ -310,11 +301,7 @@ public class ProjectService {
     @Transactional
     public void deleteProject(Integer projectId) {
 
-        Project project = getProjectIfMyProject(projectId);
-
-        if(project ==null){
-            throw new CustomAuthorizationException("내가 작성한 프로젝트만 삭제할 수 있습니다");
-        }
+        Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 삭제할 수 있습니다");
 
         List<GitCommit> gitCommitList = gitCommitRepository.findAllByProjectId(projectId);
 
@@ -337,10 +324,7 @@ public class ProjectService {
     @Transactional
     public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
 
-        Project project = getProjectIfMyProject(projectId);
-
-        //todo: 나누어 예오ㅚ처리
-        if(project == null) throw new CustomException("프로젝트가 없거나, 프로젝트 주인이 아닙니다.",INVALID_INPUT_ERROR);
+        Project project = getProjectIfMyProject(projectId,"내가 작성한 트러블 슈팅만 삭제할 수 있습니다");
 
         GitCommit gitCommit = gitCommitRepository.getById(commitId);
 
