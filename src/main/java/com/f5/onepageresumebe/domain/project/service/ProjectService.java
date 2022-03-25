@@ -329,6 +329,9 @@ public class ProjectService {
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
         s3Uploader.deleteProjectImages(projectImgs);
         projectImgRepository.deleteAllInBatch(projectImgs);
+        
+        //프로젝트 연결된 북마크 삭제
+        projectBookmarkRepository.deleteByProjectId(projectId);
 
         projectRepository.deleteById(projectId);
 
