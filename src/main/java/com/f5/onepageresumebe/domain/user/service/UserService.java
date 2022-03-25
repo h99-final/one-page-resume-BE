@@ -17,6 +17,7 @@ import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.AES256;
+import com.f5.onepageresumebe.util.UserUtil;
 import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import com.f5.onepageresumebe.web.user.dto.UserDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
@@ -263,7 +264,7 @@ public class UserService {
                 .projectId(projectIds)
                 .stack(stackNames)
                 .porfId(portfolio.getId())
-                .email(user.getEmail())
+                .email(UserUtil.convertUserEmail(user.getEmail(),user.getIsKakao()))
                 .phoneNum(user.getPhoneNum())
                 .gitUrl(user.getGithubUrl())
                 .blogUrl(user.getBlogUrl())
@@ -518,4 +519,6 @@ public class UserService {
             throw new CustomException("입력하신 깃허브 토큰이 유효하지 않습니다. 확인후 다시 입력해 주세요.", INVALID_INPUT_ERROR);
         }
     }
+
+
 }

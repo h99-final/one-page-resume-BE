@@ -19,6 +19,7 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthenticationExce
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
+import com.f5.onepageresumebe.util.UserUtil;
 import com.f5.onepageresumebe.web.portfolio.dto.PorfDto;
 import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
@@ -203,7 +204,7 @@ public class PortfolioService {
                     .job(user.getJob())
                     .username(user.getName())
                     .phoneNum(user.getPhoneNum())
-                    .email(user.getEmail())
+                    .email(UserUtil.convertUserEmail(user.getEmail(),user.getIsKakao()))
                     .build();
         } else {
             //비공개이고, 내 포트폴리오가 아닐 때
