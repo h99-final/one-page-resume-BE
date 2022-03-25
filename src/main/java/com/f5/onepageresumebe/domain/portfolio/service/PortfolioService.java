@@ -35,7 +35,7 @@ import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 
 
-@RequiredArgsConstructor //롬북을 통해서 간단하게 생성자 주입 방식의 어노테이션으로 fjnal이 붙거나 @notNull이 붙은 생성자들을 자동 생성해준다.
+@RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
 public class PortfolioService {
@@ -56,61 +56,72 @@ public class PortfolioService {
     @Transactional
     public void updateIntro(PorfDto.IntroRequest requestDto) {
 
+        //현재 로그인한 유저 확인
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
+        //로그인한 유저의 포트폴리오 가져옴
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new CustomException("존재하지 않는 포트폴리오입니다",NOT_EXIST_ERROR));
 
+        //업데이트
         portfolio.updateIntro(requestDto.getTitle(), portfolio.getUser().getGithubUrl(), requestDto.getContents(), portfolio.getUser().getBlogUrl());
 
         portfolioRepository.save(portfolio);
     }
 
-    @Transactional //템플릿 테마 지정
+    @Transactional
     public void updateTemplate(PorfDto.TemplateRequest porfTemplateRequestDto) {
 
+        //현재 로그인한 유저 확인
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
+        //로그인한 유저의 포트폴리오 가져옴
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
-
+        //업데이트
         portfolio.updateTemplate(porfTemplateRequestDto.getIdx());
-        portfolioRepository.save(portfolio);
 
+        portfolioRepository.save(portfolio);
     }
 
 
     @Transactional
     public void updateStack(StackDto requestDto) {
 
+        //현재 로그인한 유저 확인
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
+        //로그인한 유저의 포트폴리오 가져옴
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         List<String> stacks = requestDto.getStack();
-        if (stacks.size()<3){
-            throw new CustomException("포트폴리오 스택을 3개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
-        }
+
+        //스택 갯수 확인
+        checkStackSize(stacks);
 
         //기존에 있는 스택 모두 삭제
         portfolioStackRepository.deleteAllByPorfId(portfolio.getId());
 
+        //포트폴리오에 스택 삽입
         insertStacksInPortfolio(portfolio, stacks);
     }
 
     @Transactional
     public PorfDto.Status changeStatus(PorfDto.Status dto) {
 
+        //현재 로그인한 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
+        //로그인한 유저의 포트폴리오 가져옴
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
-
+        //포트폴리오 상태 변경
         boolean changedStatus = portfolio.changeStatus(dto.getShow());
 
+        //변경된 상태값 리턴
         return PorfDto.Status.builder()
                 .show(changedStatus)
                 .build();
@@ -118,24 +129,25 @@ public class PortfolioService {
 
     @Transactional
     public void inputProjectInPorf(PorfDto.ProjectRequest requestDto) {
+
+        //현재 로그인한 유저
         String email = SecurityUtil.getCurrentLoginUserId();
+
+        //로그인한 유저의 포트폴리오
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
                 new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
         List<Integer> projectIds = requestDto.getProjectId();
 
-        if (projectIds.isEmpty()){
-            throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
-        }
+        //빈 리스트인지 확인
+        checkProjectIdsEmpty(projectIds);
 
         //기존에 포함되어있던 프로젝트 모두 연결 끊음
         List<Project> existProjects = projectRepository.findAllByPorfId(portfolio.getId());
         existProjects.forEach(project -> project.removePortfolio(portfolio));
 
         //새로 들어온 프로젝트 모두 연결
-        List<Project> projects = projectRepository.findAllByIds(projectIds);
-
-        projects.forEach(project -> {
+        projectRepository.findAllByIds(projectIds).forEach(project -> {
             if (!project.getUser().getId().equals(portfolio.getUser().getId())) {
                 throw new CustomException("내가 작성한 프로젝트만 가져올 수 있습니다",INVALID_INPUT_ERROR);
             }
@@ -144,62 +156,47 @@ public class PortfolioService {
     }
 
     @Transactional
-    public void deleteProjectInPorf(PorfDto.ProjectRequest requestDto) {
-        String email = SecurityUtil.getCurrentLoginUserId();
-        Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
-                new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
-
-        List<Integer> projectIds = requestDto.getProjectId();
-
-        if (projectIds.isEmpty()){
-            throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
-        }
-
-        List<Project> projects = projectRepository.findAllByIds(projectIds);
-
-        projects.forEach(project -> project.removePortfolio(portfolio));
-    }
-
-    @Transactional
     public PorfDto.IntroResponse getIntro(Integer porfId) {
 
-        boolean isMyPorf = false;
+        //내 포트폴리오인지 확인
+        boolean isMyPorf = isMyPorf(porfId);
 
-        Portfolio portfolio = null;
-
-        try {
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
-            if(portfolio.getId() == porfId) isMyPorf = true;
-        } catch (CustomAuthenticationException e) {
-            isMyPorf = false;
-        }
-
-
-        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+        //조회하고자 하는 포트폴리오 조회
+        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
+        //나의 포트폴리오거나 포트폴리오가 공개된 상태일때
         if (isMyPorf || !(portfolio.getIsTemp())) {
             try {
+                //로그인한 유저
                 String email = SecurityUtil.getCurrentLoginUserId();
-                Portfolio myPortfolio = portfolioRepository.findByUserEmailFetchUser(email).orElseThrow(() ->
-                        new CustomException("포트폴리오가 존재하지 않습니다.",NOT_EXIST_ERROR));
-                if (myPortfolio.getId()!=portfolio.getId()) portfolio.increaseViewCount();
+
+                //현재 조회하고자하는 포트폴리오가 로그인한 유저의 포트폴리오인지 확인
+                boolean exists = portfolioRepository.existsByUserEmailAndPorfId(email, porfId);
+
+                //로그인한 유저의 포트폴리오가 아니라면
+                if(!exists){
+                    portfolio.increaseViewCount();
+                }
+
             } catch (CustomAuthenticationException e) {
+                //비로그인일때
                 portfolio.increaseViewCount();
             }
 
+            //포트폴리오의 주인
             User user = portfolio.getUser();
 
+            //조회수 늘린 것을 반환하기 위해 미리 저장
             portfolioRepository.save(portfolio);
+
             return PorfDto.IntroResponse.builder()
                     .id(porfId)
                     .title(portfolio.getTitle())
                     .githubUrl(portfolio.getGithubUrl())
                     .blogUrl(portfolio.getBlogUrl())
                     .contents(portfolio.getIntroContents())
-                    .profileImage(user.getProfileImgUrl()) // 유저의 프로필 이미지
+                    .profileImage(user.getProfileImgUrl())
                     .viewCount(portfolio.getViewCount())
                     .modifiedAt(portfolio.getUpdatedAt().toString())
                     .templateIdx(portfolio.getTemplateIdx())
@@ -209,6 +206,7 @@ public class PortfolioService {
                     .email(user.getEmail())
                     .build();
         } else {
+            //비공개이고, 내 포트폴리오가 아닐 때
             return null;
         }
 
@@ -218,9 +216,15 @@ public class PortfolioService {
     //전체 조회
     public List<PorfDto.Response> getIntrosByStacks(StackDto requestDto) {
 
+        //조회에 사용될 스택들
         List<String> stackNames = requestDto.getStack();
+
+        //ResponseDto를 담을 리스트
         List<PorfDto.Response> responseDtoList = new ArrayList<>();
+
+        //조회될 포트폴리오들
         List<Portfolio> portfolioList;
+
         if (stackNames.size() == 0) {
             //특정 조건이 없을 때
             //공개 된 것들만 가져온다
@@ -230,18 +234,10 @@ public class PortfolioService {
             portfolioList = portfolioRepository.findAllByStackNamesIfPublicLimit(stackNames);
         }
 
+        //Dto 변환
         portfolioList.forEach(portfolio -> {
-            User user = portfolio.getUser();
-            List<String> stacks = userStackRepository.findStackNamesByPorfId(portfolio.getId());
-            PorfDto.Response responseDto = PorfDto.Response.builder()
-                    .porfId(portfolio.getId())
-                    .username(user.getName())
-                    .userStack(stacks)
-                    .title(portfolio.getTitle())
-                    .templateIdx(portfolio.getTemplateIdx())
-                    .job(user.getJob())
-                    .build();
-            responseDtoList.add(responseDto);
+
+            responseDtoList.add(portfolioToResponseDto(portfolio));
         });
 
         return responseDtoList;
@@ -249,25 +245,17 @@ public class PortfolioService {
 
     public PorfDto.StackResponse getStackContents(Integer porfId) {
 
-        boolean isMyPorf = false;
+        //로그인한 유저의 포트폴리오인지 확인
+        boolean isMyPorf = isMyPorf(porfId);
 
-        Portfolio portfolio = null;
-
-        try {
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
-            if(portfolio.getId() == porfId) isMyPorf = true;
-        } catch (CustomAuthenticationException e) {
-            isMyPorf = false;
-        }
-
-
-        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+        //조회하고자하는 포트폴리오
+        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
+        //로그인한 유저의 포트폴리오거나, 공개상태의 포트폴리오일때
         if (isMyPorf || !(portfolio.getIsTemp())) {
 
+            //포트폴리오 스택과 유저 스택 조회
             List<String> porfStacks = portfolioRepository.findStackNamesByPorfId(porfId);
             List<String> userStacks = userStackRepository.findStackNamesByPorfId(porfId);
 
@@ -276,6 +264,7 @@ public class PortfolioService {
                     .subStack(porfStacks)
                     .build();
         } else {
+            //비공개상태이고 나의 포트폴리오가 아닐 때
             return null;
         }
 
@@ -283,43 +272,41 @@ public class PortfolioService {
 
     public List<ProjectDto.Response> getProject(Integer porfId) {
 
-        boolean isMyPorf = false;
+        //로그인한 유저의 포트폴리오인지 확인
+        boolean isMyPorf = isMyPorf(porfId);
 
-        Portfolio portfolio = null;
-
-        try {
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
-            if(portfolio.getId() == porfId) isMyPorf = true;
-        } catch (CustomAuthenticationException e) {
-            isMyPorf = false;
-        }
-
-
-        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+        //조회하고자 하는 포트폴리오
+        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                     new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
-
+        //로그인한 유저의 포트폴리오거나, 공개상태의 포트폴리오일때
         if (isMyPorf || !(portfolio.getIsTemp())) {
-            List<Project> projects = projectRepository.findAllByPorfId(porfId);
+
+            //Util class에서 전달해줄 map
             HashMap<Integer, List<String>> stackMap = new HashMap<>();
             HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
 
-            for(Project project : projects) {
+            //포트폴리오의 프로젝트들
+            List<Project> projects = projectRepository.findAllByPorfId(porfId);
+
+            //Util class에 넘겨줄 정보 세팅
+            projects.forEach(project -> {
                 Integer projectId = project.getId();
 
                 stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
+
                 ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+
                 if(projectImg != null) {
                     imageMap.put(projectId, projectImg);}
                 else {
                     imageMap.put(projectId, null);
                 }
-            }
+            });
 
             return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
         } else {
+            //비공개상태이고 나의 포트폴리오가 아닐 때
             return null;
         }
     }
@@ -327,13 +314,14 @@ public class PortfolioService {
     @Transactional
     public void reset() {
 
+        //현재 로그인한 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
+        //초기화하고자 하는 포트폴리오
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(() ->
                 new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
         Integer porfId = portfolio.getId();
-        portfolio.reset();
 
         //연결된 프로젝트 모두 연결 끊기
         List<Project> projects = projectRepository.findAllByPorfId(porfId);
@@ -344,21 +332,74 @@ public class PortfolioService {
 
         //연결된 기술 스택 모두 연결 끊기
         portfolioStackRepository.deleteAllByPorfId(porfId);
+
+        //내용 초기화
+        portfolio.reset();
+
     }
 
     private void insertStacksInPortfolio(Portfolio portfolio, List<String> stackNames) {
+
         //중복 스택 입력시, 중복데이터 제거
         stackNames = stackNames.stream().distinct().collect(Collectors.toList());
 
         stackNames.forEach(name -> {
             Stack stack = stackRepository.findFirstByName(name).orElse(null);
+            //존재하지 않는 스택이면 새로 생성하여 저장
             if (stack == null) {
                 stack = Stack.create(name);
                 stackRepository.save(stack);
             }
+            //스택과 포트폴리오 연결
             PortfolioStack portfolioStack = PortfolioStack.create(portfolio, stack);
             portfolioStackRepository.save(portfolioStack);
         });
+    }
+
+    private void checkStackSize(List<String> stacks){
+
+        if (stacks.size()<3){
+            throw new CustomException("포트폴리오 스택을 3개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
+        }
+
+    }
+
+    private void checkProjectIdsEmpty(List<Integer> projectIds){
+
+        if(projectIds.isEmpty()){
+            throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
+        }
+    }
+
+    private boolean isMyPorf(Integer porfId){
+
+        try {
+            //로그인 상태
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
+            //현재 로그인한 사람의 포트폴리오인지 확인
+            return portfolioRepository.existsByUserEmailAndPorfId(userEmail, porfId);
+
+        } catch (CustomAuthenticationException e) {
+            //비로그인
+            return false;
+        }
+    }
+
+    private PorfDto.Response portfolioToResponseDto(Portfolio portfolio){
+
+        //포트폴리오 주인
+        User user = portfolio.getUser();
+
+        //유저의 스택
+        List<String> stacks = userStackRepository.findStackNamesByPorfId(portfolio.getId());
+        return PorfDto.Response.builder()
+                .porfId(portfolio.getId())
+                .username(user.getName())
+                .userStack(stacks)
+                .title(portfolio.getTitle())
+                .templateIdx(portfolio.getTemplateIdx())
+                .job(user.getJob())
+                .build();
     }
 
 }
