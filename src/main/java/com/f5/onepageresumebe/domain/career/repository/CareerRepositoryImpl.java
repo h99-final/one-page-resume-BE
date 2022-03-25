@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.domain.career.repository;
 
 import com.f5.onepageresumebe.domain.career.entity.Career;
+import com.f5.onepageresumebe.domain.career.entity.QCareer;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -18,16 +19,27 @@ public class CareerRepositoryImpl implements CareerRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public Boolean existsByCareerIdAndUserEmail(Integer careerId, String userEmail){
+
+        Integer exists = queryFactory.selectOne()
+                .from(QCareer.career)
+                .innerJoin(QCareer.career.portfolio, portfolio).fetchJoin()
+                .innerJoin(portfolio.user, user).fetchJoin()
+                .where(user.email.eq(userEmail).and(QCareer.career.id.eq(careerId)))
+                .fetchFirst();
+
+        return exists != null;
+    }
+
+    @Override
     public Optional<Career> findByCareerIdAndUserEmail(Integer careerId,String userEmail){
 
-        List<Career> careers = queryFactory.selectFrom(career)
-                .innerJoin(career.portfolio, portfolio).fetchJoin()
+        Career career = queryFactory.selectFrom(QCareer.career)
+                .innerJoin(QCareer.career.portfolio, portfolio).fetchJoin()
                 .innerJoin(portfolio.user, user).fetchJoin()
-                .where(user.email.eq(userEmail).and(career.id.eq(careerId)))
-                .limit(1)
-                .fetch();
+                .where(user.email.eq(userEmail).and(QCareer.career.id.eq(careerId)))
+                .fetchFirst();
 
-        if(careers.isEmpty()) return Optional.empty();
-        else return Optional.of(careers.get(0));
+        return Optional.ofNullable(career);
     }
 }

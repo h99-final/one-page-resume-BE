@@ -14,4 +14,6 @@ public interface PortfolioRepositoryCustom {
     List<Portfolio> findAllFetchUserIfPublicLimit();
 
     List<String> findStackNamesByPorfId(Integer porfId);
+
+    boolean existsByUserEmailAndPorfId(String userEmail, Integer porfId);
 }

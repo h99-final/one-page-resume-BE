@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
+
 public class CareerDto {
 
     @Data
@@ -27,10 +28,11 @@ public class CareerDto {
         private List<String> contents;
 
         @NotNull(message = "경력 시작일이 필요합니다.")
-        private LocalDate startTime;
+        private String startTime;
 
         @NotNull(message = "경력 종료일이 필요합니다.")
         private String endTime;
+
     }
 
     @Data

@@ -39,20 +39,16 @@ public class CareerService {
         Portfolio portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(
                 () -> new CustomException("포트폴리오가 존재하지 않습니다",NOT_EXIST_ERROR));
 
-        List<String> contents = requestDto.getContents();
-        if (contents.isEmpty()){
-            throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
-        }
+        //String 값으로 들어온 datetime을 LocalDate로 변환
+        LocalDate startTime = convertStringToTime(requestDto.getStartTime());
+        LocalDate endTime = convertStringToTime(requestDto.getEndTime());
 
-        LocalDate startTime = requestDto.getStartTime();
-        LocalDate endTime = convertEndTime(requestDto.getEndTime());
-
-        //시작 시간이 종료 시간보다 앞 시간대인지 검증 -> dto받을때 해버릴까?
-        validateDate(startTime,endTime);
+        //시작 시간이 끝나는 시간보다 늦지는 않는지 확인, 내용이 비어있는지 확인
+        validateRequestDto(startTime,endTime,requestDto.getContents());
 
         Career career = Career.create(requestDto.getTitle(),
                 requestDto.getSubTitle(),
-                careerContentsListToString(contents),
+                careerContentsListToString(requestDto.getContents()),
                 startTime,
                 endTime,
                 portfolio);
@@ -65,20 +61,19 @@ public class CareerService {
     @Transactional
     public void updateCareer(Integer careerId ,CareerDto.Request requestDto) {
 
+        //로그인한 유저 확인
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
+        //자신이 작성한 커리어인지 확인
         Career career = careerRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
                 new CustomAuthorizationException("내가 작성한 직무 경험만 수정할 수 있습니다"));
 
-        List<String> contents = requestDto.getContents();
-        if (contents.isEmpty()){
-            throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
-        }
+        //String 값으로 들어온 datetime을 LocalDate로 변환
+        LocalDate startTime = convertStringToTime(requestDto.getStartTime());
+        LocalDate endTime = convertStringToTime(requestDto.getEndTime());
 
-        LocalDate startTime = requestDto.getStartTime();
-        LocalDate endTime = convertEndTime(requestDto.getEndTime());
-
-        validateDate(startTime,endTime);
+        //시작 시간이 끝나는 시간보다 늦지는 않는지 확인, 내용이 비어있는지 확인
+        validateRequestDto(startTime,endTime,requestDto.getContents());
 
         career.updateCareer(requestDto.getTitle(),
                 requestDto.getSubTitle(),
@@ -90,64 +85,82 @@ public class CareerService {
     @Transactional
     public void deleteCareer(Integer careerId){
 
+        //로그인한 유저 확인
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
-        Career career = careerRepository.findByCareerIdAndUserEmail(careerId, userEmail).orElseThrow(() ->
-                new CustomAuthorizationException("내가 작성한 직무 경험만 삭제할 수 있습니다"));
-
-        careerRepository.deleteById(careerId);
+        //현재 커리어를 작성한 유저인지 확인
+        Boolean exists = careerRepository.existsByCareerIdAndUserEmail(careerId, userEmail);
+        if(exists){
+            careerRepository.deleteById(careerId);
+        }else{
+            throw new CustomAuthorizationException("내가 작성한 직무 경험만 삭제할 수 있습니다");
+        }
     }
 
     public List<CareerDto.Response> getCareer(Integer porfId) {
 
-        boolean isMyPorf = false;
-        
-        Portfolio portfolio = null;
-        
-        try {
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            portfolio = portfolioRepository.findByUserEmailFetchUser(userEmail).orElseThrow(()->
-                    new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
-            if(portfolio.getId() == porfId) isMyPorf = true;
-        } catch (CustomAuthenticationException e) {
-            isMyPorf = false;
-        }
+        //나의 포트폴리오인지 확인
+        boolean isMyPorf = isMyPorf(porfId);
 
-        portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
+        //조회하고자 하는 포트폴리오 조회
+        Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
                 new CustomException("존재하지 않는 포트폴리오입니다.",NOT_EXIST_ERROR));
 
         List<CareerDto.Response> careerResponseDtos = new ArrayList<>();
 
+        //나의 포트폴리오이거나 공개된 포트폴리오일때
         if (isMyPorf || !(portfolio.getIsTemp())) {
 
             List<Career> careers = careerRepository.findAllByPorfIdOrderByEndTimeDesc(porfId);
             careers.forEach(career -> {
-                String[] contents = career.getContents().split("----");
-                List<String> contentsList = Arrays.asList(contents);
-
-                LocalDate endTime = career.getEndTime();
-                String endTimeString = null;
-                if(endTime.isEqual(LocalDate.of(3000,1,1))){
-                    endTimeString = "current";
-                }else{
-                    endTimeString = endTime.toString();
-                }
-
-                CareerDto.Response responseDto = CareerDto.Response.builder()
-                        .id(career.getId())
-                        .title(career.getTitle())
-                        .subTitle(career.getSubTitle())
-                        .contents(contentsList)
-                        .startTime(career.getStartTime())
-                        .endTime(endTimeString)
-                        .build();
+                CareerDto.Response responseDto = careerToResponseDto(career);
                 careerResponseDtos.add(responseDto);
             });
         } else {
+            //나의 포트폴리오가 아니고, 공개되지 않았을때
             return null;
         }
 
         return careerResponseDtos;
+    }
+
+    private boolean isMyPorf(Integer porfId){
+
+        try {
+            //로그인 상태
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
+            //현재 로그인한 사람의 포트폴리오인지 확인
+            return portfolioRepository.existsByUserEmailAndPorfId(userEmail, porfId);
+
+        } catch (CustomAuthenticationException e) {
+            //비로그인
+            return false;
+        }
+    }
+
+    private CareerDto.Response careerToResponseDto(Career career){
+
+        //구분자를 ---로 했기 때문에 가져올때 다시 split
+        String[] contents = career.getContents().split("----");
+        List<String> contentsList = Arrays.asList(contents);
+
+        //3000-01-01은 현재 진행중을 뜻하므로 변환
+        LocalDate endTime = career.getEndTime();
+        String endTimeString = null;
+        if(endTime.isEqual(LocalDate.of(3000,1,1))){
+            endTimeString = "current";
+        }else{
+            endTimeString = endTime.toString();
+        }
+
+        return CareerDto.Response.builder()
+                .id(career.getId())
+                .title(career.getTitle())
+                .subTitle(career.getSubTitle())
+                .contents(contentsList)
+                .startTime(career.getStartTime())
+                .endTime(endTimeString)
+                .build();
     }
 
     private String careerContentsListToString(List<String> contentsList) {
@@ -155,6 +168,7 @@ public class CareerService {
         StringBuilder sb = new StringBuilder();
         int size = contentsList.size();
 
+        //커리어 내용 리스트를 --- 구분자를 통해 하나의 string으로 변환하는 작업
         for (int i = 0; i < size; i++) {
             if (i == size - 1) {
                 sb.append(contentsList.get(i));
@@ -165,26 +179,32 @@ public class CareerService {
         return sb.toString();
     }
 
-    private LocalDate convertEndTime(String endTimeString){
+    private LocalDate convertStringToTime(String timeString){
 
-        LocalDate endTime = null;
-        if("current".equals(endTimeString)){
-            endTime = LocalDate.of(3000,1,1);
+        LocalDate time = null;
+        //current면 3000-01-01로 변환
+        if("current".equals(timeString)){
+            time = LocalDate.of(3000,1,1);
         }else{
-            String[] split = endTimeString.split("-");
+            //아니라면 날짜 포멧에 맞추어 변환
+            String[] split = timeString.split("-");
             Integer year = Integer.valueOf(split[0]);
             Integer month = Integer.valueOf(split[1]);
             Integer day = Integer.valueOf(split[2]);
-            endTime = LocalDate.of(year,month,day);
+            time = LocalDate.of(year,month,day);
         }
 
-        return endTime;
+        return time;
     }
 
-    private void validateDate(LocalDate startTime, LocalDate endTime){
+    private void validateRequestDto(LocalDate startTime, LocalDate endTime, List<String> contents){
 
         if(startTime.isAfter(endTime)){
             throw new CustomException("직무 경험 시작일은 직무 경험 종료일 보다 앞선 날짜여야 합니다.",INVALID_INPUT_ERROR);
+        }
+
+        if(contents.isEmpty()){
+            throw new CustomException("직무 경험 내용을 하나 이상 입력해 주세요.", INVALID_INPUT_ERROR);
         }
     }
 
