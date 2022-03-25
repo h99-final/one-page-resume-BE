@@ -30,8 +30,10 @@ public class UserController {
     @PostMapping("/user/signup")
     public ResDto registerUser(@Valid @RequestBody UserDto.SignUpRequest request) {
 
+        userService.registerUser(request);
+
         return ResDto.builder()
-                .result(userService.registerUser(request))
+                .result(true)
                 .build();
     }
 

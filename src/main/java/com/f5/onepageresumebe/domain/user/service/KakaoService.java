@@ -68,17 +68,17 @@ public class KakaoService {
         //email 얻어옴
         String userEmail = getUserInfo(code);
 
+        //카카오 유저는 kakao를 prefix로 붙임
         String kakaoUserEmail = KAKAO_PREFIX+userEmail;
-
 
         //email이 중복된 값인지 확인
         User user = userRepository.findByEmail(kakaoUserEmail).orElse(null);
 
         //첫 회원
         if(user==null){
-            log.info("새 회원");
-            String password = passwordEncoder.encode(String.valueOf(UUID.randomUUID()));
 
+            //회원 가입 절차 진행
+            String password = passwordEncoder.encode(String.valueOf(UUID.randomUUID()));
             user = User.createKakao(kakaoUserEmail, password, null, null, null);
             userRepository.save(user);
 
@@ -91,8 +91,11 @@ public class KakaoService {
         //토큰, 인증 객체 생성 후 강제로 SecurityContext에 넣음
         //원래는 인증을 해야하지만 이미 카카오에서 인증을 했으므로 인증절차 X
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(user.getRole());
+
         Collection<GrantedAuthority> authorities = new ArrayList<>();
+
         authorities.add(simpleGrantedAuthority);
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getEmail()
                 , user.getPassword(),authorities);
 
@@ -163,8 +166,6 @@ public class KakaoService {
 
     public String getUserEmailFromToken(String accessToken) {
 
-        log.info("token={}",accessToken);
-
         //header 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", BEARER_PREFIX + accessToken);
@@ -187,13 +188,11 @@ public class KakaoService {
             JsonNode jsonNode = om.readTree(responseBody);
             String email = jsonNode.get("kakao_account")
                     .get("email").asText();
-            log.info("email={}",email);
             return email;
         } catch (JsonProcessingException e) {
             log.error("kakao user info parsing error");
             throw new CustomException("kakao user info를 받아오던중 문제가 발생하였습니다. 다시 시도해 주세요.", ErrorCode.INTERNAL_SERVER_ERROR);
         }
-
     }
 
     public HttpHeaders tokenToHeader(TokenDto tokenDto) {

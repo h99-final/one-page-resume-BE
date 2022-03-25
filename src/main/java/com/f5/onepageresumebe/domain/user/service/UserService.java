@@ -14,7 +14,6 @@ import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.domain.user.repository.stack.UserStackRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
-import com.f5.onepageresumebe.exception.customException.CustomImageException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.util.AES256;
@@ -72,42 +71,41 @@ public class UserService {
     private final CertificationRepository certificationRepository;
 
     @Transactional
-    public Boolean registerUser(UserDto.SignUpRequest requestDto) {
+    public void registerUser(UserDto.SignUpRequest requestDto) {
 
         String email = requestDto.getEmail();
+
         //비밀번호, 비밀번호 확인 체크
-        if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
-            throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
-        }
+        checkPassword(requestDto.getPassword(), requestDto.getPasswordCheck());
 
         // 패스워드 암호화
         String password = passwordEncoder.encode(requestDto.getPassword());
+
+        // 유저 생성
         User user = User.create(email, password, null, null, null);
 
-        boolean res = false;
+        //포트폴리오 생성 및 유저와 연결
+        Portfolio portfolio = Portfolio.create(user);
+        user.setPortfolio(portfolio);
 
-        if (user != null) {
-            Portfolio portfolio = Portfolio.create(user);
-            user.setPortfolio(portfolio);
-            userRepository.save(user);
-            portfolioRepository.save(portfolio);
-            res = true;
-        }
+        //저장
+        userRepository.save(user);
+        portfolioRepository.save(portfolio);
 
-        return res;
     }
 
     public boolean checkEmail(UserDto.EmailRequest request) {
+
         boolean res = false;
 
+        //이미 존재한다면 TRUE
         Optional<User> found = userRepository.findByEmail(request.getEmail());
         if (found.isPresent()) res = true;
 
         return res;
     }
 
-    //로그인 서비스
-    //존재하지 않거나 비밀번호가 맞지 않을시 오류를 내주고 그렇지 않을경우 토큰을 발행합니다.
+
     public UserDto.LoginResult login(UserDto.LoginRequest loginDto) {
 
         // login ID/Password를 기반으로 Authentication 생성
@@ -122,13 +120,11 @@ public class UserService {
         TokenDto tokenDto = tokenProvider.generateToken(authentication);
 
         //유저 정보 가져오기
-        //아이디가 잘못된 값이면 여기까지 안오지만..
         User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new CustomAuthenticationException("Email을 확인해 주세요"));
 
         //첫 로그인 유저가 아닐때
         boolean isFirstLogin = user.getCreatedAt().equals(user.getUpdatedAt());
-
 
         return UserDto.LoginResult.builder()
                 .tokenDto(tokenDto)
@@ -143,44 +139,28 @@ public class UserService {
     @Transactional
     public void addInfo(UserDto.AddInfoRequest requestDto) {
 
+        //현재 로그인 유저 이메일 가져오기
         String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        //유저 정보 가져오기
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         List<String> stacks = requestDto.getStack();
 
-        if(stacks.size()<3){
-            throw new CustomException("기술 스택은 3개 이상 입력해 주세요",INVALID_INPUT_ERROR);
-        }
+        //스택 검증
+        checkStack(stacks);
 
-        User curUser = userRepository.getById(user.getId());
-
-        //사용자가 추가기입 시, 입력한 stack이 기존 stack테이블에 있으면 stack을 가져옴
-        // 기존 stack 테이블이 없으면 새로 생성해 가져옴
-        for (String curStackName : stacks) {
-            Stack stack = stackRepository.findFirstByName(curStackName).orElse(null);
-            if (stack == null) {
-                stack = Stack.create(curStackName);
-                stackRepository.save(stack);
-            }
-            UserStack userStack = UserStack.create(curUser, stack);
-
-            userstackRepository.save(userStack);
-
-        }
+        //스택과ㅏ 유저 연결
+        insertStacksInUser(user, stacks);
 
         // 추가 기입한 정보 유저에 넣기
-        String name = requestDto.getName();
-        String gitUrl = requestDto.getGitUrl();
-        String blogUrl = requestDto.getBlogUrl();
-        String phoneNum = requestDto.getPhoneNum();
-        String job = requestDto.getJob();
-        user.addInfo(name, gitUrl, blogUrl, phoneNum, job);
+        user.addInfo(requestDto.getName(), requestDto.getGitUrl(), requestDto.getBlogUrl(), requestDto.getPhoneNum(), requestDto.getJob());
         userRepository.save(user);
 
         //업데이트 한 정보를 다시 포트폴리오 정보에 넣기
         Portfolio portfolio = user.getPortfolio();
-        portfolio.updateIntro(portfolio.getTitle(),gitUrl, portfolio.getIntroContents(), blogUrl);
+        portfolio.updateIntro(portfolio.getTitle(), requestDto.getGitUrl(), portfolio.getIntroContents(), requestDto.getBlogUrl());
         portfolioRepository.save(portfolio);
 
     }
@@ -188,87 +168,82 @@ public class UserService {
     @Transactional
     public void updateInfo(UserDto.UpdateInfoRequest request) {
 
+        //현재 로그인 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
+        //업데이트
         curUser.updateInfo(request.getName(), request.getPhoneNum(), request.getGitUrl(), request.getBlogUrl(), request.getJob());
 
-
-        //업데이트 한 정보를 다시 포트폴리오 정보에 넣기
+        //업데이트 한 정보를 다시 포트폴리오 정보에 넣기(유저 정보를 포트폴리오에서도 수정할 수 있음)
         Portfolio portfolio = curUser.getPortfolio();
-        portfolio.updateIntro(portfolio.getTitle(),curUser.getGithubUrl(), portfolio.getIntroContents(), curUser.getBlogUrl());
+        portfolio.updateIntro(portfolio.getTitle(), curUser.getGithubUrl(), portfolio.getIntroContents(), curUser.getBlogUrl());
+
+        //저장
         portfolioRepository.save(portfolio);
         userRepository.save(curUser);
     }
 
     @Transactional
-    public void updateStacks(StackDto request){
+    public void updateStacks(StackDto request) {
 
+        //현재 로그인 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         List<String> stackNames = request.getStack();
 
-        if(stackNames.size()<3){
-            throw new CustomException("기술 스택은 3개 이상 입력해 주세요",INVALID_INPUT_ERROR);
-        }
+        //스택 검증
+        checkStack(stackNames);
 
         //기존의 스택 삭제하기
         userstackRepository.deleteAllUserStackByUserId(curUser.getId());
 
         //스텍 중복 삭제
         stackNames = stackNames.stream().distinct().collect(Collectors.toList());
+
         //입력으로 들어온 스택 추가
-        stackNames.forEach(name -> {
-            Stack stack = stackRepository.findFirstByName(name).orElse(null);
-            if (stack == null) {
-                stack = Stack.create(name);
-                stackRepository.save(stack);
-            }
-            UserStack userStack = UserStack.create(curUser, stack);
-            userstackRepository.save(userStack);
-        });
+        insertStacksInUser(curUser, stackNames);
     }
 
     @Transactional
-    public void updateGitToken(String token){
+    public void updateGitToken(String token) {
 
         //깃허브와 연결 테스트
         gitConnectionTest(token);
 
+        //현재 로그인 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-
         User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
-        String encryptedToken = null;
-
+        //토큰 암호화
         try {
-            encryptedToken = aes256.encrypt(token);
-        }catch (Exception e){
+            user.setGitToken(aes256.encrypt(token));
+        } catch (Exception e) {
             log.error("git token 암호화에 실패하였습니다.");
-            throw new CustomException("git token을 저장하던 중 오류가 발생하였습니다. 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
+            throw new CustomException("git token을 저장하던 중 오류가 발생하였습니다. 다시 시도해 주세요", INTERNAL_SERVER_ERROR);
         }
-
-        user.setGitToken(encryptedToken);
 
     }
 
     @Transactional
-    public void deleteToken(){
+    public void deleteToken() {
 
+        //현재 로그인 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-
         User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
+        //토큰 값 초기화
         user.setGitToken(null);
     }
 
     public UserDto.InfoResponse getUserInfo() {
 
+        //현재 로그인 유저
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
@@ -279,7 +254,9 @@ public class UserService {
         //스택 내용 불러오기
         List<String> stackNames = userstackRepository.findStackNamesByUserId(user.getId());
 
+        //포트폴리오 불러오기
         Portfolio portfolio = user.getPortfolio();
+
         return UserDto.InfoResponse.builder()
                 .userId(user.getId())
                 .name(user.getName())
@@ -293,7 +270,7 @@ public class UserService {
                 .profileImage(user.getProfileImgUrl())
                 .job(user.getJob())
                 .porfShow(!portfolio.getIsTemp())
-                .isToken(user.getGitToken()!=null)
+                .isToken(user.getGitToken() != null)
                 .build();
     }
 
@@ -302,6 +279,7 @@ public class UserService {
 
         UserDto.ImgResponse userImageResponseDto = UserDto.ImgResponse.builder().build();
 
+        //현재 로그인 유저
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
@@ -310,20 +288,24 @@ public class UserService {
         if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {
             s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
         }
+
+        //이미지 업로드 후 url db에 저장
         try {
             String profileImgUrl = s3Uploader.upload(multipartFile, "profile");
             user.updateProfile(profileImgUrl);
             userImageResponseDto.setImg(profileImgUrl);
         } catch (IOException e) {
-            //log.error("updateProfile -> s3upload : {}", e.getMessage());
+            log.error("updateProfile -> s3upload : {}", e.getMessage());
             e.printStackTrace();
-            throw new CustomException("사진 업로드에 실패하였습니다. 다시 시도해 주세요.",INTERNAL_SERVER_ERROR);
+            throw new CustomException("사진 업로드에 실패하였습니다. 다시 시도해 주세요.", INTERNAL_SERVER_ERROR);
         }
         return userImageResponseDto;
     }
 
     @Transactional
     public void deleteProfile() {
+
+        //현재 로그인 유저
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
@@ -333,48 +315,26 @@ public class UserService {
             s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
         }
 
+        //기본이미지로 변경
         user.deleteProfile();
-    }
-
-
-    public HttpHeaders tokenToHeader(TokenDto tokenDto) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
-
-        return headers;
-    }
-
-    private void gitConnectionTest(String gitToken){
-
-        try{
-            GitHub gitHub = new GitHubBuilder().withOAuthToken(gitToken).build();
-            gitHub.checkApiUrlValidity();
-
-        }catch (IOException e){
-            log.error("깃허브 연결 실패 : {}",e.getMessage());
-            throw new CustomException("입력하신 깃허브 토큰이 유효하지 않습니다. 확인후 다시 입력해 주세요.",INVALID_INPUT_ERROR);
-        }
-
-
     }
 
     @Transactional
     public void ChangePassword(UserDto.PasswordRequest requestDto) {
 
+        //현재 로그인 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
-
         User curUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         String inputCurPassword = requestDto.getCurPassword();
 
-        UsernamePasswordAuthenticationToken  usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userEmail,inputCurPassword);
+        //비밀번호를 맞게 입력하였는지 검증
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userEmail, inputCurPassword);
         authenticationManagerBuilder.getObject().authenticate(usernamePasswordAuthenticationToken);
-        
+
         //비밀번호, 비밀번호 확인 체크
-        if (!requestDto.getPassword().equals(requestDto.getPasswordCheck())) {
-            throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
-        }
+        checkPassword(requestDto.getPassword(), requestDto.getPasswordCheck());
 
         // 패스워드 암호화
         String password = passwordEncoder.encode(requestDto.getPassword());
@@ -384,21 +344,26 @@ public class UserService {
 
     @Transactional
     public void certificationEmail(UserDto.EmailRequest requestDto) {
+
+        //이메일 인증을 원하는 유저의 이메일
         String email = requestDto.getEmail();
+
+        //랜덤값 부여
         String key = makeRandomString();
 
+        //이메일 전송을 위한 메시지 생성
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-
         message.setSubject("인증번호 입력을 위한 메일 전송");
         message.setText("인증 번호 : " + key);
 
         javaMailSender.send(message);
 
+        //db에 저장
         Certification certification = certificationRepository.findCertificationByEmail(email);
 
         //만약 기존의 이메일을 가진 certification 엔티티가 있으면
-        if(certification != null) {
+        if (certification != null) {
             //인증코드만 수정
             certification.changeCode(key);
         } else {
@@ -411,15 +376,17 @@ public class UserService {
 
     @Transactional
     public boolean checkCertification(UserDto.CertificationRequest requestDto) {
+
         boolean isCertificated = false;
 
         String email = requestDto.getEmail();
         String code = requestDto.getCode();
 
+        //db에 저장된 코드와 입력한 코드가 맞다면 entity가 존재
         Certification certification = certificationRepository.findCertificationByEmailAndCode(email, code);
 
         //해당 테이블이 있으면, return 데이터에 true 넣고 테이블 삭제
-        if(certification != null) {
+        if (certification != null) {
             isCertificated = true;
             certificationRepository.delete(certification);
         }
@@ -428,14 +395,14 @@ public class UserService {
 
     public String makeRandomString() {
         Random random = new Random(); //난수 생성
-        String key=""; // 인증번호
+        String key = ""; // 인증번호
 
-        for(int i = 0; i < 3; ++i){
-            int index = random.nextInt(25)+65;
+        for (int i = 0; i < 3; ++i) {
+            int index = random.nextInt(25) + 65;
 
-            key+=(char)index;
+            key += (char) index;
         }
-        int numIndex = random.nextInt(9999)+1000;
+        int numIndex = random.nextInt(9999) + 1000;
         key += numIndex;
 
         return key;
@@ -443,53 +410,112 @@ public class UserService {
 
     @Transactional
     public void findPassword(UserDto.EmailRequest requestDto) {
+
+        //새로운 랜덤 비밀번호
         String newPassword = makeRandomString();
         String email = requestDto.getEmail();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomAuthenticationException("해당 이메일이 존재하지 않습니다."));
 
+        //임시 비밀번호 발송을 위한 메시지 작성
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-
         message.setSubject("임시 비밀번호 발송");
         message.setText("임시 비밀번호 : " + newPassword);
 
         javaMailSender.send(message);
 
+        //비밀번호 변경
         user.changePassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 
     public UserDto.EmailResponse findEmail(UserDto.FindEmailRequest requestDto) {
+
         String name = requestDto.getName();
         String phoneNum = requestDto.getPhoneNum();
 
-        User user = userRepository.findUserByNameAndPhoneNum(name,phoneNum);
+        User user = userRepository.findUserByNameAndPhoneNum(name, phoneNum);
 
         UserDto.EmailResponse findEmailResponseDto = UserDto.EmailResponse.builder().build();
 
-        if(user == null) {
+        //이름과 핸드폰번호가 일치한다면 특정 글자를 제외한 글자를 보여준다 -> ***gjkw@naver.com
+        if (user == null) {
             findEmailResponseDto.setEmail(null);
-        }
-        else {
+        } else {
             String email = user.getEmail();
             int idx = email.indexOf("@");
 
             //@기준으로, 이메일을 나눈다
-            String emailFront = email.substring(0,idx);
+            String emailFront = email.substring(0, idx);
             String emailBack = email.substring(idx);
 
-            int frontHalfLength = emailFront.length()/2;
+            int frontHalfLength = emailFront.length() / 2;
 
             StringBuilder blindFront = new StringBuilder(emailFront);
 
-            for(int i = 0; i < frontHalfLength; ++i) {
+            for (int i = 0; i < frontHalfLength; ++i) {
                 blindFront.setCharAt(i, '*');
             }
 
             findEmailResponseDto.setEmail(blindFront.toString() + emailBack);
         }
         return findEmailResponseDto;
+    }
+
+    private void insertStacksInUser(User user, List<String> stacks) {
+
+        for (String curStackName : stacks) {
+
+            Stack stack = stackRepository.findFirstByName(curStackName).orElse(null);
+
+            //존재하지 않는 스택이라면 스택 생성 후 저장
+            if (stack == null) {
+                stack = Stack.create(curStackName);
+                stackRepository.save(stack);
+            }
+            //유저와 스택 연결
+            UserStack userStack = UserStack.create(user, stack);
+
+            userstackRepository.save(userStack);
+
+        }
+    }
+
+    private void checkPassword(String password, String passwordCheck) {
+
+        if (!password.equals(passwordCheck)) {
+            throw new CustomException("비밀번호와 비밀번호 확인이 다릅니다", INVALID_INPUT_ERROR);
+        }
+    }
+
+    private void checkStack(List<String> stacks) {
+
+        if (stacks.size() < 3) {
+            throw new CustomException("기술 스택은 3개 이상 입력해 주세요", INVALID_INPUT_ERROR);
+        }
+    }
+
+    public HttpHeaders tokenToHeader(TokenDto tokenDto) {
+
+        //토큰을 response header에 담음
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
+
+        return headers;
+    }
+
+    private void gitConnectionTest(String gitToken) {
+
+        //깃허브와 연결 확인
+        try {
+            GitHub gitHub = new GitHubBuilder().withOAuthToken(gitToken).build();
+            gitHub.checkApiUrlValidity();
+
+        } catch (IOException e) {
+            log.error("깃허브 연결 실패 : {}", e.getMessage());
+            throw new CustomException("입력하신 깃허브 토큰이 유효하지 않습니다. 확인후 다시 입력해 주세요.", INVALID_INPUT_ERROR);
+        }
     }
 }
