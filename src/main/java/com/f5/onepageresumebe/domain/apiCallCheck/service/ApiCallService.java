@@ -1,6 +1,6 @@
-package com.f5.onepageresumebe.domain.project.service;
+package com.f5.onepageresumebe.domain.apiCallCheck.service;
 
-import com.f5.onepageresumebe.domain.mysql.repository.inmemory.MemoryDbRepository;
+import com.f5.onepageresumebe.domain.apiCallCheck.repository.ApiCallRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,14 +13,14 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MemoryDbService {
+public class ApiCallService {
 
-    private final MemoryDbRepository memoryDbRepository;
+    private final ApiCallRepository apiCallRepository;
 
     public boolean callAvailability(Integer userId){
 
         //호출한지 5초가 덜 지났거나 총 호출 횟수가 5초안에 100번이 넘는다면 제한
-        if(memoryDbRepository.existsByUserId(userId)||memoryDbRepository.countAll()>100){
+        if(apiCallRepository.existsByUserId(userId)|| apiCallRepository.countAll()>100){
             return false;
         }
         return true;
@@ -28,7 +28,7 @@ public class MemoryDbService {
 
     public void call(Integer userId){
 
-        memoryDbRepository.save(userId);
+        apiCallRepository.save(userId);
     }
 
     @Scheduled(fixedRate = 1000*5)
@@ -36,7 +36,7 @@ public class MemoryDbService {
 
         log.info("삭제 실행");
 
-        Map<Integer, LocalDateTime> allData = memoryDbRepository.findAllData();
+        Map<Integer, LocalDateTime> allData = apiCallRepository.findAllData();
 
         Set<Integer> userIds = allData.keySet();
 
@@ -46,7 +46,7 @@ public class MemoryDbService {
             Duration duration = Duration.between(createdAt,LocalDateTime.now());
             //5초가 지났다면 다시 요청 가능하도록 삭제
             if(duration.getSeconds()>5){
-                memoryDbRepository.deleteById(userId);
+                apiCallRepository.deleteById(userId);
             }
         });
 

@@ -1,9 +1,9 @@
-package com.f5.onepageresumebe.domain.mysql.repository.inmemory;
+package com.f5.onepageresumebe.domain.apiCallCheck.repository;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public interface MemoryDbRepository {
+public interface ApiCallRepository {
 
     //생성
     void save(Integer userId);

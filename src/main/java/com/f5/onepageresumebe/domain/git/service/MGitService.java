@@ -4,7 +4,7 @@ import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.git.entity.MFile;
 import com.f5.onepageresumebe.domain.project.entity.Project;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
-import com.f5.onepageresumebe.domain.project.service.MemoryDbService;
+import com.f5.onepageresumebe.domain.apiCallCheck.service.ApiCallService;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
@@ -41,7 +40,7 @@ public class MGitService {
 
     private final MongoTemplate mongoTemplate;
     private final AES256 aes256;
-    private final MemoryDbService memoryDbService;
+    private final ApiCallService apiCallService;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final TaskExecutor taskExecutor;
@@ -234,10 +233,10 @@ public class MGitService {
     }
 
     public void syncCallCheck(Integer userId){
-        if(!memoryDbService.callAvailability(userId)){
+        if(!apiCallService.callAvailability(userId)){
             throw new CustomException("깃허브 불러오기는 5초에 1번 가능합니다. 5초 후에 다시 시도해 주세요",TOO_MANY_CALL);
         }else{
-            memoryDbService.call(userId);
+            apiCallService.call(userId);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.f5.onepageresumebe.domain.mysql.repository.inmemory;
+package com.f5.onepageresumebe.domain.apiCallCheck.repository;
 
 import org.springframework.stereotype.Repository;
 
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class MemoryDbRepositoryImpl implements MemoryDbRepository{
+public class ApiCallRepositoryImpl implements ApiCallRepository {
 
     Map<Integer, LocalDateTime> data = new ConcurrentHashMap<>();
 
