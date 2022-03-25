@@ -1,5 +1,22 @@
 package com.f5.onepageresumebe.domain.user.service;
 
+import com.f5.onepageresumebe.domain.career.entity.Career;
+import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
+import com.f5.onepageresumebe.domain.git.entity.GitCommit;
+import com.f5.onepageresumebe.domain.git.entity.GitFile;
+import com.f5.onepageresumebe.domain.git.entity.MCommit;
+import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
+import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
+import com.f5.onepageresumebe.domain.portfolio.entity.PortfolioBookmark;
+import com.f5.onepageresumebe.domain.portfolio.repository.PortfoiloBookmarkRepository;
+import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioStackRepository;
+import com.f5.onepageresumebe.domain.project.entity.Project;
+import com.f5.onepageresumebe.domain.project.entity.ProjectBookmark;
+import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
+import com.f5.onepageresumebe.domain.project.repository.ProjectBookmarkRepository;
+import com.f5.onepageresumebe.domain.project.repository.ProjectImgRepository;
+import com.f5.onepageresumebe.domain.project.repository.ProjectStackRepository;
+import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.stack.entity.Stack;
 import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
@@ -25,6 +42,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -59,17 +79,21 @@ public class UserService {
     private final S3Uploader s3Uploader;
     private final JavaMailSender javaMailSender;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
     private final UserRepository userRepository;
     private final UserStackRepository userstackRepository;
-
     private final ProjectRepository projectRepository;
-
     private final PortfolioRepository portfolioRepository;
-
     private final StackRepository stackRepository;
-
     private final CertificationRepository certificationRepository;
+    private final GitCommitRepository gitCommitRepository;
+    private final ProjectStackRepository projectStackRepository;
+    private final GitFileRepository gitFileRepository;
+    private final ProjectImgRepository projectImgRepository;
+    private final MongoTemplate mongoTemplate;
+    private final PortfoiloBookmarkRepository portfoiloBookmarkRepository;
+    private final ProjectBookmarkRepository projectBookmarkRepository;
+    private final CareerRepository careerRepository;
+    private final PortfolioStackRepository portfolioStackRepository;
 
     @Transactional
     public Boolean registerUser(UserDto.SignUpRequest requestDto) {
@@ -491,5 +515,85 @@ public class UserService {
             findEmailResponseDto.setEmail(blindFront.toString() + emailBack);
         }
         return findEmailResponseDto;
+    }
+
+    @Transactional
+    public void deleteUser() {
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        User curUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
+        List<PortfolioBookmark> portfolioBookmarkList = curUser.getPortfolioBookmarkList();
+        List<ProjectBookmark> projectBookmarkList = curUser.getProjectBookmarkList();
+
+        //유저가 북마크중인 프로젝트 북마크 삭제
+        for(ProjectBookmark projectBookmark : projectBookmarkList) {
+            projectBookmarkRepository.deleteByUserIdAndProjectId(curUser.getId(), projectBookmark.getProject().getId());
+        }
+
+        //유저가 북마크중인 포트폴리오 북마크 삭제
+        for (PortfolioBookmark portfolioBookmark : portfolioBookmarkList) {
+            portfoiloBookmarkRepository.deleteByUserIdAndPortfolioId(portfolioBookmark.getUser().getId(),portfolioBookmark.getPortfolio().getId());
+        }
+
+        //유저가 가지고있는 포트폴리오의 스택 삭제
+        portfolioStackRepository.deleteAllByPorfId(curUser.getPortfolio().getId());
+
+        List<Project> projectList = curUser.getProjectList();
+
+        //유저가 가지고 있는 프로젝트 삭제, 프로젝트 내에 stack, img, 트러블슈팅 삭제
+        for(Project project : projectList) {
+            deleteProject(project.getId());
+        }
+
+        //유저가 가지고 있는 포트폴리오의 커리어 테이블 전부 삭제
+        careerRepository.deleteAllByPorfId(curUser.getPortfolio().getId());
+
+        //유저와 연결된 userStack 전부 삭제
+        userstackRepository.deleteAllUserStackByUserId(curUser.getId());
+        //유저가 가지고 있는 포트폴리오 삭제
+        portfolioRepository.deleteById(curUser.getPortfolio().getId());
+
+        //유저 프로필 이미지 삭제
+        s3Uploader.deleteProfile(curUser.getProfileImgUrl(), 53);
+
+        //유저 정보 삭제
+        userRepository.deleteById(curUser.getId());
+    }
+
+    @Transactional
+    public void deleteProject(Integer projectId) {
+
+        List<GitCommit> gitCommitList = gitCommitRepository.findAllByProjectId(projectId);
+
+        //프로젝트에 연결된 커밋들 삭제
+        for(GitCommit curCommit : gitCommitList) {
+            deleteProjectTroubleShootings(curCommit.getId());
+        }
+        //프로젝트의 스택들 전부 삭제
+        projectStackRepository.deleteAllByProjectId(projectId);
+
+        //연결되어 있는 모든 사진들 삭제
+        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
+        s3Uploader.deleteProjectImages(projectImgs);
+        projectImgRepository.deleteAllInBatch(projectImgs);
+
+        //프로젝트 연결된 북마크 삭제
+        projectBookmarkRepository.deleteByProjectId(projectId);
+
+        projectRepository.deleteById(projectId);
+
+    }
+
+    @Transactional
+    public void deleteProjectTroubleShootings(Integer commitId) {
+
+        GitCommit gitCommit = gitCommitRepository.getById(commitId);
+
+        List<GitFile> gitFileList = gitCommit.getFileList();
+        gitFileRepository.deleteAllInBatch(gitFileList);
+
+        gitCommitRepository.deleteById(commitId);
     }
 }

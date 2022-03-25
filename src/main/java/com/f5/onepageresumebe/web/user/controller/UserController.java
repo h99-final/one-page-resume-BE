@@ -223,4 +223,16 @@ public class UserController {
                 .data(userService.findEmail(requestDto))
                 .build();
     }
+
+    @Secured("ROLE_USER")
+    @DeleteMapping("/user")
+    public ResDto deleteUser() {
+
+        userService.deleteUser();
+
+        return ResDto.builder()
+                .result(true)
+                .data(null)
+                .build();
+    }
 }
