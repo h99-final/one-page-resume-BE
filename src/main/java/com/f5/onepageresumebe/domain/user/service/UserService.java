@@ -1,10 +1,8 @@
 package com.f5.onepageresumebe.domain.user.service;
 
-import com.f5.onepageresumebe.domain.career.entity.Career;
 import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
-import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
 import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
 import com.f5.onepageresumebe.domain.portfolio.entity.PortfolioBookmark;
@@ -43,8 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -598,35 +594,54 @@ public class UserService {
     @Transactional
     public void deleteProject(Integer projectId) {
 
-        List<GitCommit> gitCommitList = gitCommitRepository.findAllByProjectId(projectId);
+        //내가 작성한 프로젝트가 아니라면 Exception 발생
+        getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 삭제할 수 있습니다");
 
-        //프로젝트에 연결된 커밋들 삭제
-        for(GitCommit curCommit : gitCommitList) {
-            deleteProjectTroubleShootings(curCommit.getId());
-        }
+        //현재 프로젝트의 모든 커밋들 삭제
+        gitCommitRepository.findAllIdsByProjectId(projectId).forEach(id->{
+            deleteProjectTroubleShootings(projectId, id);
+        });
+
         //프로젝트의 스택들 전부 삭제
         projectStackRepository.deleteAllByProjectId(projectId);
 
-        //연결되어 있는 모든 사진들 삭제
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
+
+        //s3에서 사진 모두 삭제
         s3Uploader.deleteProjectImages(projectImgs);
+
+        //저장된 이미지 url 모두 삭제
         projectImgRepository.deleteAllInBatch(projectImgs);
 
         //프로젝트 연결된 북마크 삭제
         projectBookmarkRepository.deleteByProjectId(projectId);
 
+        //프로젝트 삭제
         projectRepository.deleteById(projectId);
 
     }
 
     @Transactional
-    public void deleteProjectTroubleShootings(Integer commitId) {
+    public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
 
-        GitCommit gitCommit = gitCommitRepository.getById(commitId);
+        //내가 작성한 프로젝트가 아니면 오류 발생
+        getProjectIfMyProject(projectId,"내가 작성한 트러블 슈팅만 삭제할 수 있습니다");
 
-        List<GitFile> gitFileList = gitCommit.getFileList();
-        gitFileRepository.deleteAllInBatch(gitFileList);
+        //커밋이 현재프로젝트에 있는 커밋인지 확인
+        gitCommitRepository.findByProjectIdAndCommitId(projectId,commitId).orElseThrow(()->
+                new CustomException("현재 프로젝트 내의 트러블 슈팅만 삭제할 수 있습니다.",INVALID_INPUT_ERROR));
 
+        //깃 파일 삭제
+        gitFileRepository.deleteByCommitId(commitId);
+
+        //커밋 삭제
         gitCommitRepository.deleteById(commitId);
+    }
+
+    public Project getProjectIfMyProject(Integer projectId,String errorMsg) {
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+        return projectRepository.findByUserEmailAndProjectId(email, projectId)
+                .orElseThrow(()->new CustomAuthorizationException(errorMsg));
     }
 }
