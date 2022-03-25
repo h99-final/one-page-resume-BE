@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -150,6 +151,7 @@ public class MGitService {
 
         Query query = new Query(Criteria.where("repoName").is(repoName));
         query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
+        query.with(Sort.by(Sort.Order.asc("index")));
 
         List<MCommit> mCommits = mongoTemplate.find(query, MCommit.class);
 
