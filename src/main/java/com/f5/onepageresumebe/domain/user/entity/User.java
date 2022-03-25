@@ -1,7 +1,6 @@
 package com.f5.onepageresumebe.domain.user.entity;
 
-
-import com.f5.onepageresumebe.domain.portfolio.entity.PortfoiloBookmark;
+import com.f5.onepageresumebe.domain.portfolio.entity.PortfolioBookmark;
 import com.f5.onepageresumebe.domain.project.entity.ProjectBookmark;
 import com.f5.onepageresumebe.domain.common.TimeEntity;
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
@@ -70,7 +69,7 @@ public class User extends TimeEntity {
 
 
     @OneToMany(mappedBy = "user")
-    private List<PortfoiloBookmark> portfoiloBookmarkList = new ArrayList<>();
+    private List<PortfolioBookmark> portfolioBookmarkList = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     public User(String email, String password, String name, String githubUrl, String blogUrl,Boolean isKakao) {

@@ -327,6 +327,9 @@ public class ProjectService {
 
         //저장된 이미지 url 모두 삭제
         projectImgRepository.deleteAllInBatch(projectImgs);
+        
+        //프로젝트 연결된 북마크 삭제
+        projectBookmarkRepository.deleteByProjectId(projectId);
 
         //프로젝트 삭제
         projectRepository.deleteById(projectId);

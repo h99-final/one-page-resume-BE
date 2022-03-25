@@ -11,7 +11,7 @@ import javax.persistence.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class PortfoiloBookmark {
+public class PortfolioBookmark {
 
 
     @Id
@@ -30,18 +30,18 @@ public class PortfoiloBookmark {
 
 
     @Builder(access = AccessLevel.PRIVATE)
-    public PortfoiloBookmark(User user, Portfolio portfolio) {
+    public PortfolioBookmark(User user, Portfolio portfolio) {
         this.user = user;
         this.portfolio = portfolio;
     }
 
-    public static PortfoiloBookmark create(User user, Portfolio portfolio) {
-        PortfoiloBookmark portfolioBookmark = PortfoiloBookmark.builder()
+    public static PortfolioBookmark create(User user, Portfolio portfolio) {
+        PortfolioBookmark portfolioBookmark = PortfolioBookmark.builder()
                 .user(user)
                 .portfolio(portfolio)
                 .build();
 
-        user.getPortfoiloBookmarkList().add(portfolioBookmark);
+        user.getPortfolioBookmarkList().add(portfolioBookmark);
         portfolio.getPortfolioBookmarkList().add(portfolioBookmark);
 
         return portfolioBookmark;
