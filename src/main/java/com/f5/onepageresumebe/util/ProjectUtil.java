@@ -47,7 +47,7 @@ public class ProjectUtil {
 
     }
 
-    public static Page<ProjectDto.Response> projectToResponseDtosPaging(Page<Project> projects,
+    public static Page<ProjectDto.Response> projectToResponseDtosPaging(List<Project> projects,
                                                                        Pageable pageable,
                                                                        HashMap<Integer, ProjectImg> imageMap,
                                                                        HashMap<Integer, List<String>> stackMap) {

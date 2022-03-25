@@ -12,4 +12,8 @@ public interface GitFileRepository extends JpaRepository<GitFile,Integer>, GitFi
     @Query("delete from GitFile gf where gf.id = :gitFileId")
     void deleteById(@Param("gitFileId") Integer gitFileId);
 
+    @Modifying
+    @Query("delete from GitFile gf where gf.commit.id = :commitId")
+    void deleteByCommitId(@Param("commitId") Integer commitId);
+
 }

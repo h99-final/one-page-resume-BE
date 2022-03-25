@@ -17,7 +17,6 @@ import com.f5.onepageresumebe.domain.project.entity.ProjectStack;
 import com.f5.onepageresumebe.domain.project.repository.*;
 import com.f5.onepageresumebe.domain.stack.entity.Stack;
 import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
-import com.f5.onepageresumebe.domain.user.repository.UserRepositoryImpl;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
@@ -36,10 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.*;
@@ -68,22 +64,22 @@ public class ProjectService {
     @Transactional
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
 
+        //현재 로그인한 유저
         String userEmail = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(userEmail).orElseThrow(()->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
+        //프로젝트 생성 및 유저와 연결
         Project project = Project.create(requestDto.getTitle(), requestDto.getContent(),
                 requestDto.getGitRepoName(), requestDto.getGitRepoUrl(), user);
 
+        //프로젝트 저장
         projectRepository.save(project);
 
         List<String> stacks = requestDto.getStack();
 
-        if(stacks.size()<3){
-            throw new CustomException("프로젝트 기술 스택을 3가지 이상 선택해 주세요.", INVALID_INPUT_ERROR);
-        }else if(multipartFiles.isEmpty()){
-            throw new CustomException("프로젝트 이미지를 1개 이상 업로드 해주세요.", INVALID_INPUT_ERROR);
-        }
+        //검증
+        checkStacks(stacks);
 
         //스택 넣기
         insertStacksInProject(project, stacks);
@@ -93,6 +89,7 @@ public class ProjectService {
 
         Integer projectId = project.getId();
 
+        //깃허브 sync 예상 시간
         Long expectEndTime = mGitService.order(projectId);
 
         return ProjectDto.Response.builder()
@@ -108,6 +105,7 @@ public class ProjectService {
     @Transactional
     public void updateProjectImages(Integer projectId,List<MultipartFile> multipartFiles){
 
+        //나의 프로젝트일때만 가져오기
         Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 수정할 수 있습니다.");
 
         //새로운 사진 모두 추가
@@ -117,8 +115,17 @@ public class ProjectService {
     @Transactional
     public void deleteProjectImg(Integer projectId, Integer imageId){
 
-        Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트의 이미지만 삭제할 수 있습니다.");
+        //나의 프로젝트가 아니면 Exception 발생
+        getProjectIfMyProject(projectId,"내가 작성한 프로젝트의 이미지만 삭제할 수 있습니다.");
 
+        //프로젝트 이미지 불러오기
+        ProjectImg projectImg = projectImgRepository.findById(imageId).orElseThrow(() ->
+                new CustomException("해당 이미지가 존재하지 않습니다.", INVALID_INPUT_ERROR));
+
+        //s3에서 삭제
+        s3Uploader.deleteProjectImages(new ArrayList<>(Arrays.asList(projectImg)));
+
+        //삭제
         projectImgRepository.deleteById(imageId);
 
     }
@@ -126,25 +133,15 @@ public class ProjectService {
     @Transactional
     public void updateProjectInfo(Integer projectId,ProjectDto.Request requestDto){
 
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
-                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
-
-        Project project = projectRepository.findById(projectId).orElseThrow(() ->
-                new CustomException("존재하지 않는 프로젝트입니다.",NOT_EXIST_ERROR));
-
-        // !project.getUser.getId().equals(user.getID())
-        if(!(project.getUser().getId().equals(user.getId()))){
-            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다");
-        }
+        //내가 작성한 프로젝트이면 불러옴, 아니라면 Exception 발생
+        Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 수정할 수 있습니다.");
 
         List<String> stacks = requestDto.getStack();
 
-        if (stacks.size()<3){
-            throw new CustomException("프로젝트 스택을 3개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
-        }
+        //스택 검증
+        checkStacks(stacks);
 
+        //업데이트
         project.updateIntro(requestDto);
 
         //기존에 있던 모든 연결된 스택 제거
@@ -156,24 +153,31 @@ public class ProjectService {
 
     public List<ProjectDto.Response> getShortInfos(){
 
+        //현재 로그인 유저
         String email = SecurityUtil.getCurrentLoginUserId();
 
+        //로그인 유저의 프로젝트들
         List<Project> projects = projectRepository.findAllByUserEmail(email);
 
+        //util class에서 사용할 정보들을 담은 map
         HashMap<Integer, List<String>> stackMap = new HashMap<>();
         HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
 
-        for(Project project : projects) {
+        //dto로 변환
+        projectRepository.findAllByUserEmail(email).forEach(project -> {
+
             Integer projectId = project.getId();
 
             stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
+
             ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
+
             if(projectImg != null) {
                 imageMap.put(projectId, projectImg);}
             else {
                 imageMap.put(projectId, null);
             }
-        }
+        });
 
         return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
     }
@@ -182,19 +186,23 @@ public class ProjectService {
 
         List<String> stackNames = requestDto.getStack();
 
-        Page<Project> projects;
+        List<Project> projects;
 
         if(stackNames.size() == 0) {
-            projects = projectRepository.findAllByOrderByBookmarkCountDesc(pageable);
+            //조회 스택을 선택하지 않았다면 전체 조회
+            projects = projectRepository.findAllByOrderByBookmarkCountDesc();
         }
         else {
-            projects = projectRepository.findAllByStackNamesPaging(stackNames,pageable);
+            //조회 스택을 선택했다면 해당 스택을 가진 프로젝트만 조회
+            projects = projectRepository.findAllByStackNames(stackNames);
         }
 
+        //util class에서 사용할 정보들을 담은 map
         HashMap<Integer, List<String>> stackMap = new HashMap<>();
         HashMap<Integer, ProjectImg> imageMap = new HashMap<>();
 
-        for(Project project : projects) {
+        //dto로 변환
+        projects.forEach(project -> {
             Integer projectId = project.getId();
 
             stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
@@ -204,19 +212,13 @@ public class ProjectService {
             else {
                 imageMap.put(projectId, null);
             }
-        }
+        });
 
         return ProjectUtil.projectToResponseDtosPaging(projects, pageable, imageMap, stackMap);
     }
 
-    public Project getProjectIfMyProject(Integer projectId,String errorMsg) {
-
-        String email = SecurityUtil.getCurrentLoginUserId();
-        return projectRepository.findByUserEmailAndProjectId(email, projectId)
-                .orElseThrow(()->new CustomAuthorizationException(errorMsg));
-    }
-
     public List<ProjectDto.TroubleShootingsResponse> getTroubleShootings(Integer projectId) {
+
         List<ProjectDto.TroubleShootingsResponse> troubleShootingsResponseDtos = new ArrayList<>();
 
         Project project = projectRepository.getById(projectId);
@@ -273,11 +275,14 @@ public class ProjectService {
 
         stackNames.forEach(name-> {
             Stack stack = stackRepository.findFirstByName(name).orElse(null);
+            //존재하지 않는 스택일경우 새로 생성
             if (stack == null) {
                 stack = Stack.create(name);
                 stackRepository.save(stack);
             }
+            //프로젝트와 스택 연결
             ProjectStack projectStack = ProjectStack.create(project, stack);
+
             projectStackRepository.save(projectStack);
         });
     }
@@ -286,7 +291,10 @@ public class ProjectService {
 
         multipartFiles.forEach(multipartFile -> {
             try{
+                //s3에 업로드
                 String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
+
+                //projectImg 생성 후 프로젝트와 연결, 저장
                 ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
                 projectImgRepository.save(projectImg);
             }catch (IOException e){
@@ -301,22 +309,26 @@ public class ProjectService {
     @Transactional
     public void deleteProject(Integer projectId) {
 
-        Project project = getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 삭제할 수 있습니다");
+        //내가 작성한 프로젝트가 아니라면 Exception 발생
+        getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 삭제할 수 있습니다");
 
-        List<GitCommit> gitCommitList = gitCommitRepository.findAllByProjectId(projectId);
+        //현재 프로젝트의 모든 커밋들 삭제
+        gitCommitRepository.findAllIdsByProjectId(projectId).forEach(id->{
+            deleteProjectTroubleShootings(projectId, id);
+        });
 
-        //프로젝트에 연결된 커밋들 삭제
-        for(GitCommit curCommit : gitCommitList) {
-            deleteProjectTroubleShootings(projectId, curCommit.getId());
-        }
         //프로젝트의 스택들 전부 삭제
         projectStackRepository.deleteAllByProjectId(projectId);
 
-//        //연결되어 있는 모든 사진들 삭제
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
+
+        //s3에서 사진 모두 삭제
         s3Uploader.deleteProjectImages(projectImgs);
+
+        //저장된 이미지 url 모두 삭제
         projectImgRepository.deleteAllInBatch(projectImgs);
 
+        //프로젝트 삭제
         projectRepository.deleteById(projectId);
 
     }
@@ -324,13 +336,17 @@ public class ProjectService {
     @Transactional
     public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
 
-        Project project = getProjectIfMyProject(projectId,"내가 작성한 트러블 슈팅만 삭제할 수 있습니다");
+        //내가 작성한 프로젝트가 아니면 오류 발생
+        getProjectIfMyProject(projectId,"내가 작성한 트러블 슈팅만 삭제할 수 있습니다");
 
-        GitCommit gitCommit = gitCommitRepository.getById(commitId);
+        //커밋이 현재프로젝트에 있는 커밋인지 확인
+        gitCommitRepository.findByProjectIdAndCommitId(projectId,commitId).orElseThrow(()->
+                new CustomException("현재 프로젝트 내의 트러블 슈팅만 삭제할 수 있습니다.",INVALID_INPUT_ERROR));
 
-        List<GitFile> gitFileList = gitCommit.getFileList();
-        gitFileRepository.deleteAllInBatch(gitFileList);
+        //깃 파일 삭제
+        gitFileRepository.deleteByCommitId(commitId);
 
+        //커밋 삭제
         gitCommitRepository.deleteById(commitId);
     }
 
@@ -341,6 +357,7 @@ public class ProjectService {
         boolean isBookmarking = false;
 
         try {
+            //현재 로그인한 유저
             String userEmail = SecurityUtil.getCurrentLoginUserId();
             User user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
@@ -357,6 +374,7 @@ public class ProjectService {
                 isBookmarking = optionalProjectBookmark.isPresent();
             }
         } catch (CustomAuthenticationException e) {
+            //비로그인
             project = projectRepository.getById(projectId);
             isMyProject = false;
             isBookmarking = false;
@@ -388,5 +406,18 @@ public class ProjectService {
                 .build();
 
         return projectDetailResponseDto;
+    }
+
+    public Project getProjectIfMyProject(Integer projectId,String errorMsg) {
+
+        String email = SecurityUtil.getCurrentLoginUserId();
+        return projectRepository.findByUserEmailAndProjectId(email, projectId)
+                .orElseThrow(()->new CustomAuthorizationException(errorMsg));
+    }
+
+    private void checkStacks(List<String> stacks){
+        if(stacks.size()<3){
+            throw new CustomException("프로젝트 기술 스택을 3가지 이상 선택해 주세요.", INVALID_INPUT_ERROR);
+        }
     }
 }
