@@ -50,7 +50,7 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
     }
 
     @Override
-    public List<Project> findAllByStackNames(List<String> stackNames){
+    public List<Project> findAllByStackNames(List<String> stackNames,Pageable pageable){
 
         List<Project> projects = queryFactory.selectDistinct(project).from(projectStack)
                 .innerJoin(projectStack.project, project)
@@ -58,6 +58,8 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                 .innerJoin(project.user, user).fetchJoin()
                 .where(stack.name.in(stackNames))
                 .orderBy(project.bookmarkCount.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         return projects;

@@ -24,6 +24,9 @@ import com.f5.onepageresumebe.web.portfolio.dto.PorfDto;
 import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -215,7 +218,7 @@ public class PortfolioService {
     }
 
     //전체 조회
-    public List<PorfDto.Response> getIntrosByStacks(StackDto requestDto) {
+    public List<PorfDto.Response> getIntrosByStacks(StackDto requestDto, Pageable pageable) {
 
         //조회에 사용될 스택들
         List<String> stackNames = requestDto.getStack();
@@ -229,10 +232,10 @@ public class PortfolioService {
         if (stackNames.size() == 0) {
             //특정 조건이 없을 때
             //공개 된 것들만 가져온다
-            portfolioList = portfolioRepository.findAllFetchUserIfPublicLimit();
+            portfolioList = portfolioRepository.findAllFetchUserIfPublicPaging(pageable);
         } else {
             //특정 스택을 가진, 공개된 포트폴리오만 조회
-            portfolioList = portfolioRepository.findAllByStackNamesIfPublicLimit(stackNames);
+            portfolioList = portfolioRepository.findAllByStackNamesIfPublicPaging(stackNames,pageable);
         }
 
         //Dto 변환

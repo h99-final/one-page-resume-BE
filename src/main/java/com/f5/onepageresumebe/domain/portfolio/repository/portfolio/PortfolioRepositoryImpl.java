@@ -4,6 +4,9 @@ import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
 import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -35,7 +38,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
     }
 
     @Override
-    public List<Portfolio> findAllByStackNamesIfPublicLimit(List<String> stacks) {
+    public List<Portfolio> findAllByStackNamesIfPublicPaging(List<String> stacks,Pageable pageable) {
 
         List<Portfolio> portfolios = queryFactory.select(portfolio).from(portfolioStack)
                 .innerJoin(portfolioStack.portfolio, portfolio)
@@ -43,7 +46,8 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
                 .innerJoin(portfolio.user, user)
                 .where(stack.name.in(stacks).and(portfolio.isTemp.eq(false)))
                 .orderBy(portfolio.viewCount.desc())
-                .limit(12L)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         return portfolios;
@@ -51,13 +55,14 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
 
     //공개된 포트폴리오만 가져온다
     @Override
-    public List<Portfolio> findAllFetchUserIfPublicLimit() {
+    public List<Portfolio> findAllFetchUserIfPublicPaging(Pageable pageable) {
 
         List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
                 .innerJoin(portfolio.user, user).fetchJoin()
                 .where(portfolio.isTemp.eq(false))
                 .orderBy(portfolio.viewCount.desc())
-                .limit(12L)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         return portfolios;

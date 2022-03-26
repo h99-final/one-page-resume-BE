@@ -28,7 +28,6 @@ import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -182,7 +181,7 @@ public class ProjectService {
         return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
     }
 
-    public Page<ProjectDto.Response> getAllByStacks(StackDto requestDto, Pageable pageable){
+    public List<ProjectDto.Response> getAllByStacks(StackDto requestDto, Pageable pageable){
 
         List<String> stackNames = requestDto.getStack();
 
@@ -190,11 +189,11 @@ public class ProjectService {
 
         if(stackNames.size() == 0) {
             //조회 스택을 선택하지 않았다면 전체 조회
-            projects = projectRepository.findAllByOrderByBookmarkCountDesc();
+            projects = projectRepository.findAllByOrderByBookmarkCountDescPaging(pageable).getContent();
         }
         else {
             //조회 스택을 선택했다면 해당 스택을 가진 프로젝트만 조회
-            projects = projectRepository.findAllByStackNames(stackNames);
+            projects = projectRepository.findAllByStackNames(stackNames,pageable);
         }
 
         //util class에서 사용할 정보들을 담은 map
@@ -214,7 +213,7 @@ public class ProjectService {
             }
         });
 
-        return ProjectUtil.projectToResponseDtosPaging(projects, pageable, imageMap, stackMap);
+        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
     }
 
     public List<ProjectDto.TroubleShootingsResponse> getTroubleShootings(Integer projectId) {
