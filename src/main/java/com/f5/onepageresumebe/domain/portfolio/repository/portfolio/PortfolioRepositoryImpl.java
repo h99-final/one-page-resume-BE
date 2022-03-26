@@ -82,13 +82,16 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
     @Override
     public boolean existsByUserEmailAndPorfId(String userEmail, Integer porfId) {
 
-        Integer exists = queryFactory.selectOne()
-                .from(portfolio)
-                .innerJoin(portfolio.user, user)
-                .where(portfolio.id.eq(porfId).and(user.email.eq(userEmail)))
-                .fetchFirst();
 
-        return exists!=null;
+        List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
+                .innerJoin(portfolio.user, user).fetchJoin()
+                .where(user.email.eq(userEmail).and(portfolio.id.eq(porfId)))
+                .limit(1L)
+                .fetch();
+
+        if (portfolios.isEmpty()) return false;
+        else return true;
+
     }
 
 }
