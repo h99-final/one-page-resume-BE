@@ -12,10 +12,11 @@ import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.AES256;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
-import com.f5.onepageresumebe.util.GitRunnable;
+
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.git.dto.CommitDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
@@ -25,10 +26,13 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
@@ -44,9 +48,8 @@ public class MGitService {
     private final ApiCallService apiCallService;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
-    private final TaskExecutor taskExecutor;
 
-    public Long order(Integer projectId) {
+    public void order(Integer projectId) {
 
         String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -59,61 +62,46 @@ public class MGitService {
         syncCallCheck(user.getId());
 
         //토큰이 없으면 바로 RETURN
-        if(project.getUser().getGitToken()==null) return 0L;
+        if(project.getUser().getGitToken()==null) return;
 
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
         String repoOwner = getOwner(repoUrl);
 
-        GHRepository ghRepository = null;
-
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
         deleteMCommits(repoName, repoOwner);
         try {
-            ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
+            final GHRepository ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
+
+            CompletableFuture.runAsync(()->{
+                try {
+                    List<GHCommit> commits = ghRepository.listCommits().toList();
+                    commits.parallelStream().forEach((commit)-> {
+                        try {
+                            log.info("parallerStream");
+                            String curSha = commit.getSHA1();
+                            String curMessage = commit.getCommitShortInfo().getMessage();
+
+                            List<MFile> files = getFiles(ghRepository, curSha);
+
+                            Date date = commit.getCommitDate();
+
+                            MCommit mCommit = MCommit.create(projectId, date ,curMessage, curSha, repoName, repoOwner, files);
+                            mongoTemplate.save(mCommit);
+
+                        }catch (IOException e) {
+                        }
+                    });
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
         } catch (IOException e) {
             log.error("Repository 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
         }
-        List<GHCommit> commits = null;
-
-        try {
-            commits = ghRepository.listCommits().toList();
-        }
-        catch (IOException e) {
-            log.error("Commit 가져오기 실패: {}", e.getMessage());
-            e.printStackTrace();
-        }
-        Integer commitsSize = commits.size();
-
-        Integer modeValue = commitsSize/ 5;
-
-        Integer firstStart = 0;
-        Integer firstEnd = firstStart + modeValue;
-
-        Integer secondStart = firstEnd;
-        Integer secondEnd = firstEnd + modeValue;
-
-        Integer thirdStart = secondEnd;
-        Integer thirdEnd = secondEnd + modeValue;
-
-        Integer fourthStart = thirdEnd;
-        Integer fourthEnd = thirdEnd + modeValue;
-
-        Integer fifthStart = fourthEnd;
-        Integer fifthEnd = commitsSize;
-
-        taskExecutor.execute(new GitRunnable(firstStart, firstEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
-        taskExecutor.execute(new GitRunnable(secondStart, secondEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
-        taskExecutor.execute(new GitRunnable(thirdStart, thirdEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
-        taskExecutor.execute(new GitRunnable(fourthStart, fourthEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
-        taskExecutor.execute(new GitRunnable(fifthStart, fifthEnd,commits, ghRepository, repoName, repoOwner, mongoTemplate));
-
-        Double endTime = commitsSize * 0.3;
-
-        Long expectEndTime = Math.round(endTime / 5);
-
-        return expectEndTime;
     }
 
     public List<MFile> getFiles(GHRepository ghRepository, String sha) {
@@ -150,7 +138,8 @@ public class MGitService {
 
         Query query = new Query(Criteria.where("repoName").is(repoName));
         query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
-        query.with(Sort.by(Sort.Order.asc("index")));
+        query.addCriteria(Criteria.where("projectId").is(projectId));
+        query.with(Sort.by(Sort.Order.desc("date")));
 
         List<MCommit> mCommits = mongoTemplate.find(query, MCommit.class);
 
