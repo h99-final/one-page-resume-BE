@@ -13,5 +13,5 @@ public interface ProjectRepositoryCustom {
 
     Optional<Project> findByUserEmailAndProjectId(String userEmail, Integer projectId);
 
-    List<Project> findAllByStackNames(List<String> stackNames);
+    List<Project> findAllByStackNames(List<String> stackNames,Pageable pageable);
 }

@@ -99,11 +99,11 @@ public class ProjectController {
     public ResDto getProjectsByStack(@RequestBody StackDto requestDto,
                                      @PageableDefault(size = 12) Pageable pageable){
 
-        Page<ProjectDto.Response> responseDtos = projectService.getAllByStacks(requestDto,pageable);
+        List<ProjectDto.Response> responseDtos = projectService.getAllByStacks(requestDto,pageable);
 
         return ResDto.builder()
                 .result(true)
-                .data(responseDtos.getContent())
+                .data(responseDtos)
                 .build();
     }
 

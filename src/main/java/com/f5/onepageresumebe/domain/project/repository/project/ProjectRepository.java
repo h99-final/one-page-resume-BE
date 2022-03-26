@@ -14,7 +14,7 @@ import java.util.List;
 public interface ProjectRepository extends JpaRepository<Project,Integer>, ProjectRepositoryCustom {
 
     @Query("select p from Project p order by p.bookmarkCount desc")
-    List<Project> findAllByOrderByBookmarkCountDesc();
+    Page<Project> findAllByOrderByBookmarkCountDescPaging(Pageable pageable);
 
     @Query("select p.id from Project p where p.user.id = :userId")
     List<Integer> findProjectIdByUserId(@Param("userId") Integer userId);

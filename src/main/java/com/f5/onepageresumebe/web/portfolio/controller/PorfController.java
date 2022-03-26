@@ -6,6 +6,9 @@ import com.f5.onepageresumebe.web.portfolio.dto.PorfDto;
 import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -53,9 +56,10 @@ public class PorfController {
     }
 
     @PostMapping("/porf/intro/recommend")
-    public ResDto getIntrosByStacks(@RequestBody StackDto requestDto){
+    public ResDto getIntrosByStacks(@RequestBody StackDto requestDto,
+                                    @PageableDefault(size = 12) Pageable pageable){
 
-        List<PorfDto.Response> responseDtos = portfolioService.getIntrosByStacks(requestDto);
+        List<PorfDto.Response> responseDtos = portfolioService.getIntrosByStacks(requestDto,pageable);
 
         return ResDto.builder()
                 .result(true)
