@@ -19,14 +19,11 @@ public class MGitController {
     @GetMapping("/project/{projectId}/git/sync")
     public ResDto sync(@PathVariable("projectId") Integer projectId){
 
-        Long expectEndTime = mGitService.order(projectId);
-
-        HashMap<String, Long> response = new HashMap<>();
-        response.put("expectEndTime", expectEndTime);
+        mGitService.order(projectId);
 
         return ResDto.builder()
                 .result(true)
-                .data(response)
+                .data(null)
                 .build();
     }
 
