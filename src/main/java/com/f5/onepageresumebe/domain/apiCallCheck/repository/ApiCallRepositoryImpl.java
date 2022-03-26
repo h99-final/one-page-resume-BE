@@ -24,9 +24,9 @@ public class ApiCallRepositoryImpl implements ApiCallRepository {
     }
 
     @Override
-    public boolean existsByUserId(Integer userId) {
+    public boolean existsById(Integer userId) {
 
-        return data.get(userId)!=null;
+        return data.containsKey(userId);
     }
 
     @Override

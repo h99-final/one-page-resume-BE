@@ -12,7 +12,7 @@ public interface ApiCallRepository {
     Map<Integer, LocalDateTime> findAllData();
 
     //존재 여부
-    boolean existsByUserId(Integer userId);
+    boolean existsById(Integer userId);
 
     //삭제
     void deleteById(Integer userId);
