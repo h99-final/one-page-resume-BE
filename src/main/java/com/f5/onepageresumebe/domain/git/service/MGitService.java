@@ -66,7 +66,7 @@ public class MGitService {
 
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
-        String repoOwner = getOwner(repoUrl);
+        String repoOwner = GitUtil.getOwner(repoUrl);
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
         deleteMCommits(repoName, repoOwner);
@@ -132,7 +132,7 @@ public class MGitService {
 
         String repoUrl = project.getGitRepoUrl();
         String repoName = project.getGitRepoName();
-        String repoOwner = getOwner(repoUrl);
+        String repoOwner = GitUtil.getOwner(repoUrl);
 
         List<CommitDto.MessageResponse> mCommitMessageResponseDtos = new ArrayList<>();
 
@@ -218,14 +218,9 @@ public class MGitService {
         return gitUrl.substring(idx + 5) + "/" + reName;
     }
 
-    public String getOwner(String gitUrl) {
-        int idx = gitUrl.indexOf(".com/");
-        return gitUrl.substring(idx + 5);
-    }
-
-    public void syncCallCheck(Integer userId){
+    private void syncCallCheck(Integer userId){
         if(!apiCallService.callAvailability(userId)){
-            throw new CustomException("깃허브 불러오기는 5초에 1번 가능합니다. 5초 후에 다시 시도해 주세요",TOO_MANY_CALL);
+            throw new CustomException("깃허브 불러오기는 20초에 1번 가능합니다. 잠시 후에 다시 시도해 주세요",TOO_MANY_CALL);
         }else{
             apiCallService.call(userId);
         }

@@ -33,4 +33,10 @@ public class GitUtil {
 
         return res;
     }
+
+    //repository 주인
+    public static String getOwner(String gitUrl) {
+        int idx = gitUrl.indexOf(".com/");
+        return gitUrl.substring(idx + 5);
+    }
 }
