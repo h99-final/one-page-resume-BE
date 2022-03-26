@@ -49,4 +49,17 @@ public class MGitController {
                 .build();
     }
 
+    @Secured("ROLE_USER")
+    @GetMapping("/project/{projectId}/git/completion")
+    public ResDto isCompletion(@PathVariable("projectId") Integer projectId) {
+
+        Boolean isDone = mGitService.isCompletion(projectId);
+        HashMap res = new HashMap<String, Boolean>();
+        res.put("isDone", isDone);
+
+        return ResDto.builder()
+                .result(true)
+                .data(res)
+                .build();
+    }
 }

@@ -5,6 +5,7 @@ import com.f5.onepageresumebe.domain.git.entity.MFile;
 import com.f5.onepageresumebe.domain.project.entity.Project;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.apiCallCheck.service.ApiCallService;
+import com.f5.onepageresumebe.domain.task.repository.TaskRepositoryImpl;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
@@ -48,6 +49,7 @@ public class MGitService {
     private final ApiCallService apiCallService;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final TaskRepositoryImpl taskRepository;
 
     public void order(Integer projectId) {
 
@@ -75,6 +77,7 @@ public class MGitService {
 
             CompletableFuture.runAsync(()->{
                 try {
+                    taskRepository.save(projectId, false);
                     List<GHCommit> commits = ghRepository.listCommits().toList();
                     commits.parallelStream().forEach((commit)-> {
                         try {
@@ -92,7 +95,7 @@ public class MGitService {
                         }catch (IOException e) {
                         }
                     });
-
+                    taskRepository.save(projectId, true);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -231,4 +234,7 @@ public class MGitService {
         }
     }
 
+    public Boolean isCompletion(Integer projectId) {
+        return taskRepository.findByProjectId(projectId);
+    }
 }
