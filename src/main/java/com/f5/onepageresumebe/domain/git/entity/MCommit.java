@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Document
@@ -19,9 +20,9 @@ public class MCommit {
     @Id
     private ObjectId id;
 
-    @Field(targetType = FieldType.INT32, write = Field.Write.NON_NULL)
+    @Field(targetType = FieldType.DATE_TIME, write = Field.Write.NON_NULL)
     @Indexed(unique = true)
-    private Integer index;
+    private Date date;
 
     @Field(targetType = FieldType.STRING, write = Field.Write.NON_NULL)
     @Indexed(unique = true)
@@ -40,8 +41,8 @@ public class MCommit {
     private List<MFile> files = new ArrayList();
 
     @Builder
-    public MCommit(Integer index, String sha, String message, String repoName, String repoOwner, List<MFile> files) {
-        this.index = index;
+    public MCommit(Date date, String sha, String message, String repoName, String repoOwner, List<MFile> files) {
+        this.date = date;
         this.sha = sha;
         this.message = message;
         this.repoName = repoName;
@@ -49,9 +50,9 @@ public class MCommit {
         this.files = files;
     }
 
-    public static MCommit create(Integer index, String message, String sha, String repoName, String repoOwner, List<MFile> files){
+    public static MCommit create(Date date, String message, String sha, String repoName, String repoOwner, List<MFile> files){
         return MCommit.builder()
-                .index(index)
+                .date(date)
                 .message(message)
                 .sha(sha)
                 .repoName(repoName)

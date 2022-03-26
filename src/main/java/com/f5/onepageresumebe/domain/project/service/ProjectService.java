@@ -89,15 +89,13 @@ public class ProjectService {
 
         Integer projectId = project.getId();
 
-        //깃허브 sync 예상 시간
-        Long expectEndTime = mGitService.order(projectId);
+        //mGitService.order(projectId);
 
         return ProjectDto.Response.builder()
                 .id(projectId)
                 .title(project.getTitle())
                 .imageUrl(projectImgRepository.findFirstByProjectId(projectId).get()
                         .getImageUrl())
-                .expectEndTime(expectEndTime)
                 .stack(stacks)
                 .build();
     }

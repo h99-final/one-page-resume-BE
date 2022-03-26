@@ -48,7 +48,6 @@ public class ProjectDto {
         private Integer bookmarkCount;
         private String username;
         private String userJob;
-        private Long expectEndTime;
     }
 
     @Data
