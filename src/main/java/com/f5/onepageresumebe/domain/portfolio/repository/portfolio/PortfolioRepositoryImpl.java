@@ -84,7 +84,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
 
         Integer exists = queryFactory.selectOne()
                 .from(portfolio)
-                .innerJoin(portfolio.user, user).fetchJoin()
+                .innerJoin(portfolio.user, user)
                 .where(portfolio.id.eq(porfId).and(user.email.eq(userEmail)))
                 .fetchFirst();
 
