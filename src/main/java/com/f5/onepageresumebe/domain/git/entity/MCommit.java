@@ -20,6 +20,10 @@ public class MCommit {
     @Id
     private ObjectId id;
 
+    @Field(targetType = FieldType.INT32, write = Field.Write.NON_NULL)
+    @Indexed(unique = true)
+    private Integer projectId;
+
     @Field(targetType = FieldType.DATE_TIME, write = Field.Write.NON_NULL)
     @Indexed(unique = true)
     private Date date;
@@ -41,7 +45,8 @@ public class MCommit {
     private List<MFile> files = new ArrayList();
 
     @Builder
-    public MCommit(Date date, String sha, String message, String repoName, String repoOwner, List<MFile> files) {
+    public MCommit(Integer projectId, Date date, String sha, String message, String repoName, String repoOwner, List<MFile> files) {
+        this.projectId = projectId;
         this.date = date;
         this.sha = sha;
         this.message = message;
@@ -50,8 +55,9 @@ public class MCommit {
         this.files = files;
     }
 
-    public static MCommit create(Date date, String message, String sha, String repoName, String repoOwner, List<MFile> files){
+    public static MCommit create(Integer projectId, Date date, String message, String sha, String repoName, String repoOwner, List<MFile> files){
         return MCommit.builder()
+                .projectId(projectId)
                 .date(date)
                 .message(message)
                 .sha(sha)
