@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.domain.user.service;
 import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
+import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
 import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
 import com.f5.onepageresumebe.domain.portfolio.entity.PortfolioBookmark;
@@ -15,6 +16,7 @@ import com.f5.onepageresumebe.domain.project.repository.ProjectBookmarkRepositor
 import com.f5.onepageresumebe.domain.project.repository.ProjectImgRepository;
 import com.f5.onepageresumebe.domain.project.repository.ProjectStackRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
+import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.stack.entity.Stack;
 import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
@@ -41,6 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -595,7 +599,17 @@ public class UserService {
     public void deleteProject(Integer projectId) {
 
         //내가 작성한 프로젝트가 아니라면 Exception 발생
-        getProjectIfMyProject(projectId,"내가 작성한 프로젝트만 삭제할 수 있습니다");
+        Project project = getProjectIfMyProject(projectId, "내가 작성한 프로젝트만 삭제할 수 있습니다");
+
+        String repoName = project.getGitRepoName();
+        String repoOwner = GitUtil.getOwner(project.getGitRepoUrl());
+
+        //mongodb에 저장된 리포지토리 내용 모두 삭제
+        Query query = new Query(Criteria.where("repoName").is(repoName));
+        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
+        query.addCriteria(Criteria.where("projectId").is(projectId));
+
+        mongoTemplate.remove(query, MCommit.class);
 
         //현재 프로젝트의 모든 커밋들 삭제
         gitCommitRepository.findAllIdsByProjectId(projectId).forEach(id->{

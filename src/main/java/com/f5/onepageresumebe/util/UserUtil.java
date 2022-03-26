@@ -5,7 +5,7 @@ public class UserUtil {
     public static String convertUserEmail(String userEmail, boolean isKakao){
 
         if(isKakao){
-            return userEmail.substring(6);
+            return userEmail.substring(5);
         }else return userEmail;
     }
 }
