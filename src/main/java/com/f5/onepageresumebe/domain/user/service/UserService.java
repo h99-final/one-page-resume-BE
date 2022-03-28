@@ -314,7 +314,7 @@ public class UserService {
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //현재 기본 이미지가 아니면 s3에서 삭제
-        if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {
+        if (!user.getProfileImgUrl().equals("empty")) {
             s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
         }
 
@@ -340,7 +340,7 @@ public class UserService {
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
         //s3에서 삭제
-        if (!user.getProfileImgUrl().equals("https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png")) {
+        if (!user.getProfileImgUrl().equals("empty")) {
             s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
         }
 

@@ -80,7 +80,7 @@ public class User extends TimeEntity {
         this.githubUrl = githubUrl;
         this.blogUrl = blogUrl;
         this.role = "ROLE_USER";
-        this.profileImgUrl = "https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png";
+        this.profileImgUrl = "empty";
     }
 
     public static User create(String email, String password, String name, String githubUrl, String blogUrl){
@@ -128,7 +128,7 @@ public class User extends TimeEntity {
     }
 
     public void deleteProfile(){
-        this.profileImgUrl = "https://mini-project.s3.ap-northeast-2.amazonaws.com/profile/default.png";
+        this.profileImgUrl = "empty";
     }
 
     public void setPortfolio(Portfolio portfolio){
