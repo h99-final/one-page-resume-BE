@@ -1,13 +1,10 @@
 package com.f5.onepageresumebe.domain.career.entity;
 
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
-import com.f5.onepageresumebe.exception.customException.CustomException;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-
-import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 
 @Entity
 @AllArgsConstructor(access = AccessLevel.PROTECTED)

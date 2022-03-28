@@ -1,11 +1,8 @@
 package com.f5.onepageresumebe.domain.portfolio.repository.portfolio;
 
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
-import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -89,8 +86,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
                 .limit(1L)
                 .fetch();
 
-        if (portfolios.isEmpty()) return false;
-        else return true;
+        return !portfolios.isEmpty();
 
     }
 

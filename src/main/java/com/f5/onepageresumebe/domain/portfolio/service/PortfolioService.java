@@ -240,10 +240,7 @@ public class PortfolioService {
         }
 
         //Dto 변환
-        portfolioList.forEach(portfolio -> {
-
-            responseDtoList.add(portfolioToResponseDto(portfolio));
-        });
+        portfolioList.forEach(portfolio -> responseDtoList.add(portfolioToResponseDto(portfolio)));
 
         return responseDtoList;
     }
@@ -302,11 +299,7 @@ public class PortfolioService {
 
                 ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
 
-                if(projectImg != null) {
-                    imageMap.put(projectId, projectImg);}
-                else {
-                    imageMap.put(projectId, null);
-                }
+                imageMap.put(projectId, projectImg);
             });
 
             return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);

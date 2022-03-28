@@ -145,7 +145,7 @@ public class CareerService {
             if (i == size - 1) {
                 sb.append(contentsList.get(i));
             } else {
-                sb.append(contentsList.get(i) + "----");
+                sb.append(contentsList.get(i)).append("----");
             }
         }
         return sb.toString();
@@ -160,9 +160,9 @@ public class CareerService {
         }else{
             //아니라면 날짜 포멧에 맞추어 변환
             String[] split = timeString.split("-");
-            Integer year = Integer.valueOf(split[0]);
-            Integer month = Integer.valueOf(split[1]);
-            Integer day = Integer.valueOf(split[2]);
+            int year = Integer.parseInt(split[0]);
+            int month = Integer.parseInt(split[1]);
+            int day = Integer.parseInt(split[2]);
             time = LocalDate.of(year,month,day);
         }
 

@@ -2,15 +2,12 @@ package com.f5.onepageresumebe.domain.project.service;
 
 
 import com.f5.onepageresumebe.domain.common.check.CheckOwnerService;
-import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
-import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
-import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
 import com.f5.onepageresumebe.domain.project.entity.Project;
 import com.f5.onepageresumebe.domain.project.entity.ProjectBookmark;
 import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
@@ -30,9 +27,6 @@ import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,13 +53,7 @@ public class ProjectService {
     private final ProjectBookmarkRepository projectBookmarkRepository;
 
     private final StackRepository stackRepository;
-
-    private final GitCommitRepository gitCommitRepository;
-    private final GitFileRepository gitFileRepository;
-
     private final UserRepository userRepository;
-
-    private final MongoTemplate mongoTemplate;
 
     @Transactional
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
@@ -173,11 +161,7 @@ public class ProjectService {
 
             ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
 
-            if (projectImg != null) {
-                imageMap.put(projectId, projectImg);
-            } else {
-                imageMap.put(projectId, null);
-            }
+            imageMap.put(projectId, projectImg);
         });
 
         return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
@@ -207,11 +191,7 @@ public class ProjectService {
 
             stackMap.put(projectId, projectStackRepository.findStackNamesByProjectId(projectId));
             ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
-            if (projectImg != null) {
-                imageMap.put(projectId, projectImg);
-            } else {
-                imageMap.put(projectId, null);
-            }
+            imageMap.put(projectId, projectImg);
         });
 
         return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);

@@ -1,7 +1,6 @@
 package com.f5.onepageresumebe.domain.portfolio.repository.portfolio;
 
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;

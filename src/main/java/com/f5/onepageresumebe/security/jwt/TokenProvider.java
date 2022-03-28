@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.security.jwt;
 
+import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -87,15 +88,15 @@ public class TokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return 1;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            //throw new CustomAuthenticationException("잘못된 JWT 서명입니다");
+            throw new CustomAuthenticationException("잘못된 JWT 서명입니다");
         } catch (ExpiredJwtException e) {
-            //throw new CustomAuthenticationException("만료된 JWT 토큰입니다");
+            throw new CustomAuthenticationException("만료된 JWT 토큰입니다");
         } catch (UnsupportedJwtException e) {
-            //throw new CustomAuthenticationException("지원되지 않는 JWT 토큰입니다");
+            throw new CustomAuthenticationException("지원되지 않는 JWT 토큰입니다");
         } catch (IllegalArgumentException e) {
-            //throw new CustomAuthenticationException("JWT 토큰이 잘못되었습니다");
+            throw new CustomAuthenticationException("JWT 토큰이 잘못되었습니다");
         }
-        return 0;
+        //return 0;
     }
 
     private Claims parseClaims(String accessToken) {

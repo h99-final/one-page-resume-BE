@@ -64,11 +64,7 @@ public class ProjectBookmarkService {
 
             stackMap.put(projectId,projectStackRepository.findStackNamesByProjectId(projectId));
             ProjectImg projectImg = projectImgRepository.findFirstByProjectId(projectId).orElse(null);
-            if(projectImg != null) {
-                imageMap.put(projectId, projectImg);}
-            else {
-                imageMap.put(projectId, null);
-            }
+            imageMap.put(projectId, projectImg);
         }
 
         return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);

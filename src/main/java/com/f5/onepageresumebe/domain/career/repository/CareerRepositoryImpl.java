@@ -5,10 +5,8 @@ import com.f5.onepageresumebe.domain.career.entity.QCareer;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 import java.util.Optional;
 
-import static com.f5.onepageresumebe.domain.career.entity.QCareer.career;
 import static com.f5.onepageresumebe.domain.portfolio.entity.QPortfolio.portfolio;
 import static com.f5.onepageresumebe.domain.user.entity.QUser.user;
 

@@ -1,22 +1,5 @@
 package com.f5.onepageresumebe.domain.user.service;
 
-import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
-import com.f5.onepageresumebe.domain.git.entity.GitCommit;
-import com.f5.onepageresumebe.domain.git.entity.GitFile;
-import com.f5.onepageresumebe.domain.git.entity.MCommit;
-import com.f5.onepageresumebe.domain.git.repository.commit.GitCommitRepository;
-import com.f5.onepageresumebe.domain.git.repository.file.GitFileRepository;
-import com.f5.onepageresumebe.domain.portfolio.entity.PortfolioBookmark;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfoiloBookmarkRepository;
-import com.f5.onepageresumebe.domain.portfolio.repository.PortfolioStackRepository;
-import com.f5.onepageresumebe.domain.project.entity.Project;
-import com.f5.onepageresumebe.domain.project.entity.ProjectBookmark;
-import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
-import com.f5.onepageresumebe.domain.project.repository.ProjectBookmarkRepository;
-import com.f5.onepageresumebe.domain.project.repository.ProjectImgRepository;
-import com.f5.onepageresumebe.domain.project.repository.ProjectStackRepository;
-import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
-import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.stack.entity.Stack;
 import com.f5.onepageresumebe.domain.stack.repository.StackRepository;
@@ -42,9 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -386,17 +366,17 @@ public class UserService {
 
     public String makeRandomString() {
         Random random = new Random(); //난수 생성
-        String key = ""; // 인증번호
+        StringBuilder key = new StringBuilder(); // 인증번호
 
         for (int i = 0; i < 3; ++i) {
             int index = random.nextInt(25) + 65;
 
-            key += (char) index;
+            key.append((char) index);
         }
         int numIndex = random.nextInt(9999) + 1000;
-        key += numIndex;
+        key.append(numIndex);
 
-        return key;
+        return key.toString();
     }
 
     @Transactional
@@ -450,7 +430,7 @@ public class UserService {
                 blindFront.setCharAt(i, '*');
             }
 
-            findEmailResponseDto.setEmail(blindFront.toString() + emailBack);
+            findEmailResponseDto.setEmail(blindFront + emailBack);
         }
         return findEmailResponseDto;
     }

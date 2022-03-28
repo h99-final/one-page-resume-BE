@@ -20,10 +20,7 @@ public class ApiCallService {
     public boolean callAvailability(Integer userId){
 
         //호출한지 20초가 덜 지났거나 총 호출 횟수가 20초안에 100번이 넘는다면 제한
-        if(apiCallRepository.existsById(userId)|| apiCallRepository.countAll()>100){
-            return false;
-        }
-        return true;
+        return !(apiCallRepository.existsById(userId) && apiCallRepository.countAll() <= 100);
     }
 
     public void call(Integer userId){
@@ -40,7 +37,7 @@ public class ApiCallService {
 
         Set<Integer> userIds = allData.keySet();
 
-        userIds.stream().forEach(userId->{
+        userIds.forEach(userId->{
             LocalDateTime createdAt = allData.get(userId);
             //초단위
             Duration duration = Duration.between(createdAt,LocalDateTime.now());

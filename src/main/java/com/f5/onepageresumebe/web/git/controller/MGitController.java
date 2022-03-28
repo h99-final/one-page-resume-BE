@@ -54,7 +54,7 @@ public class MGitController {
     public ResDto isCompletion(@PathVariable("projectId") Integer projectId) {
 
         Boolean isDone = mGitService.isCompletion(projectId);
-        HashMap res = new HashMap<String, Boolean>();
+        HashMap<String, Boolean> res = new HashMap<>();
         res.put("isDone", isDone);
 
         return ResDto.builder()

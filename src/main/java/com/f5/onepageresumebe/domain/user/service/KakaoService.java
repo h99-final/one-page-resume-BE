@@ -2,7 +2,6 @@ package com.f5.onepageresumebe.domain.user.service;
 
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
 import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepository;
-import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepositoryCustom;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.ErrorCode;
@@ -11,7 +10,6 @@ import com.f5.onepageresumebe.security.jwt.TokenProvider;
 import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import com.f5.onepageresumebe.web.user.dto.UserDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +20,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,7 +32,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.f5.onepageresumebe.security.jwt.TokenProvider.AUTHORIZATION_HEADER;

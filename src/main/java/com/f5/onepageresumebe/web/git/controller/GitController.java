@@ -2,7 +2,6 @@ package com.f5.onepageresumebe.web.git.controller;
 
 import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.git.service.GitService;
-import com.f5.onepageresumebe.domain.project.service.ProjectService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import com.f5.onepageresumebe.web.git.dto.CommitDto;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import javax.validation.Valid;
 public class GitController {
 
     private final GitService gitService;
-    private final ProjectService projectService;
     private final DeleteService deleteService;
 
     @Secured("ROLE_USER")

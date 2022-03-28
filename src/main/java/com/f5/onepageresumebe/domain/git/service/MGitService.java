@@ -18,17 +18,14 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthorizationExcep
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.git.dto.CommitDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,7 +81,7 @@ public class MGitService {
                     List<GHCommit> commits = ghRepository.listCommits().toList();
                     commits.parallelStream().forEach((commit)-> {
                         try {
-                            log.info("parallerStream");
+                            log.info("parallelStream");
                             String curSha = commit.getSHA1();
                             String curMessage = commit.getCommitShortInfo().getMessage();
 
@@ -96,6 +93,7 @@ public class MGitService {
                             mongoTemplate.save(mCommit);
 
                         }catch (IOException e) {
+                            log.error("Commit 정보 가져오기 실패 : {}",e.getMessage());
                         }
                     });
                     taskRepository.save(projectId, true);
@@ -190,7 +188,6 @@ public class MGitService {
         User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
         String rawToken = null;
-        String encryptToken = user.getGitToken();
 
         try {
             rawToken = aes256.decrypt(user.getGitToken());

@@ -1,7 +1,6 @@
 package com.f5.onepageresumebe.exception.customException;
 
 import com.f5.onepageresumebe.exception.ErrorCode;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.AuthenticationException;
 

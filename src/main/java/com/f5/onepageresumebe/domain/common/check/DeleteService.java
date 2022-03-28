@@ -17,7 +17,6 @@ import com.f5.onepageresumebe.domain.project.repository.ProjectBookmarkRepositor
 import com.f5.onepageresumebe.domain.project.repository.ProjectImgRepository;
 import com.f5.onepageresumebe.domain.project.repository.ProjectStackRepository;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
-import com.f5.onepageresumebe.domain.project.service.ProjectBookmarkService;
 import com.f5.onepageresumebe.domain.user.entity.User;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.domain.user.repository.stack.UserStackRepository;
@@ -36,7 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
@@ -137,7 +136,7 @@ public class DeleteService {
                     new CustomException("해당 이미지가 존재하지 않습니다.", INVALID_INPUT_ERROR));
 
             //s3에서 삭제
-            s3Uploader.deleteProjectImages(new ArrayList<>(Arrays.asList(projectImg)));
+            s3Uploader.deleteProjectImages(new ArrayList<>(Collections.singletonList(projectImg)));
 
             //삭제
             projectImgRepository.deleteById(imageId);
@@ -167,9 +166,9 @@ public class DeleteService {
             mongoTemplate.remove(query, MCommit.class);
 
             //현재 프로젝트의 모든 커밋들 삭제
-            gitCommitRepository.findAllIdsByProjectId(projectId).forEach(id -> {
+            for (Integer id : gitCommitRepository.findAllIdsByProjectId(projectId)) {
                 deleteProjectTroubleShootings(projectId, id);
-            });
+            }
 
             //프로젝트의 스택들 전부 삭제
             projectStackRepository.deleteAllByProjectId(projectId);
