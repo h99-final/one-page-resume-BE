@@ -1,11 +1,11 @@
 package com.f5.onepageresumebe.domain.project.service;
 
 
+import com.f5.onepageresumebe.domain.common.check.CheckOwnerService;
 import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.user.repository.UserRepository;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
-import com.f5.onepageresumebe.domain.git.service.MGitService;
 import com.f5.onepageresumebe.util.S3Uploader;
 import com.f5.onepageresumebe.domain.git.entity.GitCommit;
 import com.f5.onepageresumebe.domain.git.entity.GitFile;
@@ -49,6 +49,8 @@ import static com.f5.onepageresumebe.exception.ErrorCode.*;
 @Transactional(readOnly = true)
 public class ProjectService {
 
+    private final CheckOwnerService checkOwnerService;
+
     private final S3Uploader s3Uploader;
 
     private final ProjectRepository projectRepository;
@@ -60,7 +62,6 @@ public class ProjectService {
 
     private final GitCommitRepository gitCommitRepository;
     private final GitFileRepository gitFileRepository;
-    private final MGitService mGitService;
 
     private final UserRepository userRepository;
 
@@ -94,8 +95,6 @@ public class ProjectService {
 
         Integer projectId = project.getId();
 
-        //mGitService.order(projectId);
-
         return ProjectDto.Response.builder()
                 .id(projectId)
                 .title(project.getTitle())
@@ -109,49 +108,48 @@ public class ProjectService {
     public void updateProjectImages(Integer projectId, List<MultipartFile> multipartFiles) {
 
         //나의 프로젝트일때만 가져오기
-        Project project = getProjectIfMyProject(projectId, "내가 작성한 프로젝트만 수정할 수 있습니다.");
+        boolean isMyProject = checkOwnerService.isMyProject(projectId);
 
-        //새로운 사진 모두 추가
-        addImages(project, multipartFiles);
-    }
+        if(isMyProject){
+            Project project = projectRepository.findById(projectId).orElseThrow(() ->
+                    new CustomException("존재하지 않는 프로젝트입니다", NOT_EXIST_ERROR));
 
-    @Transactional
-    public void deleteProjectImg(Integer projectId, Integer imageId) {
-
-        //나의 프로젝트가 아니면 Exception 발생
-        getProjectIfMyProject(projectId, "내가 작성한 프로젝트의 이미지만 삭제할 수 있습니다.");
-
-        //프로젝트 이미지 불러오기
-        ProjectImg projectImg = projectImgRepository.findById(imageId).orElseThrow(() ->
-                new CustomException("해당 이미지가 존재하지 않습니다.", INVALID_INPUT_ERROR));
-
-        //s3에서 삭제
-        s3Uploader.deleteProjectImages(new ArrayList<>(Arrays.asList(projectImg)));
-
-        //삭제
-        projectImgRepository.deleteById(imageId);
+            //새로운 사진 모두 추가
+            addImages(project, multipartFiles);
+        }else{
+            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
+        }
 
     }
 
     @Transactional
     public void updateProjectInfo(Integer projectId, ProjectDto.Request requestDto) {
 
-        //내가 작성한 프로젝트이면 불러옴, 아니라면 Exception 발생
-        Project project = getProjectIfMyProject(projectId, "내가 작성한 프로젝트만 수정할 수 있습니다.");
+        //나의 프로젝트일때만 가져오기
+        boolean isMyProject = checkOwnerService.isMyProject(projectId);
 
-        List<String> stacks = requestDto.getStack();
+        if(isMyProject){
+            Project project = projectRepository.findById(projectId).orElseThrow(() ->
+                    new CustomException("존재하지 않는 프로젝트입니다", NOT_EXIST_ERROR));
 
-        //스택 검증
-        checkStacks(stacks);
+            List<String> stacks = requestDto.getStack();
 
-        //업데이트
-        project.updateIntro(requestDto);
+            //스택 검증
+            checkStacks(stacks);
 
-        //기존에 있던 모든 연결된 스택 제거
-        projectStackRepository.deleteAllByProjectId(projectId);
+            //업데이트
+            project.updateIntro(requestDto);
 
-        //새로 들어온 스택 모두 프로젝트와 연결
-        insertStacksInProject(project, stacks);
+            //기존에 있던 모든 연결된 스택 제거
+            projectStackRepository.deleteAllByProjectId(projectId);
+
+            //새로 들어온 스택 모두 프로젝트와 연결
+            insertStacksInProject(project, stacks);
+        }else{
+            throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
+        }
+
+
     }
 
     public List<ProjectDto.Response> getShortInfos() {
@@ -289,83 +287,6 @@ public class ProjectService {
         });
     }
 
-    private void addImages(Project project, List<MultipartFile> multipartFiles) {
-
-        multipartFiles.forEach(multipartFile -> {
-            try {
-                //s3에 업로드
-                String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
-
-                //projectImg 생성 후 프로젝트와 연결, 저장
-                ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
-                projectImgRepository.save(projectImg);
-            } catch (IOException e) {
-                log.error("createProject -> imageUpload : {}", e.getMessage());
-                throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
-            }
-        });
-
-        projectRepository.save(project);
-    }
-
-    @Transactional
-    public void deleteProject(Integer projectId) {
-
-        //내가 작성한 프로젝트가 아니라면 Exception 발생
-        Project project = getProjectIfMyProject(projectId, "내가 작성한 프로젝트만 삭제할 수 있습니다");
-
-        String repoName = project.getGitRepoName();
-        String repoOwner = GitUtil.getOwner(project.getGitRepoUrl());
-
-        //mongodb에 저장된 리포지토리 내용 모두 삭제
-        Query query = new Query(Criteria.where("repoName").is(repoName));
-        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
-        query.addCriteria(Criteria.where("projectId").is(projectId));
-
-        mongoTemplate.remove(query, MCommit.class);
-
-        //현재 프로젝트의 모든 커밋들 삭제
-        gitCommitRepository.findAllIdsByProjectId(projectId).forEach(id -> {
-            deleteProjectTroubleShootings(projectId, id);
-        });
-
-        //프로젝트의 스택들 전부 삭제
-        projectStackRepository.deleteAllByProjectId(projectId);
-
-        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
-
-        //s3에서 사진 모두 삭제
-        s3Uploader.deleteProjectImages(projectImgs);
-
-        //저장된 이미지 url 모두 삭제
-        projectImgRepository.deleteAllInBatch(projectImgs);
-
-        //프로젝트 연결된 북마크 삭제
-        projectBookmarkRepository.deleteByProjectId(projectId);
-
-        //프로젝트 삭제
-        projectRepository.deleteById(projectId);
-
-
-    }
-
-    @Transactional
-    public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
-
-        //내가 작성한 프로젝트가 아니면 오류 발생
-        getProjectIfMyProject(projectId, "내가 작성한 트러블 슈팅만 삭제할 수 있습니다");
-
-        //커밋이 현재프로젝트에 있는 커밋인지 확인
-        gitCommitRepository.findByProjectIdAndCommitId(projectId, commitId).orElseThrow(() ->
-                new CustomException("현재 프로젝트 내의 트러블 슈팅만 삭제할 수 있습니다.", INVALID_INPUT_ERROR));
-
-        //깃 파일 삭제
-        gitFileRepository.deleteByCommitId(commitId);
-
-        //커밋 삭제
-        gitCommitRepository.deleteById(commitId);
-    }
-
     public ProjectDto.DetailResponse getProjectDetail(Integer projectId) {
 
         Project project;
@@ -403,8 +324,27 @@ public class ProjectService {
         return projectDetailResponseDto;
     }
 
+    private void addImages(Project project, List<MultipartFile> multipartFiles) {
 
-    public ProjectDto.DetailResponse projectToDetailResponseDto(Project project) {
+        multipartFiles.forEach(multipartFile -> {
+            try {
+                //s3에 업로드
+                String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
+
+                //projectImg 생성 후 프로젝트와 연결, 저장
+                ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
+                projectImgRepository.save(projectImg);
+            } catch (IOException e) {
+                log.error("createProject -> imageUpload : {}", e.getMessage());
+                throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
+            }
+        });
+
+        projectRepository.save(project);
+    }
+
+
+    private ProjectDto.DetailResponse projectToDetailResponseDto(Project project) {
 
         List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
 
@@ -422,13 +362,6 @@ public class ProjectService {
                 .build();
 
         return projectDetailResponseDto;
-    }
-
-    public Project getProjectIfMyProject(Integer projectId, String errorMsg) {
-
-        String email = SecurityUtil.getCurrentLoginUserId();
-        return projectRepository.findByUserEmailAndProjectId(email, projectId)
-                .orElseThrow(() -> new CustomAuthorizationException(errorMsg));
     }
 
     private void checkStacks(List<String> stacks) {

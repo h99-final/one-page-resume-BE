@@ -2,9 +2,9 @@ package com.f5.onepageresumebe.domain.career.service;
 
 import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
 import com.f5.onepageresumebe.domain.career.entity.Career;
+import com.f5.onepageresumebe.domain.common.check.CheckOwnerService;
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
 import com.f5.onepageresumebe.domain.portfolio.repository.portfolio.PortfolioRepository;
-import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.exception.customException.CustomAuthorizationException;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
@@ -25,6 +25,8 @@ import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CareerService {
+
+    private final CheckOwnerService checkOwnerService;
 
     private final CareerRepository careerRepository;
     private final PortfolioRepository portfolioRepository;
@@ -82,25 +84,10 @@ public class CareerService {
                 endTime);
     }
 
-    @Transactional
-    public void deleteCareer(Integer careerId){
-
-        //로그인한 유저 확인
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        //현재 커리어를 작성한 유저인지 확인
-        Boolean exists = careerRepository.existsByCareerIdAndUserEmail(careerId, userEmail);
-        if(exists){
-            careerRepository.deleteById(careerId);
-        }else{
-            throw new CustomAuthorizationException("내가 작성한 직무 경험만 삭제할 수 있습니다");
-        }
-    }
-
     public List<CareerDto.Response> getCareer(Integer porfId) {
 
         //나의 포트폴리오인지 확인
-        boolean isMyPorf = isMyPorf(porfId);
+        boolean isMyPorf = checkOwnerService.isMyPorf(porfId);
 
         //조회하고자 하는 포트폴리오 조회
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
@@ -111,8 +98,7 @@ public class CareerService {
         //나의 포트폴리오이거나 공개된 포트폴리오일때
         if (isMyPorf || !(portfolio.getIsTemp())) {
 
-            List<Career> careers = careerRepository.findAllByPorfIdOrderByEndTimeDesc(porfId);
-            careers.forEach(career -> {
+            careerRepository.findAllByPorfIdOrderByEndTimeDesc(porfId).forEach(career -> {
                 CareerDto.Response responseDto = careerToResponseDto(career);
                 careerResponseDtos.add(responseDto);
             });
@@ -122,20 +108,6 @@ public class CareerService {
         }
 
         return careerResponseDtos;
-    }
-
-    private boolean isMyPorf(Integer porfId){
-
-        try {
-            //로그인 상태
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            //현재 로그인한 사람의 포트폴리오인지 확인
-            return portfolioRepository.existsByUserEmailAndPorfId(userEmail, porfId);
-
-        } catch (CustomAuthenticationException e) {
-            //비로그인
-            return false;
-        }
     }
 
     private CareerDto.Response careerToResponseDto(Career career){

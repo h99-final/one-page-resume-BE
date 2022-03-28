@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.web.career.controller;
 
 import com.f5.onepageresumebe.domain.career.service.CareerService;
+import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.web.career.dto.CareerDto;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 public class CareerController {
 
     private final CareerService careerService;
+    private final DeleteService deleteService;
 
     @Secured("ROLE_USER")
     @PostMapping("/porf/career")
@@ -57,7 +59,7 @@ public class CareerController {
     @DeleteMapping("/porf/career/{careerId}")
     public ResDto deleteCareer(@PathVariable("careerId") Integer careerId){
 
-        careerService.deleteCareer(careerId);
+        deleteService.deleteCareer(careerId);
 
         return ResDto.builder()
                 .result(true)

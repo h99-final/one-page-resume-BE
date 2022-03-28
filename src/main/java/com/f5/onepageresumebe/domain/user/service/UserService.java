@@ -90,15 +90,6 @@ public class UserService {
     private final StackRepository stackRepository;
 
     private final CertificationRepository certificationRepository;
-    private final GitCommitRepository gitCommitRepository;
-    private final ProjectStackRepository projectStackRepository;
-    private final GitFileRepository gitFileRepository;
-    private final ProjectImgRepository projectImgRepository;
-    private final MongoTemplate mongoTemplate;
-    private final PortfoiloBookmarkRepository portfoiloBookmarkRepository;
-    private final ProjectBookmarkRepository projectBookmarkRepository;
-    private final CareerRepository careerRepository;
-    private final PortfolioStackRepository portfolioStackRepository;
 
     @Transactional
     public void registerUser(UserDto.SignUpRequest requestDto) {
@@ -258,18 +249,6 @@ public class UserService {
 
     }
 
-    @Transactional
-    public void deleteToken() {
-
-        //현재 로그인 유저
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
-                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
-
-        //토큰 값 초기화
-        user.setGitToken(null);
-    }
-
     public UserDto.InfoResponse getUserInfo() {
 
         //현재 로그인 유저
@@ -329,23 +308,6 @@ public class UserService {
             throw new CustomException("사진 업로드에 실패하였습니다. 다시 시도해 주세요.", INTERNAL_SERVER_ERROR);
         }
         return userImageResponseDto;
-    }
-
-    @Transactional
-    public void deleteProfile() {
-
-        //현재 로그인 유저
-        String email = SecurityUtil.getCurrentLoginUserId();
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
-
-        //s3에서 삭제
-        if (!user.getProfileImgUrl().equals("empty")) {
-            s3Uploader.deleteProfile(user.getProfileImgUrl(), 53);
-        }
-
-        //기본이미지로 변경
-        user.deleteProfile();
     }
 
     @Transactional
@@ -546,116 +508,5 @@ public class UserService {
             log.error("깃허브 연결 실패 : {}", e.getMessage());
             throw new CustomException("입력하신 깃허브 토큰이 유효하지 않습니다. 확인후 다시 입력해 주세요.", INVALID_INPUT_ERROR);
         }
-    }
-
-
-
-    @Transactional
-    public void deleteUser() {
-
-        String userEmail = SecurityUtil.getCurrentLoginUserId();
-
-        User curUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
-        List<PortfolioBookmark> portfolioBookmarkList = curUser.getPortfolioBookmarkList();
-        List<ProjectBookmark> projectBookmarkList = curUser.getProjectBookmarkList();
-
-        //유저가 북마크중인 프로젝트 북마크 삭제
-        for(ProjectBookmark projectBookmark : projectBookmarkList) {
-            projectBookmarkRepository.deleteByUserIdAndProjectId(curUser.getId(), projectBookmark.getProject().getId());
-        }
-
-        //유저가 북마크중인 포트폴리오 북마크 삭제
-        for (PortfolioBookmark portfolioBookmark : portfolioBookmarkList) {
-            portfoiloBookmarkRepository.deleteByUserIdAndPortfolioId(portfolioBookmark.getUser().getId(),portfolioBookmark.getPortfolio().getId());
-        }
-
-        //유저가 가지고있는 포트폴리오의 스택 삭제
-        portfolioStackRepository.deleteAllByPorfId(curUser.getPortfolio().getId());
-
-        List<Project> projectList = curUser.getProjectList();
-
-        //유저가 가지고 있는 프로젝트 삭제, 프로젝트 내에 stack, img, 트러블슈팅 삭제
-        for(Project project : projectList) {
-            deleteProject(project.getId());
-        }
-
-        //유저가 가지고 있는 포트폴리오의 커리어 테이블 전부 삭제
-        careerRepository.deleteAllByPorfId(curUser.getPortfolio().getId());
-
-        //유저와 연결된 userStack 전부 삭제
-        userstackRepository.deleteAllUserStackByUserId(curUser.getId());
-        //유저가 가지고 있는 포트폴리오 삭제
-        portfolioRepository.deleteById(curUser.getPortfolio().getId());
-
-        //유저 프로필 이미지 삭제
-        s3Uploader.deleteProfile(curUser.getProfileImgUrl(), 53);
-
-        //유저 정보 삭제
-        userRepository.deleteById(curUser.getId());
-    }
-
-    @Transactional
-    public void deleteProject(Integer projectId) {
-
-        //내가 작성한 프로젝트가 아니라면 Exception 발생
-        Project project = getProjectIfMyProject(projectId, "내가 작성한 프로젝트만 삭제할 수 있습니다");
-
-        String repoName = project.getGitRepoName();
-        String repoOwner = GitUtil.getOwner(project.getGitRepoUrl());
-
-        //mongodb에 저장된 리포지토리 내용 모두 삭제
-        Query query = new Query(Criteria.where("repoName").is(repoName));
-        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
-        query.addCriteria(Criteria.where("projectId").is(projectId));
-
-        mongoTemplate.remove(query, MCommit.class);
-
-        //현재 프로젝트의 모든 커밋들 삭제
-        gitCommitRepository.findAllIdsByProjectId(projectId).forEach(id->{
-            deleteProjectTroubleShootings(projectId, id);
-        });
-
-        //프로젝트의 스택들 전부 삭제
-        projectStackRepository.deleteAllByProjectId(projectId);
-
-        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
-
-        //s3에서 사진 모두 삭제
-        s3Uploader.deleteProjectImages(projectImgs);
-
-        //저장된 이미지 url 모두 삭제
-        projectImgRepository.deleteAllInBatch(projectImgs);
-
-        //프로젝트 연결된 북마크 삭제
-        projectBookmarkRepository.deleteByProjectId(projectId);
-
-        //프로젝트 삭제
-        projectRepository.deleteById(projectId);
-
-    }
-
-    @Transactional
-    public void deleteProjectTroubleShootings(Integer projectId, Integer commitId) {
-
-        //내가 작성한 프로젝트가 아니면 오류 발생
-        getProjectIfMyProject(projectId,"내가 작성한 트러블 슈팅만 삭제할 수 있습니다");
-
-        //커밋이 현재프로젝트에 있는 커밋인지 확인
-        gitCommitRepository.findByProjectIdAndCommitId(projectId,commitId).orElseThrow(()->
-                new CustomException("현재 프로젝트 내의 트러블 슈팅만 삭제할 수 있습니다.",INVALID_INPUT_ERROR));
-
-        //깃 파일 삭제
-        gitFileRepository.deleteByCommitId(commitId);
-
-        //커밋 삭제
-        gitCommitRepository.deleteById(commitId);
-    }
-
-    public Project getProjectIfMyProject(Integer projectId,String errorMsg) {
-
-        String email = SecurityUtil.getCurrentLoginUserId();
-        return projectRepository.findByUserEmailAndProjectId(email, projectId)
-                .orElseThrow(()->new CustomAuthorizationException(errorMsg));
     }
 }

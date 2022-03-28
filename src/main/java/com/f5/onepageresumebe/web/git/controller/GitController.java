@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.web.git.controller;
 
+import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.git.service.GitService;
 import com.f5.onepageresumebe.domain.project.service.ProjectService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
@@ -16,6 +17,7 @@ public class GitController {
 
     private final GitService gitService;
     private final ProjectService projectService;
+    private final DeleteService deleteService;
 
     @Secured("ROLE_USER")
     @PostMapping("/project/{projectId}/troubleShooting")
@@ -47,7 +49,7 @@ public class GitController {
     @DeleteMapping("/project/{projectId}/troubleShooting/{commitId}")
     public ResDto deleteTroubleShooting(@PathVariable("projectId") Integer projectId, @PathVariable("commitId") Integer commitId) {
 
-        projectService.deleteProjectTroubleShootings(projectId, commitId);
+        deleteService.deleteProjectTroubleShootings(projectId, commitId);
 
         return ResDto.builder()
                 .result(true)
@@ -60,7 +62,7 @@ public class GitController {
                              @PathVariable("commitId") Integer commitId,
                              @PathVariable("fileId") Integer fileId){
 
-        gitService.deleteFile(projectId,commitId,fileId);
+        deleteService.deleteFile(projectId,commitId,fileId);
 
         return ResDto.builder()
                 .result(true)

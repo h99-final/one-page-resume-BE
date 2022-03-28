@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.web.project.controller;
 
+import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.project.service.ProjectBookmarkService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProjectBookmarkController {
 
     private final ProjectBookmarkService projectBookmarkService;
+    private final DeleteService deleteService;
 
     @Secured("ROLE_USER")
     @PostMapping("bookmark/project/{projectId}")
@@ -27,7 +29,7 @@ public class ProjectBookmarkController {
     @DeleteMapping("/bookmark/project/{projectId}")
     public ResDto deleteProjectBookmark(@PathVariable("projectId") Integer projectId) {
 
-        projectBookmarkService.deleteProjectBookmark(projectId);
+        deleteService.deleteProjectBookmark(projectId);
 
         return ResDto.builder()
                 .result(true)

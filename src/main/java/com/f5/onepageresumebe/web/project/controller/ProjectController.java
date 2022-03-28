@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.web.project.controller;
 
+import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.git.service.MGitService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import com.f5.onepageresumebe.domain.project.service.ProjectService;
@@ -21,6 +22,7 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final DeleteService deleteService;
 
     @Secured("ROLE_USER")
     @PostMapping("/project")
@@ -66,7 +68,7 @@ public class ProjectController {
     public ResDto deleteProjectImg(@PathVariable("projectId") Integer projectId,
                                    @PathVariable("imageId") Integer imageId){
 
-        projectService.deleteProjectImg(projectId, imageId);
+        deleteService.deleteProjectImg(projectId, imageId);
 
         return ResDto.builder()
                 .result(true)
@@ -110,7 +112,7 @@ public class ProjectController {
     @DeleteMapping("/project/{projectId}")
     public ResDto deleteProject(@PathVariable("projectId") Integer projectId) {
 
-        projectService.deleteProject(projectId);
+        deleteService.deleteProject(projectId);
 
         return ResDto.builder()
                 .result(true)

@@ -1,9 +1,9 @@
 package com.f5.onepageresumebe.web.user.controller;
 
+import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.user.service.KakaoService;
 import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
-import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import com.f5.onepageresumebe.domain.user.service.UserService;
 import com.f5.onepageresumebe.web.user.dto.UserDto;
@@ -14,7 +14,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
@@ -25,6 +24,7 @@ public class UserController {
 
     private final UserService userService;
     private final KakaoService kakaoService;
+    private final DeleteService deleteService;
 
     // 회원 가입 요청 처리
     @PostMapping("/user/signup")
@@ -103,7 +103,7 @@ public class UserController {
     @DeleteMapping("/user/git/token")
     public ResDto deleteToken(){
 
-        userService.deleteToken();
+        deleteService.deleteGitToken();
 
         return ResDto.builder()
                 .result(true)
@@ -166,7 +166,7 @@ public class UserController {
     @DeleteMapping("/user/profile")
     public ResDto deleteProfile(){
 
-        userService.deleteProfile();
+        deleteService.deleteUserProfile();
 
         return ResDto.builder()
                 .result(true)
@@ -230,7 +230,7 @@ public class UserController {
     @DeleteMapping("/user")
     public ResDto deleteUser() {
 
-        userService.deleteUser();
+        deleteService.deleteUser();
 
         return ResDto.builder()
                 .result(true)

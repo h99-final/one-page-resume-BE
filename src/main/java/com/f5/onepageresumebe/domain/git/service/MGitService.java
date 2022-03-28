@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.git.service;
 
+import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.git.entity.MFile;
 import com.f5.onepageresumebe.domain.project.entity.Project;
@@ -44,6 +45,8 @@ import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 @Slf4j
 public class MGitService {
 
+    private final DeleteService deleteService;
+
     private final MongoTemplate mongoTemplate;
     private final AES256 aes256;
     private final ApiCallService apiCallService;
@@ -71,7 +74,7 @@ public class MGitService {
         String repoOwner = GitUtil.getOwner(repoUrl);
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
-        deleteMCommits(repoName, repoOwner);
+        deleteService.deleteMCommits(repoName, repoOwner);
         try {
             final GHRepository ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
 
@@ -154,14 +157,6 @@ public class MGitService {
         return mCommitMessageResponseDtos;
     }
 
-    public void deleteMCommits(String repoName, String repoOwner) {
-
-        Query query = new Query(Criteria.where("repoName").is(repoName));
-        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
-
-        mongoTemplate.remove(query, MCommit.class);
-    }
-
     public List<FileDto.Response> findFilesBySha(String sha) {
 
         MCommit gitCommit = mongoTemplate.findOne(
@@ -216,7 +211,7 @@ public class MGitService {
 
     }
 
-    public String makeRepoName(String gitUrl, String reName) {
+    private String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");
         return gitUrl.substring(idx + 5) + "/" + reName;
     }

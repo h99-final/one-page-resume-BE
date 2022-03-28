@@ -2,6 +2,7 @@ package com.f5.onepageresumebe.domain.portfolio.service;
 
 import com.f5.onepageresumebe.domain.career.repository.CareerRepository;
 
+import com.f5.onepageresumebe.domain.common.check.CheckOwnerService;
 import com.f5.onepageresumebe.domain.portfolio.entity.Portfolio;
 import com.f5.onepageresumebe.domain.portfolio.entity.PortfolioStack;
 import com.f5.onepageresumebe.domain.project.entity.ProjectImg;
@@ -24,8 +25,6 @@ import com.f5.onepageresumebe.web.portfolio.dto.PorfDto;
 import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +42,8 @@ import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 @Service
 @Transactional(readOnly = true)
 public class PortfolioService {
+
+    private final CheckOwnerService checkOwnerService;
 
     private final UserStackRepository userStackRepository;
 
@@ -163,7 +164,7 @@ public class PortfolioService {
     public PorfDto.IntroResponse getIntro(Integer porfId) {
 
         //내 포트폴리오인지 확인
-        boolean isMyPorf = isMyPorf(porfId);
+        boolean isMyPorf = checkOwnerService.isMyPorf(porfId);
 
         //조회하고자 하는 포트폴리오 조회
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
@@ -250,7 +251,7 @@ public class PortfolioService {
     public PorfDto.StackResponse getStackContents(Integer porfId) {
 
         //로그인한 유저의 포트폴리오인지 확인
-        boolean isMyPorf = isMyPorf(porfId);
+        boolean isMyPorf = checkOwnerService.isMyPorf(porfId);
 
         //조회하고자하는 포트폴리오
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
@@ -277,7 +278,7 @@ public class PortfolioService {
     public List<ProjectDto.Response> getProject(Integer porfId) {
 
         //로그인한 유저의 포트폴리오인지 확인
-        boolean isMyPorf = isMyPorf(porfId);
+        boolean isMyPorf = checkOwnerService.isMyPorf(porfId);
 
         //조회하고자 하는 포트폴리오
         Portfolio portfolio = portfolioRepository.findById(porfId).orElseThrow(() ->
@@ -372,20 +373,6 @@ public class PortfolioService {
 
         if(projectIds.isEmpty()){
             throw new CustomException("최소 하나의 프로젝트를 선택해 주세요.",INVALID_INPUT_ERROR);
-        }
-    }
-
-    private boolean isMyPorf(Integer porfId){
-
-        try {
-            //로그인 상태
-            String userEmail = SecurityUtil.getCurrentLoginUserId();
-            //현재 로그인한 사람의 포트폴리오인지 확인
-            return portfolioRepository.existsByUserEmailAndPorfId(userEmail, porfId);
-
-        } catch (CustomAuthenticationException e) {
-            //비로그인
-            return false;
         }
     }
 
