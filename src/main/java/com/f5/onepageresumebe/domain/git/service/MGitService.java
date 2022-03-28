@@ -222,9 +222,12 @@ public class MGitService {
     }
 
     private void syncCallCheck(Integer userId){
+
         if(!apiCallService.callAvailability(userId)){
+            log.error("호출 불가");
             throw new CustomException("깃허브 불러오기는 20초에 1번 가능합니다. 잠시 후에 다시 시도해 주세요",TOO_MANY_CALL);
         }else{
+            log.info("호출");
             apiCallService.call(userId);
         }
     }
