@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JasyptTest {
     @Test
     public void jasypt_test() {
-        String plainText = "poug";
+        String plainText = "skduf564ds";
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         SimpleStringPBEConfig config = new SimpleStringPBEConfig();
-        config.setPassword("poug");
+        config.setPassword("poug***pp");
         config.setAlgorithm("PBEWithMD5AndDES");
         config.setKeyObtentionIterations("1000");
         config.setPoolSize("1");
