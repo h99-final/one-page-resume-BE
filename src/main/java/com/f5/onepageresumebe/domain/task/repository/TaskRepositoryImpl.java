@@ -1,17 +1,22 @@
 package com.f5.onepageresumebe.domain.task.repository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
+@Slf4j
 public class TaskRepositoryImpl implements TaskRepository {
 
     Map<Integer, Boolean> data = new ConcurrentHashMap<>();
 
     @Override
     public void save(Integer projectId, Boolean isDone) {
+
+        log.info("projectId:{}",projectId);
+        log.info("inDone:{}",isDone);
 
         boolean isExists = data.containsKey(projectId);
 
