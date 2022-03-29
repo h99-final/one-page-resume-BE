@@ -71,7 +71,7 @@ public class MGitService {
         String repoOwner = GitUtil.getOwner(repoUrl);
 
         //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
-        deleteService.deleteMCommits(repoName, repoOwner);
+        deleteService.deleteMCommits(repoName, repoOwner,projectId);
         try {
             final GHRepository ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
 

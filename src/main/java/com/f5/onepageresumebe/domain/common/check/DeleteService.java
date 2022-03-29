@@ -106,10 +106,11 @@ public class DeleteService {
 
     }
 
-    public void deleteMCommits(String repoName, String repoOwner) {
+    public void deleteMCommits(String repoName, String repoOwner,Integer projectId) {
 
         Query query = new Query(Criteria.where("repoName").is(repoName));
         query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
+        query.addCriteria(Criteria.where("projectId").is(projectId));
 
         mongoTemplate.remove(query, MCommit.class);
     }
