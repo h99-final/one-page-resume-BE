@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
 import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
@@ -70,7 +71,6 @@ public class MGitService {
         String repoName = project.getGitRepoName();
         String repoOwner = GitUtil.getOwner(repoUrl);
 
-        //싱크를 맞추기 전, 같은 repoName, Owner의 커밋들이 있으면 db의 데이터 전체 삭제 후 추가 시작
         deleteService.deleteMCommits(repoName, repoOwner,projectId);
         try {
             final GHRepository ghRepository = getGitHub().getRepository(makeRepoName(repoUrl, repoName));
@@ -79,29 +79,32 @@ public class MGitService {
                 try {
                     taskRepository.save(projectId, false);
                     List<GHCommit> commits = ghRepository.listCommits().toList();
-                    commits.parallelStream().forEach((commit)-> {
-                        try {
-                            log.info("parallelStream");
-                            String curSha = commit.getSHA1();
-                            String curMessage = commit.getCommitShortInfo().getMessage();
+                    ForkJoinPool myPool = new ForkJoinPool(15);
+                    myPool.submit(()-> {
+                        commits.parallelStream().forEach((commit)-> {
+                            try {
+                                log.info("parallelStream");
+                                String curSha = commit.getSHA1();
+                                String curMessage = commit.getCommitShortInfo().getMessage();
 
-                            List<MFile> files = getFiles(ghRepository, curSha);
+                                List<MFile> files = getFiles(ghRepository, curSha);
 
-                            Date date = commit.getCommitDate();
+                                Date date = commit.getCommitDate();
 
-                            MCommit mCommit = MCommit.create(projectId, date ,curMessage, curSha, repoName, repoOwner, files);
-                            mongoTemplate.save(mCommit);
+                                MCommit mCommit = MCommit.create(projectId, date ,curMessage, curSha, repoName, repoOwner, files);
+                                mongoTemplate.save(mCommit);
 
-                        }catch (IOException e) {
-                            log.error("Commit 정보 가져오기 실패 : {}",e.getMessage());
-                        }
+                            }catch (IOException e) {
+                                log.error("Commit 정보 가져오기 실패 : {}",e.getMessage());
+                            }
+                        });
+                        taskRepository.save(projectId, true);
                     });
-                    taskRepository.save(projectId, true);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
-
         } catch (IOException e) {
             log.error("Repository 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
