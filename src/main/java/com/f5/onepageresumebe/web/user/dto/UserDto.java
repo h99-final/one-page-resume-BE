@@ -31,7 +31,6 @@ public class UserDto {
 
         private String blogUrl;
 
-        @NotBlank(message = "직무 분야를 입력해 주세요")
         private String job;
     }
 

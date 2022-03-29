@@ -27,12 +27,15 @@ import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.*;
@@ -78,6 +81,7 @@ public class ProjectService {
         //스택 넣기
         insertStacksInProject(project, stacks);
 
+
         //이미지 넣기
         addImages(project, multipartFiles);
 
@@ -85,10 +89,6 @@ public class ProjectService {
 
         return ProjectDto.Response.builder()
                 .id(projectId)
-                .title(project.getTitle())
-                .imageUrl(projectImgRepository.findFirstByProjectId(projectId).get()
-                        .getImageUrl())
-                .stack(stacks)
                 .build();
     }
 
