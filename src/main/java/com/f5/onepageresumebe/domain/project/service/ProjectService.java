@@ -26,6 +26,8 @@ import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -57,6 +60,10 @@ public class ProjectService {
 
     private final StackRepository stackRepository;
     private final UserRepository userRepository;
+
+    @Autowired
+    @Qualifier("customExecutor")
+    private Executor executor;
 
     @Transactional
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
@@ -81,9 +88,11 @@ public class ProjectService {
         //스택 넣기
         insertStacksInProject(project, stacks);
 
+        CompletableFuture.runAsync(()->{
+            //이미지 넣기
+            addImages(project, multipartFiles);
+        },executor);
 
-        //이미지 넣기
-        addImages(project, multipartFiles);
 
         Integer projectId = project.getId();
 
@@ -169,6 +178,26 @@ public class ProjectService {
 
     public List<ProjectDto.Response> getAllByStacks(StackDto requestDto, Pageable pageable) {
 
+        //현재 유저의 프로젝트 id들
+        Set<Integer> myProjectIds = new HashSet<>();
+        //현재 유저가 북마크한 프로젝트 id들
+        Set<Integer> bookmarkingProjectIds = new HashSet<>();
+
+        try{
+            //현재 로그인 유저
+            String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+            //현재 로그인한 유저가 소유한 프로젝트들
+            myProjectIds = projectRepository.findProjectIdsByUserEmail(userEmail);
+
+            //현재 로그인한 유저가 북마크한 프로젝트 Id들
+            bookmarkingProjectIds = projectBookmarkRepository.findByUserEmail(userEmail);
+
+        }catch (CustomAuthenticationException e){
+
+        }
+
+
         List<String> stackNames = requestDto.getStack();
 
         List<Project> projects;
@@ -194,7 +223,7 @@ public class ProjectService {
             imageMap.put(projectId, projectImg);
         });
 
-        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap);
+        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap,myProjectIds,bookmarkingProjectIds);
     }
 
     public List<ProjectDto.TroubleShootingsResponse> getTroubleShootings(Integer projectId) {
@@ -304,7 +333,7 @@ public class ProjectService {
         return projectDetailResponseDto;
     }
 
-    private void addImages(Project project, List<MultipartFile> multipartFiles) {
+    public void addImages(Project project, List<MultipartFile> multipartFiles) {
 
         multipartFiles.forEach(multipartFile -> {
             try {
