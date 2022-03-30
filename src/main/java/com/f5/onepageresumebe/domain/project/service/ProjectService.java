@@ -36,9 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.*;
@@ -60,10 +58,6 @@ public class ProjectService {
 
     private final StackRepository stackRepository;
     private final UserRepository userRepository;
-
-    @Autowired
-    @Qualifier("customExecutor")
-    private Executor executor;
 
     @Transactional
     public ProjectDto.Response createProject(ProjectDto.Request requestDto, List<MultipartFile> multipartFiles) {
@@ -88,10 +82,8 @@ public class ProjectService {
         //스택 넣기
         insertStacksInProject(project, stacks);
 
-        CompletableFuture.runAsync(()->{
-            //이미지 넣기
-            addImages(project, multipartFiles);
-        },executor);
+        //이미지 넣기
+        addImages(project, multipartFiles);
 
 
         Integer projectId = project.getId();
@@ -107,13 +99,13 @@ public class ProjectService {
         //나의 프로젝트일때만 가져오기
         boolean isMyProject = checkOwnerService.isMyProject(projectId);
 
-        if(isMyProject){
+        if (isMyProject) {
             Project project = projectRepository.findById(projectId).orElseThrow(() ->
                     new CustomException("존재하지 않는 프로젝트입니다", NOT_EXIST_ERROR));
 
             //새로운 사진 모두 추가
             addImages(project, multipartFiles);
-        }else{
+        } else {
             throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
         }
 
@@ -125,7 +117,7 @@ public class ProjectService {
         //나의 프로젝트일때만 가져오기
         boolean isMyProject = checkOwnerService.isMyProject(projectId);
 
-        if(isMyProject){
+        if (isMyProject) {
             Project project = projectRepository.findById(projectId).orElseThrow(() ->
                     new CustomException("존재하지 않는 프로젝트입니다", NOT_EXIST_ERROR));
 
@@ -142,7 +134,7 @@ public class ProjectService {
 
             //새로 들어온 스택 모두 프로젝트와 연결
             insertStacksInProject(project, stacks);
-        }else{
+        } else {
             throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
         }
 
@@ -183,7 +175,7 @@ public class ProjectService {
         //현재 유저가 북마크한 프로젝트 id들
         Set<Integer> bookmarkingProjectIds = new HashSet<>();
 
-        try{
+        try {
             //현재 로그인 유저
             String userEmail = SecurityUtil.getCurrentLoginUserId();
 
@@ -193,7 +185,7 @@ public class ProjectService {
             //현재 로그인한 유저가 북마크한 프로젝트 Id들
             bookmarkingProjectIds = projectBookmarkRepository.findByUserEmail(userEmail);
 
-        }catch (CustomAuthenticationException e){
+        } catch (CustomAuthenticationException e) {
 
         }
 
@@ -223,7 +215,7 @@ public class ProjectService {
             imageMap.put(projectId, projectImg);
         });
 
-        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap,myProjectIds,bookmarkingProjectIds);
+        return ProjectUtil.projectToResponseDtos(projects, imageMap, stackMap, myProjectIds, bookmarkingProjectIds);
     }
 
     public List<ProjectDto.TroubleShootingsResponse> getTroubleShootings(Integer projectId) {
@@ -333,24 +325,40 @@ public class ProjectService {
         return projectDetailResponseDto;
     }
 
+    @Async("customExecutor")
     public void addImages(Project project, List<MultipartFile> multipartFiles) {
 
-        multipartFiles.forEach(multipartFile -> {
-            try {
-                //s3에 업로드
-                String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
 
-                //projectImg 생성 후 프로젝트와 연결, 저장
-                ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
-                projectImgRepository.save(projectImg);
-            } catch (IOException e) {
-                log.error("createProject -> imageUpload : {}", e.getMessage());
-                throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
-            }
+        multipartFiles.forEach(multipartFile -> {
+            //s3에 업로드
+            CompletableFuture<String> future = s3Uploader.uploadS3Ob(multipartFile, "project/" + project.getTitle());
+            future.thenCompose(url-> {
+
+            });
+
+            ProjectImg projectImg = ProjectImg.create(project, url);
+            projectImgRepository.save(projectImg);
         });
 
+
+
+//        multipartFiles.forEach(multipartFile -> {
+//                    try {
+//                        //s3에 업로드
+//                        String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
+//
+//                        //projectImg 생성 후 프로젝트와 연결, 저장
+//                        ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
+//                        projectImgRepository.save(projectImg);
+//                    } catch (IOException e) {
+//                        log.error("createProject -> imageUpload : {}", e.getMessage());
+//                        throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
+//                    }
+//                });
+
         projectRepository.save(project);
-    }
+        log.info("저장 완료");
+   }
 
 
     private ProjectDto.DetailResponse projectToDetailResponseDto(Project project) {

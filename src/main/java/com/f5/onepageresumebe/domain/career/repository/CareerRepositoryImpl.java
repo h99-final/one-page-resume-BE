@@ -21,8 +21,8 @@ public class CareerRepositoryImpl implements CareerRepositoryCustom{
 
         Integer exists = queryFactory.selectOne()
                 .from(QCareer.career)
-                .innerJoin(QCareer.career.portfolio, portfolio).fetchJoin()
-                .innerJoin(portfolio.user, user).fetchJoin()
+                .innerJoin(QCareer.career.portfolio, portfolio)
+                .innerJoin(portfolio.user, user)
                 .where(user.email.eq(userEmail).and(QCareer.career.id.eq(careerId)))
                 .fetchFirst();
 
