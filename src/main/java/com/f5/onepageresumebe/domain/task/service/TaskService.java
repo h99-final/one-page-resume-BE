@@ -1,6 +1,7 @@
-package com.f5.onepageresumebe.domain.task.repository;
+package com.f5.onepageresumebe.domain.task.service;
 
 import com.f5.onepageresumebe.domain.git.entity.MCommit;
+import com.f5.onepageresumebe.domain.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;

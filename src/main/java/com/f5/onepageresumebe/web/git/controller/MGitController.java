@@ -1,7 +1,7 @@
 package com.f5.onepageresumebe.web.git.controller;
 
 import com.f5.onepageresumebe.domain.git.service.MGitService;
-import com.f5.onepageresumebe.domain.task.repository.TaskService;
+import com.f5.onepageresumebe.domain.task.service.TaskService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
 import lombok.RequiredArgsConstructor;
