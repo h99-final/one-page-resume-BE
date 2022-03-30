@@ -48,6 +48,8 @@ public class ProjectDto {
         private Integer bookmarkCount;
         private String username;
         private String userJob;
+        private Boolean isMyProject;
+        private Boolean isBookmarking;
     }
 
     @Data

@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.Set;
 
 
 public interface ProjectBookmarkRepository extends JpaRepository<ProjectBookmark, Integer> {
+
+    @Query("select pb.project.id from ProjectBookmark pb inner join pb.user u where u.email = :email")
+    Set<Integer> findByUserEmail(@Param("email") String email);
 
     @Modifying
     @Query("delete from ProjectBookmark pb where pb.user.id = :userId and pb.project.id = :projectId")

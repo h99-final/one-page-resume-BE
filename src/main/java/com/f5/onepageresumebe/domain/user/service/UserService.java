@@ -29,6 +29,7 @@ import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -314,6 +315,7 @@ public class UserService {
     }
 
     @Transactional
+    @Async("customExecutor")
     public void certificationEmail(UserDto.EmailRequest requestDto) {
 
         //이메일 인증을 원하는 유저의 이메일
