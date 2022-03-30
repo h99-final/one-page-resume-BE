@@ -1,6 +1,7 @@
 package com.f5.onepageresumebe.web.git.controller;
 
 import com.f5.onepageresumebe.domain.git.service.MGitService;
+import com.f5.onepageresumebe.domain.task.repository.TaskService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MGitController {
     private final MGitService mGitService;
+    private final TaskService taskService;
 
     @Secured("ROLE_USER")
     @GetMapping("/project/{projectId}/git/sync")
@@ -52,10 +54,13 @@ public class MGitController {
     @Secured("ROLE_USER")
     @GetMapping("/project/{projectId}/git/completion")
     public ResDto isCompletion(@PathVariable("projectId") Integer projectId) {
+        HashMap<String, Object> res = new HashMap<>();
 
+        Integer percent = taskService.getCommitPercent(projectId);
         Boolean isDone = mGitService.isCompletion(projectId);
-        HashMap<String, Boolean> res = new HashMap<>();
+        res.put("percent", percent);
         res.put("isDone", isDone);
+
 
         return ResDto.builder()
                 .result(true)

@@ -6,5 +6,7 @@ public interface TaskRepository {
 
     boolean findByProjectId(Integer projectId);
 
+    void saveCommitCount(Integer projectId, Integer commitCount);
 
+    Integer getCommitCount(Integer projectId);
 }
