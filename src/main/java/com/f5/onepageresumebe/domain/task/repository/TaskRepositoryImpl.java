@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskRepositoryImpl implements TaskRepository {
 
     Map<Integer, Boolean> data = new ConcurrentHashMap<>();
+    Map<Integer, Integer> totalCommitCount = new ConcurrentHashMap<>();
 
     @Override
     public void save(Integer projectId, Boolean isDone) {
@@ -38,8 +39,19 @@ public class TaskRepositoryImpl implements TaskRepository {
         //작업이 끝났다면 삭제
         if(isDone){
             data.remove(projectId);
+            totalCommitCount.remove(projectId);
         }
 
         return isDone;
+    }
+
+    @Override
+    public void saveCommitCount(Integer projectId, Integer commitCount) {
+        totalCommitCount.put(projectId, commitCount);
+    }
+
+    @Override
+    public Integer getCommitCount(Integer projectId) {
+        return totalCommitCount.get(projectId);
     }
 }

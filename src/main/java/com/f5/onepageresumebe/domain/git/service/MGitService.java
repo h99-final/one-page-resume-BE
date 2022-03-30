@@ -79,6 +79,9 @@ public class MGitService {
                 try {
                     taskRepository.save(projectId, false);
                     List<GHCommit> commits = ghRepository.listCommits().toList();
+
+                    //현재 가져오고자 하는 프로젝트 id, 커밋 갯수 저장
+                    taskRepository.saveCommitCount(projectId, commits.size());
                     ForkJoinPool myPool = new ForkJoinPool(15);
                     myPool.submit(()-> {
                         commits.parallelStream().forEach((commit)-> {
