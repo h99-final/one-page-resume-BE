@@ -325,36 +325,35 @@ public class ProjectService {
         return projectDetailResponseDto;
     }
 
-    @Async("customExecutor")
     public void addImages(Project project, List<MultipartFile> multipartFiles) {
 
 
-        multipartFiles.forEach(multipartFile -> {
-            //s3에 업로드
-            CompletableFuture<String> future = s3Uploader.uploadS3Ob(multipartFile, "project/" + project.getTitle());
-            future.thenCompose(url-> {
-
-            });
-
-            ProjectImg projectImg = ProjectImg.create(project, url);
-            projectImgRepository.save(projectImg);
-        });
-
-
-
 //        multipartFiles.forEach(multipartFile -> {
-//                    try {
-//                        //s3에 업로드
-//                        String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
+//            //s3에 업로드
+//            CompletableFuture<String> future = s3Uploader.uploadS3Ob(multipartFile, "project/" + project.getTitle());
+//            future.thenCompose(url-> {
 //
-//                        //projectImg 생성 후 프로젝트와 연결, 저장
-//                        ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
-//                        projectImgRepository.save(projectImg);
-//                    } catch (IOException e) {
-//                        log.error("createProject -> imageUpload : {}", e.getMessage());
-//                        throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
-//                    }
-//                });
+//            });
+//
+//            ProjectImg projectImg = ProjectImg.create(project, url);
+//            projectImgRepository.save(projectImg);
+//        });
+
+
+
+        multipartFiles.forEach(multipartFile -> {
+                    try {
+                        //s3에 업로드
+                        String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
+
+                        //projectImg 생성 후 프로젝트와 연결, 저장
+                        ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
+                        projectImgRepository.save(projectImg);
+                    } catch (IOException e) {
+                        log.error("createProject -> imageUpload : {}", e.getMessage());
+                        throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
+                    }
+                });
 
         projectRepository.save(project);
         log.info("저장 완료");
