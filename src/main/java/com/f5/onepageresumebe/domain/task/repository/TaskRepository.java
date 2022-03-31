@@ -9,4 +9,5 @@ public interface TaskRepository {
     void saveCommitCount(Integer projectId, Integer commitCount);
 
     Integer getCommitCount(Integer projectId);
+
 }
