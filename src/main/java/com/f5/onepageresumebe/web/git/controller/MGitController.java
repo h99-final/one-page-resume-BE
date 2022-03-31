@@ -56,9 +56,12 @@ public class MGitController {
     public ResDto isCompletion(@PathVariable("projectId") Integer projectId) {
         HashMap<String, Object> res = new HashMap<>();
 
-        Integer percent = taskService.getCommitPercent(projectId);
+        Integer totalCommitCount = taskService.getTotalCommitCount(projectId);
+        Integer curCommitCount = taskService.getCurCommitCount(projectId);
         Boolean isDone = mGitService.isCompletion(projectId);
-        res.put("percent", percent);
+
+        res.put("totalCommitCount", totalCommitCount);
+        res.put("curCommitCount", curCommitCount);
         res.put("isDone", isDone);
 
 

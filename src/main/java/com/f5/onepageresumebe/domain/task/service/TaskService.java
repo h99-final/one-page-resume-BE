@@ -15,22 +15,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @Slf4j
 public class TaskService {
-    private final TaskRepository taskRepository;
     private final MongoTemplate mongoTemplate;
+    private final TaskRepository taskRepository;
 
-    public Integer getCommitPercent(Integer projectId) {
-        Integer totalCommitCount = taskRepository.getCommitCount(projectId);
+    public Integer getCurCommitCount(Integer projectId) {
 
         Query query = new Query(Criteria.where("projectId").is(projectId));
         Long curCommitCount = mongoTemplate.count(query, MCommit.class);
 
-        Double percent = .0;
+        return curCommitCount.intValue();
+    }
+    public Integer getTotalCommitCount(Integer projectId) {
 
-        if(curCommitCount != 0L) {
-            percent = (((double)curCommitCount.intValue() / (double)totalCommitCount) * 100);
-        }
+        Integer res = taskRepository.getCommitCount(projectId);
+        if(res == null) res = 0;
 
-        return percent.intValue();
+        return res;
     }
 
 }
