@@ -37,7 +37,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
     @Override
     public List<Portfolio> findAllByStackNamesIfPublicPaging(List<String> stacks,Pageable pageable) {
 
-        List<Portfolio> portfolios = queryFactory.select(portfolio).from(portfolioStack)
+        List<Portfolio> portfolios = queryFactory.selectDistinct(portfolio).from(portfolioStack)
                 .innerJoin(portfolioStack.portfolio, portfolio)
                 .innerJoin(portfolioStack.stack, stack)
                 .innerJoin(portfolio.user, user)
@@ -54,7 +54,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepositoryCustom {
     @Override
     public List<Portfolio> findAllFetchUserIfPublicPaging(Pageable pageable) {
 
-        List<Portfolio> portfolios = queryFactory.selectFrom(portfolio)
+        List<Portfolio> portfolios = queryFactory.selectDistinct(portfolio).from(portfolio)
                 .innerJoin(portfolio.user, user).fetchJoin()
                 .where(portfolio.isTemp.eq(false))
                 .orderBy(portfolio.viewCount.desc())
