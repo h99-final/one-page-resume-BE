@@ -26,17 +26,12 @@ import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.*;
@@ -85,11 +80,8 @@ public class ProjectService {
         //이미지 넣기
         addImages(project, multipartFiles);
 
-
-        Integer projectId = project.getId();
-
         return ProjectDto.Response.builder()
-                .id(projectId)
+                .id(project.getId())
                 .build();
     }
 
@@ -325,39 +317,22 @@ public class ProjectService {
         return projectDetailResponseDto;
     }
 
+
     public void addImages(Project project, List<MultipartFile> multipartFiles) {
 
 
-//        multipartFiles.forEach(multipartFile -> {
-//            //s3에 업로드
-//            CompletableFuture<String> future = s3Uploader.uploadS3Ob(multipartFile, "project/" + project.getTitle());
-//            future.thenCompose(url-> {
-//
-//            });
-//
-//            ProjectImg projectImg = ProjectImg.create(project, url);
-//            projectImgRepository.save(projectImg);
-//        });
-
-
-
         multipartFiles.forEach(multipartFile -> {
-                    try {
-                        //s3에 업로드
-                        String projectImgUrl = s3Uploader.upload(multipartFile, "project/" + project.getTitle());
 
-                        //projectImg 생성 후 프로젝트와 연결, 저장
-                        ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
-                        projectImgRepository.save(projectImg);
-                    } catch (IOException e) {
-                        log.error("createProject -> imageUpload : {}", e.getMessage());
-                        throw new CustomException("사진 업로드에 실패하였습니다.", INTERNAL_SERVER_ERROR);
-                    }
-                });
+            //s3에 업로드
+            String projectImgUrl = s3Uploader.uploadS3Ob(multipartFile, "project/" + project.getTitle());
 
-        projectRepository.save(project);
-        log.info("저장 완료");
-   }
+            //projectImg 생성 후 프로젝트와 연결, 저장
+            ProjectImg projectImg = ProjectImg.create(project, projectImgUrl);
+            projectImgRepository.save(projectImg);
+
+        });
+
+    }
 
 
     private ProjectDto.DetailResponse projectToDetailResponseDto(Project project) {

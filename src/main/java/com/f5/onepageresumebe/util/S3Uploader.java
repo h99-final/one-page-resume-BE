@@ -32,69 +32,7 @@ public class S3Uploader {
     @Value("${cloud.aws.s3.bucket}")
     public String bucket;
 
-    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
-
-        File uploadFile = convert(multipartFile)
-                .orElseThrow(()->new IllegalArgumentException("MultipartFile -> File 변환 실패!"));
-
-        return upload(uploadFile,dirName);
-
-    }
-
-    private String upload(File uploadFile, String dirName){
-        String fileName = dirName + "/" + UUID.randomUUID() + uploadFile.getName();
-        String uploadImageUrl = putS3(uploadFile,fileName);
-        removeNewFile(uploadFile);
-        return uploadImageUrl;
-    }
-
-    private String putS3(File uploadFile, String fileName){
-        amazonS3Client.putObject(new PutObjectRequest(bucket,fileName,
-                uploadFile).withCannedAcl(CannedAccessControlList.PublicRead));
-        return amazonS3Client.getUrl(bucket,fileName).toString();
-    }
-
-    private void removeNewFile(File targetFile){
-        if(targetFile.delete()){
-            log.info("로컬 파일 삭제 완료");
-            return;
-        }
-        log.info("로컬 파일 삭제 실패");
-    }
-
-    private Optional<File> convert(MultipartFile file) throws IOException {
-        File convertFile = new File(System.getProperty("user.dir")
-                + "/" + file.getOriginalFilename());
-
-        if(convertFile.createNewFile()){
-            try(FileOutputStream fos = new FileOutputStream(convertFile)){
-                fos.write(file.getBytes());
-                log.info("로컬 파일 생성 완료");
-                return Optional.of(convertFile);
-            }catch(Exception e){
-                log.info("로컬 파일 생성 실패: {}",e.getMessage());
-                return Optional.empty();
-            }
-        }
-        return Optional.empty();
-    }
-
-    public void deleteProfile(String imageURL,Integer prefixLength){
-
-        String fileName = imageURL.substring(prefixLength);
-
-        amazonS3Client.deleteObject(new DeleteObjectRequest(bucket,fileName));
-    }
-
-    public void deleteProjectImages(List<ProjectImg> projectImgs) {
-        projectImgs.forEach(projectImg -> {
-            String imageUrl = projectImg.getImageUrl();
-            deleteProfile(imageUrl,53);
-        });
-    }
-
-    @Async("customExecutor")
-    public CompletableFuture<String> uploadS3Ob(MultipartFile multipartFile, String dir){
+    public String uploadS3Ob(MultipartFile multipartFile, String dir){
 
         try(InputStream inputStream = multipartFile.getInputStream()){
             String originalFileName = dir+"/"+UUID.randomUUID()+multipartFile.getOriginalFilename();
@@ -113,11 +51,28 @@ public class S3Uploader {
             String url = amazonS3Client.getUrl(bucket,originalFileName).toString();
 
             log.info("파일 업로드 성공");
-            return CompletableFuture.completedFuture(url);
+            return url;
 
         }catch (IOException e){
-            log.error("파일 업로드 실패: {}",e.getMessage());
+            log.error("파일 업로드 실패");
+            e.printStackTrace();
             return null;
         }
     }
+
+    public void deleteProfile(String imageURL,Integer prefixLength){
+
+        String fileName = imageURL.substring(prefixLength);
+
+        amazonS3Client.deleteObject(new DeleteObjectRequest(bucket,fileName));
+    }
+
+    public void deleteProjectImages(List<ProjectImg> projectImgs) {
+        projectImgs.forEach(projectImg -> {
+            String imageUrl = projectImg.getImageUrl();
+            deleteProfile(imageUrl,53);
+        });
+    }
+
+
 }

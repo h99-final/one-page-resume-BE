@@ -25,11 +25,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -42,6 +44,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.f5.onepageresumebe.exception.ErrorCode.INTERNAL_SERVER_ERROR;
@@ -71,6 +74,10 @@ public class UserService {
     private final StackRepository stackRepository;
 
     private final CertificationRepository certificationRepository;
+
+    @Autowired
+    @Qualifier("email-executor")
+    private ThreadPoolTaskExecutor executor;
 
     @Transactional
     public void registerUser(UserDto.SignUpRequest requestDto) {
@@ -279,15 +286,9 @@ public class UserService {
         }
 
         //이미지 업로드 후 url db에 저장
-        try {
-            String profileImgUrl = s3Uploader.upload(multipartFile, "profile");
-            user.updateProfile(profileImgUrl);
-            userImageResponseDto.setImg(profileImgUrl);
-        } catch (IOException e) {
-            log.error("updateProfile -> s3upload : {}", e.getMessage());
-            e.printStackTrace();
-            throw new CustomException("사진 업로드에 실패하였습니다. 다시 시도해 주세요.", INTERNAL_SERVER_ERROR);
-        }
+        String profileImgUrl = s3Uploader.uploadS3Ob(multipartFile, "profile");
+        user.updateProfile(profileImgUrl);
+        userImageResponseDto.setImg(profileImgUrl);
         return userImageResponseDto;
     }
 
@@ -315,36 +316,39 @@ public class UserService {
     }
 
     @Transactional
-    @Async("customExecutor")
     public void certificationEmail(UserDto.EmailRequest requestDto) {
 
-        //이메일 인증을 원하는 유저의 이메일
-        String email = requestDto.getEmail();
+        CompletableFuture.runAsync(()->{
+                //이메일 인증을 원하는 유저의 이메일
+                String email = requestDto.getEmail();
 
-        //랜덤값 부여
-        String key = makeRandomString();
+                //랜덤값 부여
+                String key = makeRandomString();
 
-        //이메일 전송을 위한 메시지 생성
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("인증번호 입력을 위한 메일 전송");
-        message.setText("인증 번호 : " + key);
+                //이메일 전송을 위한 메시지 생성
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(email);
+                message.setSubject("인증번호 입력을 위한 메일 전송");
+                message.setText("인증 번호 : " + key);
 
-        javaMailSender.send(message);
+                javaMailSender.send(message);
 
-        //db에 저장
-        Certification certification = certificationRepository.findCertificationByEmail(email);
+                //db에 저장
+                Certification certification = certificationRepository.findCertificationByEmail(email);
 
-        //만약 기존의 이메일을 가진 certification 엔티티가 있으면
-        if (certification != null) {
-            //인증코드만 수정
-            certification.changeCode(key);
-        } else {
-            //없으면, 새로 생성
-            certification = Certification.create(email, key);
-        }
+                //만약 기존의 이메일을 가진 certification 엔티티가 있으면
+                if (certification != null) {
+                    //인증코드만 수정
+                    certification.changeCode(key);
+                } else {
+                    //없으면, 새로 생성
+                    certification = Certification.create(email, key);
+                }
 
-        certificationRepository.save(certification);
+                certificationRepository.save(certification);
+        },executor);
+
+
     }
 
     @Transactional
