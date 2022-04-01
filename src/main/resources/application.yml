@@ -60,8 +60,8 @@ jwt:
   secret: ENC(cYVIqNdwnZoRq2T41WZwrvLMZbgt76LEiNbpKhaEAy7sOejP96BYqzSY5+C8fi+KBYWwXq2MpowDb4yV1hYsHw==)
 
 kakao:
-  clientId: ENC(YtADzWnSepf/LOy7YHhldBTJcZiLicWO4/aSm3Jx9PE/mHqTs177RyFosFgCPAcG)
-  redirectUri: ENC(2AvTfkxbs/YQ4LTKApjEcg2JkNXZaUDDbpvYudQVrtAigJyx9YG4Kb6vN1w0HVvOjER38SZXLc0=)
+  clientId: ENC(gH5MUsECz5TBbleCk2v8AbyYrxBSGw93VlWz9MTETrI1bGAymRKhGf/hnNZ+tp0S)
+  redirectUri: ENC(pahpdRkIqv0+BM08PiAqPm9F/UMhLC3AWr0OeTOPFRIbMEH7NIEbmJowTzRBf2cD)
 
 jasypt:
   encryptor:
