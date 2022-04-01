@@ -21,7 +21,7 @@ public class Portfolio extends TimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(columnDefinition = "varchar(100)")
+    @Column(columnDefinition = "varchar(200)")
     private String title;
 
     @Column(nullable = false,  columnDefinition = "SMALLINT")
@@ -30,7 +30,7 @@ public class Portfolio extends TimeEntity {
     @Column(nullable = false ,columnDefinition = "TINYINT")
     private Integer templateIdx;
 
-    @Column(columnDefinition = "varchar(500)")
+    @Column(columnDefinition = "varchar(1000)")
     private String introContents;
 
     @Column(columnDefinition = "varchar(100)")
