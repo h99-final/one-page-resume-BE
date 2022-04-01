@@ -26,6 +26,7 @@ import com.f5.onepageresumebe.web.project.dto.ProjectDto;
 import com.f5.onepageresumebe.web.stack.dto.StackDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.kohsuke.github.GHRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +63,7 @@ public class ProjectService {
         User user = userRepository.findByEmail(userEmail).orElseThrow(() ->
                 new CustomAuthenticationException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요."));
 
-        //프로젝트 생성 및 유저와 연결
+                //프로젝트 생성 및 유저와 연결
         Project project = Project.create(requestDto.getTitle(), requestDto.getContent(),
                 requestDto.getGitRepoName(), requestDto.getGitRepoUrl(), user);
 
@@ -86,7 +87,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public void updateProjectImages(Integer projectId, List<MultipartFile> multipartFiles) {
+    public List<ProjectDto.ImgResponse> updateProjectImages(Integer projectId, List<MultipartFile> multipartFiles) {
 
         //나의 프로젝트일때만 가져오기
         boolean isMyProject = checkOwnerService.isMyProject(projectId);
@@ -100,7 +101,7 @@ public class ProjectService {
         } else {
             throw new CustomAuthorizationException("내가 작성한 프로젝트만 수정할 수 있습니다.");
         }
-
+        return getImgResponse(projectId);
     }
 
     @Transactional
@@ -337,14 +338,12 @@ public class ProjectService {
 
     private ProjectDto.DetailResponse projectToDetailResponseDto(Project project) {
 
-        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(project.getId());
-
         User user = project.getUser();
 
         ProjectDto.DetailResponse projectDetailResponseDto = ProjectDto.DetailResponse.builder()
                 .title(project.getTitle())
                 .content(project.getIntroduce())
-                .img(projectImgs.stream().map(ProjectImg::toProjectImgResponseDto).collect(Collectors.toList()))
+                .img(getImgResponse(project.getId()))
                 .bookmarkCount(project.getBookmarkCount())
                 .stack(projectStackRepository.findStackNamesByProjectId(project.getId()))
                 .userJob(user.getJob())
@@ -353,6 +352,12 @@ public class ProjectService {
                 .build();
 
         return projectDetailResponseDto;
+    }
+
+    private List<ProjectDto.ImgResponse> getImgResponse(Integer projectId) {
+        List<ProjectImg> projectImgs = projectImgRepository.findAllByProjectId(projectId);
+
+        return projectImgs.stream().map(ProjectImg::toProjectImgResponseDto).collect(Collectors.toList());
     }
 
     private void checkStacks(List<String> stacks) {
