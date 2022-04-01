@@ -53,11 +53,9 @@ public class ProjectController {
     public ResDto updateImages(@RequestPart("images") List<MultipartFile> multipartFiles,
                                @PathVariable("projectId") Integer projectId){
 
-        projectService.updateProjectImages(projectId, multipartFiles);
-
         return ResDto.builder()
                 .result(true)
-                .data(null)
+                .data(projectService.updateProjectImages(projectId, multipartFiles))
                 .build();
     }
 
