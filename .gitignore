@@ -19,9 +19,9 @@ bin/
 
 ### IntelliJ IDEA ###
 .idea
-*.yml
 *.iws
 *.iml
+*.yml
 *.ipr
 out/
 !**/src/main/**/out/
