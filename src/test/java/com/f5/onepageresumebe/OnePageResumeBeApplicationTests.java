@@ -3,10 +3,10 @@ package com.f5.onepageresumebe;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class OnePageResumeBeApplicationTests {
 
-    @Test
+   // @Test
     void contextLoads() {
     }
 
