@@ -16,13 +16,13 @@ public class Career  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "varchar(50)")
+    @Column(nullable = false, columnDefinition = "varchar(200)")
     private String title;
 
-    @Column(nullable = false, columnDefinition = "varchar(50)")
+    @Column(nullable = false, columnDefinition = "varchar(300)")
     private String subTitle;
 
-    @Column(nullable = false, columnDefinition = "varchar(500)")
+    @Column(nullable = false, columnDefinition = "varchar(1000)")
     private String contents; // 여러 줄 구분자로 구분하여 합친 것
 
     @Column(nullable = false, columnDefinition = "DATE")
