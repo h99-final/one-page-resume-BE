@@ -21,18 +21,18 @@ public class Project extends TimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "varchar(100)")
+    @Column(nullable = false, columnDefinition = "varchar(300)")
     private String title;
 
     @Column(nullable = false, columnDefinition = "varchar(5000)")
     private String introduce;
 
-    @Column(columnDefinition = "varchar(30)")
+    @Column(columnDefinition = "varchar(100)")
     private String gitRepoName;
 
 
     //github.com/{username or organizationName}
-    @Column(columnDefinition = "varchar(100)")
+    @Column(columnDefinition = "varchar(200)")
     private String gitRepoUrl;
 
 
