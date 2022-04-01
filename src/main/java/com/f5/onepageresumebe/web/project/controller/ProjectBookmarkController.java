@@ -7,6 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 public class ProjectBookmarkController {
@@ -43,6 +47,19 @@ public class ProjectBookmarkController {
         return ResDto.builder()
                 .result(true)
                 .data(projectBookmarkService.getProjectBookmark())
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @GetMapping("/bookmark/projectId")
+    public ResDto getProjectBookmarkId() {
+
+        Map<String,List<Integer>> res = new HashMap<>();
+        res.put("projectIds", projectBookmarkService.getProjectBookmarkId());
+
+        return ResDto.builder()
+                .result(true)
+                .data(res)
                 .build();
     }
 

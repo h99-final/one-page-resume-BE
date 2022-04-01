@@ -71,6 +71,20 @@ public class ProjectBookmarkService {
 
     }
 
+    public List<Integer> getProjectBookmarkId() {
+        String email = SecurityUtil.getCurrentLoginUserId();
+        User user = userRepository.findByEmail(email).orElseThrow(()->
+                new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+
+        List<Integer> myBookmarkProjectIdList = new ArrayList<>();
+
+        List<ProjectBookmark> projectBookmarkList = user.getProjectBookmarkList();
+        for (ProjectBookmark projectBookmark : projectBookmarkList) {
+            myBookmarkProjectIdList.add(projectBookmark.getProject().getId());
+        }
+
+        return myBookmarkProjectIdList;
+    }
 
 
 //    @Transactional //포트폴리오 북마크 추가
