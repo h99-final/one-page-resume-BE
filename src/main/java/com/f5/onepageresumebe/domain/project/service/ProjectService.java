@@ -361,8 +361,8 @@ public class ProjectService {
     }
 
     private void checkStacks(List<String> stacks) {
-        if (stacks.size() < 3) {
-            throw new CustomException("프로젝트 기술 스택을 3가지 이상 선택해 주세요.", INVALID_INPUT_ERROR);
+        if (stacks.size() < 1) {
+            throw new CustomException("프로젝트 기술 스택을 1가지 이상 선택해 주세요.", INVALID_INPUT_ERROR);
         }
     }
 }
