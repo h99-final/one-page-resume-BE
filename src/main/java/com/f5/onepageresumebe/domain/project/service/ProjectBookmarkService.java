@@ -9,6 +9,8 @@ import com.f5.onepageresumebe.domain.project.repository.ProjectImgRepository;
 import com.f5.onepageresumebe.domain.project.repository.project.ProjectRepository;
 import com.f5.onepageresumebe.domain.project.repository.ProjectStackRepository;
 import com.f5.onepageresumebe.domain.user.entity.User;
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import com.f5.onepageresumebe.security.SecurityUtil;
 import com.f5.onepageresumebe.util.ProjectUtil;
 import com.f5.onepageresumebe.web.project.dto.ProjectDto;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+
+import static com.f5.onepageresumebe.exception.ErrorCode.DUPLICATED_INPUT_ERROR;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,10 @@ public class ProjectBookmarkService {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+
+        Optional<ProjectBookmark> oProjectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId);
+
+        if(oProjectBookmark.isPresent()) throw new CustomException("이미 북마크를 하셨습니다.", DUPLICATED_INPUT_ERROR);
 
         Project project = projectRepository.getById(projectId);
         project.updateBookmarkCount(1);
