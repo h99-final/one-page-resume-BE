@@ -68,7 +68,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // jasypt
-    implementation group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '3.0.4'
+    //implementation group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '3.0.4'
 }
 
 tasks.named('test') {
