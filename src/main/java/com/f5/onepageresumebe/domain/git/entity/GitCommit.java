@@ -18,13 +18,13 @@ public class GitCommit {
     @Column(name = "commit_id")
     private Integer id;
 
-    @Column(name = "commit_message", nullable = false, columnDefinition = "varchar(300)")
+    @Column(name = "commit_message", nullable = false, columnDefinition = "varchar(500)")
     private String message;
 
-    @Column(name = "commit_sha", nullable = false, columnDefinition = "varchar(50)")
+    @Column(name = "commit_sha", nullable = false, columnDefinition = "varchar(100)")
     private String sha;
 
-    @Column(name = "commit_ts_name", nullable = false, columnDefinition = "varchar(100)")
+    @Column(name = "commit_ts_name", nullable = false, columnDefinition = "varchar(500)")
     private String tsName;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
