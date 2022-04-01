@@ -69,5 +69,5 @@ jasypt:
     password : ENC(FGrhG1KN2Le9iKsKusXmDQ==)
 
 git:
-  oauthToken: ENC(ebB7+ys3i6C8Fkc1l2tWvV7q2TKN8b5TnG8z8T1qBew+H977IWsACtZBYgGjWxNWagz4gf3+iTY=)
+  publicToken: ENC(z7WCBBkoqEQHDP4hAWHNXQjqw0h7D//ukBkj2s2CQ4Guamtl8i9QDoD5SX9c5+cuJUlkPAzcHCM=)
 
