@@ -22,7 +22,7 @@ public class User extends TimeEntity {
     @Id
     private Integer id;
 
-    @Column(unique = true,nullable = false, columnDefinition = "varchar(30)")
+    @Column(unique = true,nullable = false, columnDefinition = "varchar(100)")
     private String email;
 
     @Column(nullable = false, columnDefinition = "varchar(100)")
@@ -31,7 +31,7 @@ public class User extends TimeEntity {
     @Column(columnDefinition = "varchar(10)")
     private Boolean isKakao;
 
-    @Column(columnDefinition = "varchar(10)")
+    @Column(columnDefinition = "varchar(100)")
     private String name;
 
     @Column(columnDefinition = "varchar(100)")
@@ -40,10 +40,10 @@ public class User extends TimeEntity {
     @Column(columnDefinition = "varchar(100)")
     private String blogUrl;
 
-    @Column(columnDefinition = "varchar(20)")
+    @Column(columnDefinition = "varchar(100)")
     private String phoneNum;
 
-    @Column(columnDefinition = "varchar(20)")
+    @Column(columnDefinition = "varchar(100)")
     private String job;
 
     @Column(columnDefinition = "varchar(300)")
