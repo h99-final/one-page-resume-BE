@@ -66,6 +66,9 @@ dependencies {
     //이메일 인증
     //implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.5.4'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // jasypt
+    implementation group: 'com.github.ulisesbocchio', name: 'jasypt-spring-boot-starter', version: '3.0.4'
 }
 
 tasks.named('test') {

@@ -1,0 +1,71 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ENC(qmwHD2sKnPqo5yf6fZMLIVibc257PO4PZHDLNec2oD0HKmfH9wN0U3CVeRAk0/aw7TfXu8bZYf4EIz/o4+FX7b3C9r8cH42Av4GiFwMCo8JmilWl/AW+U4Hw1bnaeYfTzYRlOCEImdWCeASGZ+CmmWuaoNRML9KG/TD4HttgvU9WJQDrw5Sykx8AuEtJIhmOTFc1vSfM7H8=)
+    username: ENC(d67k0g2jxkCj7A5R4Vrm4w==)
+    password: ENC(xpujT6R6E80cSnIHopxAcELVte4qgYX3)
+
+  jpa:
+    database: mysql #database 종류 선택
+    hibernate:
+      ddl-auto: update # none, create, update, validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      username: ENC(j1XmJMN5yCh+EVrA2tp9Vg==)
+      password: ENC(j1XmJMN5yCh+EVrA2tp9Vg==)
+      database: ENC(j1XmJMN5yCh+EVrA2tp9Vg==)
+
+  mail:
+    host: ENC(AGP+HGlAGRNIymxt27dCeliW5W5Aiqco)
+    port: 587
+    username: ENC(IenybIOu7aOXgdvJ3aRk3PuhAXPmDQd68TFYCgrGVhA=)
+    password: ENC(lSUPDVvYsJzrgb6HLt0425cVsufZPwZeJNO3rUuJNr8=)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+logging.level:
+  org.apache.coyote.http11: debug #http 요청 메시지 보기
+
+server:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ENC(zN5uYClBiVRNDckOLfK3tDr7OU/Ix7sKFAjO6gqxQkY=)
+      secretKey: ENC(GH4rfmBSP5hycecaO8YYzkoslLNgaah74UxxqNgi6A9BP7vGSDRyFlRphPbCphZLLmKuG//P1mY=)
+    s3:
+      bucket: ENC(wGTY2VYi+uTMvixI2IK3np+C5sey78RA)
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+jwt:
+  secret: ENC(cYVIqNdwnZoRq2T41WZwrvLMZbgt76LEiNbpKhaEAy7sOejP96BYqzSY5+C8fi+KBYWwXq2MpowDb4yV1hYsHw==)
+
+kakao:
+  clientId: ENC(YtADzWnSepf/LOy7YHhldBTJcZiLicWO4/aSm3Jx9PE/mHqTs177RyFosFgCPAcG)
+  redirectUri: ENC(2AvTfkxbs/YQ4LTKApjEcg2JkNXZaUDDbpvYudQVrtAigJyx9YG4Kb6vN1w0HVvOjER38SZXLc0=)
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    password : ENC(FGrhG1KN2Le9iKsKusXmDQ==)
+
+
+
