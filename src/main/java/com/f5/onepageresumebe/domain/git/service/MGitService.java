@@ -1,5 +1,6 @@
 package com.f5.onepageresumebe.domain.git.service;
 
+import com.f5.onepageresumebe.config.GitConfig;
 import com.f5.onepageresumebe.domain.common.check.DeleteService;
 import com.f5.onepageresumebe.domain.git.entity.MCommit;
 import com.f5.onepageresumebe.domain.git.entity.MFile;
@@ -18,9 +19,11 @@ import com.f5.onepageresumebe.exception.customException.CustomAuthorizationExcep
 import com.f5.onepageresumebe.util.GitUtil;
 import com.f5.onepageresumebe.web.git.dto.CommitDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
+import com.f5.onepageresumebe.web.git.dto.RepoDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -42,6 +45,8 @@ import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
 @RequiredArgsConstructor
 @Slf4j
 public class MGitService {
+
+    private final GitConfig gitConfig;
 
     private final DeleteService deleteService;
 
@@ -216,7 +221,10 @@ public class MGitService {
 
     private String makeRepoName(String gitUrl, String reName) {
         int idx = gitUrl.indexOf(".com/");
-        return gitUrl.substring(idx + 5) + "/" + reName;
+        String res = "";
+        if(idx != -1) res = gitUrl.substring(idx + 5) + "/" + reName;
+
+        return res;
     }
 
     private void syncCallCheck(Integer userId){
@@ -232,5 +240,35 @@ public class MGitService {
 
     public Boolean isCompletion(Integer projectId) {
         return taskRepository.findByProjectId(projectId);
+    }
+
+    public Boolean gitRepoValidation(RepoDto.Request request) {
+        Boolean res = true;
+
+        String repoUrl = request.getGitRepoUrl();
+        String repoName = request.getGitRepoName();
+
+        GitHub gitHub = null;
+
+        try {
+            gitHub = new GitHubBuilder().withOAuthToken(gitConfig.getPublicToken()).build();
+            gitHub.checkApiUrlValidity();
+
+        } catch (IOException e) {
+            log.error("깃허브 연결 실패 : {}", e.getMessage());
+            throw new CustomException("토큰 정보가 잘못되었습니다. 토큰을 재등록 해주세요.", INVALID_INPUT_ERROR);
+        }
+
+        try {
+            GHRepository ghRepository = gitHub.getRepository(makeRepoName(repoUrl, repoName));
+        } catch (IOException e) {
+            res = false;
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            res = false;
+            e.printStackTrace();
+        }
+
+        return res;
     }
 }

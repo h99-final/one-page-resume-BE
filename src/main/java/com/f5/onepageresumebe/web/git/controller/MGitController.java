@@ -4,6 +4,7 @@ import com.f5.onepageresumebe.domain.git.service.MGitService;
 import com.f5.onepageresumebe.domain.task.service.TaskService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
+import com.f5.onepageresumebe.web.git.dto.RepoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -64,6 +65,20 @@ public class MGitController {
         res.put("curCommitCount", curCommitCount);
         res.put("isDone", isDone);
 
+
+        return ResDto.builder()
+                .result(true)
+                .data(res)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping("/git/repo/validation")
+    public ResDto gitRepoValidation(@RequestBody RepoDto.Request request) {
+
+        HashMap<String, Boolean> res = new HashMap<>();
+
+        res.put("isOk", mGitService.gitRepoValidation(request));
 
         return ResDto.builder()
                 .result(true)
