@@ -75,7 +75,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
         configuration.addAllowedOrigin("https://poug.me");
-        configuration.addAllowedOrigin("http://localhost:3000");
+        //configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.addExposedHeader("*");
