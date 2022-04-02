@@ -119,10 +119,14 @@ public class DeleteService {
         String email = SecurityUtil.getCurrentLoginUserId();
         User user = userRepository.findByEmail(email).orElseThrow(()->
                 new IllegalArgumentException("로그인 정보가 잘못되었습니다. 다시 로그인 해주세요"));
+
+        ProjectBookmark projectBookmark = projectBookmarkRepository.findFirstByUserIdAndProjectId(user.getId(), projectId)
+                .orElseThrow(() -> new CustomAuthenticationException("북마크 중인 프로젝트가 아닙니다."));
+
         Project project = projectRepository.getById(projectId);
         project.updateBookmarkCount(-1);
 
-        projectBookmarkRepository.deleteByUserIdAndProjectId(user.getId(), projectId);
+        projectBookmarkRepository.deleteById(projectBookmark.getId());
     }
 
     public void deleteProjectImg(Integer projectId, Integer imageId) {
