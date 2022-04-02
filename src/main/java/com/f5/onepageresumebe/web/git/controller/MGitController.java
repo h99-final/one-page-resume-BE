@@ -59,7 +59,7 @@ public class MGitController {
 
         Integer totalCommitCount = taskService.getTotalCommitCount(projectId);
         Integer curCommitCount = taskService.getCurCommitCount(projectId);
-        Boolean isDone = mGitService.isCompletion(projectId);
+        Boolean isDone = taskService.isCompletion(projectId);
 
         res.put("totalCommitCount", totalCommitCount);
         res.put("curCommitCount", curCommitCount);
