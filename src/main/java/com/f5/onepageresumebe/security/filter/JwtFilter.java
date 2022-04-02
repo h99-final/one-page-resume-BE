@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.f5.onepageresumebe.security.jwt.TokenProvider.NOT_VALID;
+
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -27,12 +29,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String accessToken = resolveAccessToken(request);
 
         // 정상적인 토큰이면 파싱 후 security context에 저장
-        if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)==1) {
-            Authentication authentication = tokenProvider.getAuthentication(accessToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (StringUtils.hasText(accessToken)) {
+            Integer result = tokenProvider.validateToken(accessToken);
+            if (result==1) {
+                Authentication authentication = tokenProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }else if(result==NOT_VALID) {
+                request.setAttribute("exception", "로그인 유지 시간이 만료되었습니다. 다시 로그인 해주세요");
+            }else{
+                request.setAttribute("exception","로그인 정보가 잘못되었습니다. 다시 로그인 해주세요");
+            }
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 
 
@@ -40,7 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private String resolveAccessToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
 
-        if(StringUtils.hasText(bearerToken)){
+        if (StringUtils.hasText(bearerToken)) {
             return bearerToken;
         }
         return null;
