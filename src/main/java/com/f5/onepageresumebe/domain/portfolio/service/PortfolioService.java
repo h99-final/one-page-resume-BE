@@ -356,8 +356,8 @@ public class PortfolioService {
 
     private void checkStackSize(List<String> stacks){
 
-        if (stacks.size()<3){
-            throw new CustomException("포트폴리오 스택을 3개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
+        if (stacks.size()==0){
+            throw new CustomException("포트폴리오 스택을 1개 이상 선택해 주세요.",INVALID_INPUT_ERROR);
         }
 
     }
