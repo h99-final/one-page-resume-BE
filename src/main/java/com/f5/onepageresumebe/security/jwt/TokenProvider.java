@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -28,6 +29,8 @@ public class TokenProvider {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_PREFIX = "Bearer ";
+    public static final Integer NOT_VALID = 2;
+    public static final Integer EXPIRED = 3;
     private static final String AUTHORITY_KEY = "auth";
     private static final String BEARER_TYPE = "bearer ";
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 3 ;
@@ -88,15 +91,19 @@ public class TokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return 1;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            //throw new CustomAuthenticationException("잘못된 JWT 서명입니다");
+            log.error("잘못된 JWT 서명입니다");
+            return NOT_VALID;
         } catch (ExpiredJwtException e) {
-            //throw new CustomAuthenticationException("만료된 JWT 토큰입니다");
+            log.error("만료된 JWT 토큰입니다");
+            return EXPIRED;
         } catch (UnsupportedJwtException e) {
-            //throw new CustomAuthenticationException("지원되지 않는 JWT 토큰입니다");
+            log.error("지원되지 않는 JWT 토큰입니다");
+            return NOT_VALID;
         } catch (IllegalArgumentException e) {
-            //throw new CustomAuthenticationException("JWT 토큰이 잘못되었습니다");
+            log.error("JWT 토큰이 잘못되었습니다");
+            return NOT_VALID;
         }
-        return 0;
+
     }
 
     private Claims parseClaims(String accessToken) {

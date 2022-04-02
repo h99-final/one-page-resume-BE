@@ -32,8 +32,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             errorMsg = "아이디나 비밀번호가 맞지 않습니다. 다시 확인해 주세요";
         } else if (exception instanceof CredentialsExpiredException) {
             errorMsg = "비밀번호 유효기간이 지났습니다. 비밀번호를 재설정해주세요";
-        } else {
-            errorMsg = "로그인이 필요합니다";
+        } else if(request.getAttribute("exception")!=null){
+            errorMsg = (String) request.getAttribute("exception");
+        }else{
+            errorMsg = "로그인이 필요합니다.";
         }
 
         response.setContentType("application/json");
