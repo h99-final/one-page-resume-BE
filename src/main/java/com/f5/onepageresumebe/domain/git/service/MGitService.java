@@ -114,7 +114,11 @@ public class MGitService {
                     log.error("Commit 정보 가져오기 실패 : {}",e.getMessage());
                     throw new CustomException("Commit을 불러오던 중 문제가 발생하였습니다. 잠시 후 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
                 }
-            });
+            }).exceptionally(t -> {
+                t.printStackTrace();
+                return null;
+            }).thenAcceptAsync(s -> log.info("CORRECT value" + s));
+
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Repository 가져오기 실패: {}", e.getMessage());
