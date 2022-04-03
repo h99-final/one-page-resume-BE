@@ -81,7 +81,7 @@ git:
   publicToken: ENC(fdRxjATkA0Pd4sidw5k85MjNSxE+nlRu3mmpz6Ca6/6NlJ6aLMW9olddwth7t0gdNDuCyWWMPbs=)
 
 jwt:
-  secret: ENC(qE43xLJtRvszPuxujPdNUuoDry7dGuZPRa2dHObI6NbVdCnO20o/HuO+pk86zMObTXeAQrvQjTIx1vk3Uo4W7eOOyDFvHYfmZc5ZJhZ4PV8oJGEnTHnif+0Ybqxa7iwY95mJGoVF2BKuUT8n/OR1RnR3hbG4KDWoAR0iqPu5uqaEbzNjavJyKo8dlzBokgKJ)
+  secret: ENC(KRZgHmn8uLPC0Uf4QBuyWmLGudbNKiGe+zcnIRaT82jAbbnavOanpV06BQRNrc2M2PZOPZpmHMG20r4QvWCBIXkE51tRpSN0YUiul35sGl78bTkZ9p/+O4gbNwDEPnNCyMc8eu1Xa42dK2JjTuzx9w==)
 
 
 kakao:
