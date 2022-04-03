@@ -24,7 +24,7 @@ public class Project extends TimeEntity {
     @Column(nullable = false, columnDefinition = "varchar(100)")
     private String title;
 
-    @Column(nullable = false, columnDefinition = "varchar(5000)")
+    @Column(nullable = false)
     private String introduce;
 
     @Column(columnDefinition = "varchar(30)")
