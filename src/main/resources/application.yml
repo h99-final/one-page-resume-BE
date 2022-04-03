@@ -7,7 +7,10 @@ spring:
     hikari:
       maximum-pool-size: 20 # 커넥션 풀
       leak-detection-threshold: 60000 # 1분
-
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   jpa:
     database: mysql #database 종류 선택
     hibernate:
@@ -51,10 +54,7 @@ logging:
       file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}-%i.log
 
 server:
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+
   tomcat:
     accesslog:
       enabled: true
