@@ -47,7 +47,7 @@ logging.level:
 
 logging:
   file:
-    name: ENC(cp9lPyEdyloQaenXwXkBXHwSbwH+uxfA2eLkjEcUVpg=)
+    name: springLogs/final.log
   logback:
     rollingpolicy:
       max-file-size: 10MB
