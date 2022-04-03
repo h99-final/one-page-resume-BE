@@ -1,73 +1,89 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ENC(qmwHD2sKnPqo5yf6fZMLIVibc257PO4PZHDLNec2oD0HKmfH9wN0U3CVeRAk0/aw7TfXu8bZYf4EIz/o4+FX7b3C9r8cH42Av4GiFwMCo8JmilWl/AW+U4Hw1bnaeYfTzYRlOCEImdWCeASGZ+CmmWuaoNRML9KG/TD4HttgvU9WJQDrw5Sykx8AuEtJIhmOTFc1vSfM7H8=)
-    username: ENC(d67k0g2jxkCj7A5R4Vrm4w==)
-    password: ENC(xpujT6R6E80cSnIHopxAcELVte4qgYX3)
+    url: ENC(eHWHb65hrjlAka4F1751U+W6pseE9bl4ISxtrIoYpC1j9/5NhN3iSmzadOCKFRGIkxMX4pR+96rEb0qU8Vezapb2eNWcZN6qtjuGCd+8t/OeFYJhg9onlW2ILYX062K43Jn2fMT4UWcJKKLkScG2nf0QRIC+En//brtoARwvSJ70sE7JwH3ss0AQiiWCMOb6BFutcsz8an0=)
+    username: ENC(/d3ppkzC9xRZKlf3zyBHFw==)
+    password: ENC(BE/Zgi1GptVc+j1nu9t8/3iOq1mkqKBh)
+    hikari:
+      maximum-pool-size: 20 # 커넥션 풀
+      leak-detection-threshold: 60000 # 1분
 
   jpa:
     database: mysql #database 종류 선택
     hibernate:
-      ddl-auto: update # none, create, update, validate
+      ddl-auto: update #update # none, create, update, validate
     properties:
       hibernate:
         format_sql: true
-
   data:
     mongodb:
       host: 127.0.0.1
       port: 27017
-      username: ENC(j1XmJMN5yCh+EVrA2tp9Vg==)
-      password: ENC(j1XmJMN5yCh+EVrA2tp9Vg==)
-      database: ENC(j1XmJMN5yCh+EVrA2tp9Vg==)
+      username: ENC(vHXmZv7WqYX5bad2pvdYsA==)
+      password: ENC(vHXmZv7WqYX5bad2pvdYsA==)
+      database: ENC(vHXmZv7WqYX5bad2pvdYsA==)
 
   mail:
-    host: ENC(AGP+HGlAGRNIymxt27dCeliW5W5Aiqco)
+    host: ENC(mK8rM28cn7IRpTCuoO9jUFuBseXtXcJ5)
     port: 587
-    username: ENC(IenybIOu7aOXgdvJ3aRk3PuhAXPmDQd68TFYCgrGVhA=)
-    password: ENC(lSUPDVvYsJzrgb6HLt0425cVsufZPwZeJNO3rUuJNr8=)
+    username: onepageresumeservice
+    password: vwdvbnbundyphlhf
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-
+  output:
+    ansi:
+      enabled: always
 
 logging.level:
-  org.apache.coyote.http11: debug #http 요청 메시지 보기
+  com.zaxxer.hikari.HikariConfig: debug
+  com.zaxxer.hikari: trace
+
+logging:
+  file:
+    name: ENC(cp9lPyEdyloQaenXwXkBXHwSbwH+uxfA2eLkjEcUVpg=)
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}-%i.log
 
 server:
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
-
+  tomcat:
+    accesslog:
+      enabled: true
+      directory: ENC(x9e8FI8+8ZAR0P8ekc7dVg==)
+      suffix: .log
+      prefix: access_log
+      file-date-format: .yyyy-MM-dd
+      pattern: common
+    basedir: .
 
 cloud:
   aws:
     credentials:
-      accessKey: ENC(vcB4YkBqaFx73SfZn6Yx/qwz8sHoWaN/N8NbmWrWy+U=)
-      secretKey: ENC(pVV+zkstMOw8w648oZfOPO4Fl64x/1ATYagAj+BVFiJCGXiefrJUYK3uIaGwpZpwQ8e/Wgigr2w=)
+      accesskey: ENC(j1tSani1vSPz0tQEPGZskS4pPKjDi8o2dAJHcIH9nlo=)
+      secretkey: ENC(g2CvDlRD+TLEgH6sltQnDXs0zvJsI56SbczOFJXiMo7izbakv+OCMI4FFLG7CAn8b6rIgo3PrEg=)
     s3:
-      bucket: ENC(wGTY2VYi+uTMvixI2IK3np+C5sey78RA)
+      bucket: ENC(ia5BKyifXqN/2HC/MzfZyfwL5qT4Mf+m)
     region:
       static: ap-northeast-2
     stack:
       auto: false
 
+git:
+  publicToken: ENC(fdRxjATkA0Pd4sidw5k85MjNSxE+nlRu3mmpz6Ca6/6NlJ6aLMW9olddwth7t0gdNDuCyWWMPbs=)
+
 jwt:
-  secret: ENC(cYVIqNdwnZoRq2T41WZwrvLMZbgt76LEiNbpKhaEAy7sOejP96BYqzSY5+C8fi+KBYWwXq2MpowDb4yV1hYsHw==)
+  secret: ENC(qE43xLJtRvszPuxujPdNUuoDry7dGuZPRa2dHObI6NbVdCnO20o/HuO+pk86zMObTXeAQrvQjTIx1vk3Uo4W7eOOyDFvHYfmZc5ZJhZ4PV8oJGEnTHnif+0Ybqxa7iwY95mJGoVF2BKuUT8n/OR1RnR3hbG4KDWoAR0iqPu5uqaEbzNjavJyKo8dlzBokgKJ)
+
 
 kakao:
-  clientId: ENC(gH5MUsECz5TBbleCk2v8AbyYrxBSGw93VlWz9MTETrI1bGAymRKhGf/hnNZ+tp0S)
-  redirectUri: ENC(pahpdRkIqv0+BM08PiAqPm9F/UMhLC3AWr0OeTOPFRIbMEH7NIEbmJowTzRBf2cD)
-
-jasypt:
-  encryptor:
-    bean: jasyptStringEncryptor
-    password : ENC(FGrhG1KN2Le9iKsKusXmDQ==)
-
-git:
-  publicToken: ENC(z7WCBBkoqEQHDP4hAWHNXQjqw0h7D//ukBkj2s2CQ4Guamtl8i9QDoD5SX9c5+cuJUlkPAzcHCM=)
-
+  clientId: ENC(nfguA+tVCgS+kGodLR9Vdrd7q6PprIFZZLRjlN5CJlpaHX3wPa39lwBLb/rjE+7U)
+  redirectUri: ENC(rIKVhHh2bgRtgaxQt9bXhVVjcAys0SvJNKn23BrJMK7emsXCvI23xOIr+5lioDqI)
