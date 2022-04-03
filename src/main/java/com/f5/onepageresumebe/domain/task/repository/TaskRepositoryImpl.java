@@ -1,5 +1,7 @@
 package com.f5.onepageresumebe.domain.task.repository;
 
+import com.f5.onepageresumebe.exception.ErrorCode;
+import com.f5.onepageresumebe.exception.customException.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -35,6 +37,10 @@ public class TaskRepositoryImpl implements TaskRepository {
 
         //작업이 끝났는지 확인
         Boolean isDone = data.get(projectId);
+
+        if(isDone==null){
+            throw new CustomException("현재 commit을 불러오는 중이 아닙니다.", ErrorCode.NOT_EXIST_ERROR);
+        }
 
         //작업이 끝났다면 삭제
         if(isDone){

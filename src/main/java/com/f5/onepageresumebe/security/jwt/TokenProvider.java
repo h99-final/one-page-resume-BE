@@ -3,6 +3,7 @@ package com.f5.onepageresumebe.security.jwt;
 import com.f5.onepageresumebe.exception.customException.CustomAuthenticationException;
 import com.f5.onepageresumebe.web.jwt.dto.TokenDto;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +39,8 @@ public class TokenProvider {
     private final Key key;
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey){
-        byte[] encode = Base64.getEncoder().encode(secretKey.getBytes(StandardCharsets.UTF_8));
-        this.key = Keys.hmacShaKeyFor(encode);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
 
@@ -64,7 +65,7 @@ public class TokenProvider {
 
         return TokenDto.builder()
                 .accessToken(accessToken)
-                .grantType(BEARER_TYPE)
+                .grantType(BEARER_PREFIX)
                 .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
                 .build();
     }
@@ -91,15 +92,19 @@ public class TokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return 1;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            e.printStackTrace();
             log.error("잘못된 JWT 서명입니다");
             return NOT_VALID;
         } catch (ExpiredJwtException e) {
+            e.printStackTrace();
             log.error("만료된 JWT 토큰입니다");
             return EXPIRED;
         } catch (UnsupportedJwtException e) {
+            e.printStackTrace();
             log.error("지원되지 않는 JWT 토큰입니다");
             return NOT_VALID;
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             log.error("JWT 토큰이 잘못되었습니다");
             return NOT_VALID;
         }

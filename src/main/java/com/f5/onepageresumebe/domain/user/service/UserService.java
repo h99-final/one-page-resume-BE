@@ -472,7 +472,7 @@ public class UserService {
 
         //토큰을 response header에 담음
         HttpHeaders headers = new HttpHeaders();
-        headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
+        headers.add(AUTHORIZATION_HEADER, tokenDto.getGrantType()+tokenDto.getAccessToken());
 
         return headers;
     }

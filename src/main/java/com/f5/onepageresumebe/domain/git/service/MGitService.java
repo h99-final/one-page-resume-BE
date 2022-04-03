@@ -37,9 +37,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
-import static com.f5.onepageresumebe.exception.ErrorCode.INVALID_INPUT_ERROR;
-import static com.f5.onepageresumebe.exception.ErrorCode.TOO_MANY_CALL;
-import static com.f5.onepageresumebe.exception.ErrorCode.NOT_EXIST_ERROR;
+import static com.f5.onepageresumebe.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -103,7 +101,9 @@ public class MGitService {
                                 mongoTemplate.save(mCommit);
 
                             }catch (IOException e) {
+                                e.printStackTrace();
                                 log.error("Commit 정보 가져오기 실패 : {}",e.getMessage());
+                                throw new CustomException("Commit을 불러오던 중 문제가 발생하였습니다. 잠시 후 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
                             }
                         });
                         taskRepository.save(projectId, true);
@@ -111,11 +111,14 @@ public class MGitService {
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    log.error("Commit 정보 가져오기 실패 : {}",e.getMessage());
+                    throw new CustomException("Commit을 불러오던 중 문제가 발생하였습니다. 잠시 후 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
                 }
             });
         } catch (IOException e) {
-            log.error("Repository 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
+            log.error("Repository 가져오기 실패: {}", e.getMessage());
+            throw new CustomException("Repository를 불러오던 중 문제가 발생하였습니다. 잠시 후 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -131,8 +134,9 @@ public class MGitService {
                 files.add(mFile);
             }
         } catch (IOException e) {
-            log.error("File 가져오기 실패: {}", e.getMessage());
             e.printStackTrace();
+            log.error("File 가져오기 실패: {}", e.getMessage());
+            throw new CustomException("Commit의 파일을 불러오던 중 문제가 발생하였습니다. 잠시 후 다시 시도해 주세요",INTERNAL_SERVER_ERROR);
         }
 
         return files;
@@ -236,10 +240,6 @@ public class MGitService {
             log.info("호출");
             apiCallService.call(userId);
         }
-    }
-
-    public Boolean isCompletion(Integer projectId) {
-        return taskRepository.findByProjectId(projectId);
     }
 
     public Boolean gitRepoValidation(RepoDto.Request request) {

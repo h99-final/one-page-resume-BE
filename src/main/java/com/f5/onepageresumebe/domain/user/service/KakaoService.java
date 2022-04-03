@@ -192,7 +192,7 @@ public class KakaoService {
 
     public HttpHeaders tokenToHeader(TokenDto tokenDto) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(AUTHORIZATION_HEADER, tokenDto.getAccessToken());
+        headers.add(AUTHORIZATION_HEADER, tokenDto.getGrantType()+tokenDto.getAccessToken());
 
         return headers;
     }

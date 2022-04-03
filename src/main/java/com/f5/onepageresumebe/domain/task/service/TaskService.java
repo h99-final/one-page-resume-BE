@@ -33,4 +33,8 @@ public class TaskService {
         return res;
     }
 
+    public Boolean isCompletion(Integer projectId) {
+        return taskRepository.findByProjectId(projectId);
+    }
+
 }
