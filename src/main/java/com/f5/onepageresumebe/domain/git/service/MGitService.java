@@ -96,7 +96,7 @@ public class MGitService {
                     myPool.submit(()-> {
                         commits.parallelStream().forEach((commit)-> {
                             try {
-                                log.info("parallelStream");
+                                log.info("parallelStream: {}",projectId);
                                 String curSha = commit.getSHA1();
                                 String curMessage = commit.getCommitShortInfo().getMessage();
 
