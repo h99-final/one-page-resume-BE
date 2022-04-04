@@ -3,12 +3,17 @@ package com.f5.onepageresumebe.web.git.controller;
 import com.f5.onepageresumebe.domain.git.service.MGitService;
 import com.f5.onepageresumebe.domain.task.service.TaskService;
 import com.f5.onepageresumebe.web.common.dto.ResDto;
+import com.f5.onepageresumebe.web.git.dto.CommitDto;
 import com.f5.onepageresumebe.web.git.dto.FileDto;
 import com.f5.onepageresumebe.web.git.dto.RepoDto;
 import lombok.RequiredArgsConstructor;
+import org.joda.time.DateTime;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -83,6 +88,17 @@ public class MGitController {
         return ResDto.builder()
                 .result(true)
                 .data(res)
+                .build();
+    }
+
+    @Secured("ROLE_USER")
+    @GetMapping("/project/{projectId}/git/commit/search")
+    public ResDto getCommitsByDate(@PathVariable("projectId") Integer projectId,
+                                   @RequestParam("date") String dateTime) throws ParseException {
+
+        return ResDto.builder()
+                .result(true)
+                .data(mGitService.getCommitsByDate(projectId, dateTime))
                 .build();
     }
 }
