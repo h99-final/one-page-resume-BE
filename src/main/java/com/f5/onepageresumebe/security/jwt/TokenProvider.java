@@ -94,8 +94,7 @@ public class TokenProvider {
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             e.printStackTrace();
             log.error("잘못된 JWT 서명입니다");
-            return 1;
-            //return NOT_VALID;
+            return NOT_VALID;
         } catch (ExpiredJwtException e) {
             e.printStackTrace();
             log.error("만료된 JWT 토큰입니다");
