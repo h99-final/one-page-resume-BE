@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CommitDto {
@@ -43,5 +44,6 @@ public class CommitDto {
     public static class MessageResponse{
         private String sha;
         private String message;
+        private String date;
     }
 }

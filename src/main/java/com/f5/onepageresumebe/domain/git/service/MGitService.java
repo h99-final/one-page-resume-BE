@@ -22,6 +22,9 @@ import com.f5.onepageresumebe.web.git.dto.FileDto;
 import com.f5.onepageresumebe.web.git.dto.RepoDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.format.ISODateTimeFormat;
 import org.kohsuke.github.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -31,9 +34,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
@@ -166,8 +173,10 @@ public class MGitService {
 
         List<MCommit> mCommits = mongoTemplate.find(query, MCommit.class);
 
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
         for (MCommit curCommit : mCommits) {
-            CommitDto.MessageResponse mCommitMessageResponseDto = new CommitDto.MessageResponse(curCommit.getSha(), curCommit.getMessage());
+            CommitDto.MessageResponse mCommitMessageResponseDto = new CommitDto.MessageResponse(curCommit.getSha(), curCommit.getMessage(), dateFormat.format(curCommit.getDate()));
             mCommitMessageResponseDtos.add(mCommitMessageResponseDto);
         }
 
@@ -274,5 +283,45 @@ public class MGitService {
         }
 
         return res;
+    }
+
+    public List<CommitDto.MessageResponse> getCommitsByDate(Integer projectId, String date) throws ParseException {
+
+        Integer year = Integer.valueOf(date.substring(0,4));
+        Integer month = Integer.valueOf(date.substring(5,7));
+        Integer day = Integer.valueOf(date.substring(8,10));
+
+        DateTime startDateTime = new DateTime(year, month, day, 0,0,0);
+        DateTime endDateTime = new DateTime(year, month, day, 23,59,59);
+
+        String userEmail = SecurityUtil.getCurrentLoginUserId();
+
+        Project project = projectRepository.findByUserEmailAndProjectId(userEmail, projectId).orElseThrow(() ->
+                new CustomAuthorizationException("내가 작성한 프로젝트에서만 가능합니다."));
+
+        String repoUrl = project.getGitRepoUrl();
+        String repoName = project.getGitRepoName();
+        String repoOwner = GitUtil.getOwner(repoUrl);
+
+        List<CommitDto.MessageResponse> mCommitMessageResponseDtos = new ArrayList<>();
+
+        Query query = new Query(Criteria.where("repoName").is(repoName));
+        query.addCriteria(Criteria.where("repoOwner").is(repoOwner));
+        query.addCriteria(Criteria.where("projectId").is(projectId));
+        query.addCriteria(Criteria.where("date").gte(startDateTime).lte(endDateTime));
+
+        query.with(Sort.by(Sort.Order.desc("date")));
+
+        List<MCommit> mCommits = mongoTemplate.find(query, MCommit.class);
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        for (MCommit curCommit : mCommits) {
+            CommitDto.MessageResponse mCommitMessageResponseDto = new CommitDto.MessageResponse(curCommit.getSha(), curCommit.getMessage(), dateFormat.format(curCommit.getDate()));
+            mCommitMessageResponseDtos.add(mCommitMessageResponseDto);
+        }
+
+        return mCommitMessageResponseDtos;
+
     }
 }
