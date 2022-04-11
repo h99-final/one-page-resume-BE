@@ -42,13 +42,17 @@
 
 <br></br>
 # 프로젝트 아키텍처
-![cover](https://user-images.githubusercontent.com/67905075/162718255-01ee5e04-7ff6-4001-a1cc-c307245b9a34.png)
+<img src="https://user-images.githubusercontent.com/45589210/162730455-82898eb1-3e08-400b-b95c-550a8fb3cf6e.png" width="570" height="400"/>
 
 <br></br>
 # 추가 정보
 
-## Notion - [https://www.notion.so/POUG-0111568c60b74c679782702fb8686653](https://www.notion.so/POUG-0111568c60b74c679782702fb8686653)
-
+### API 설계 
+[https://useful-jonquil-43d.notion.site/API-466b7cd3786a41969a988f5539f6e59a](https://useful-jonquil-43d.notion.site/API-466b7cd3786a41969a988f5539f6e59a)
+### ERD 설계
+[https://useful-jonquil-43d.notion.site/ERD-f92995d82a9341b8b1a492f46e1ca0b7](https://useful-jonquil-43d.notion.site/ERD-f92995d82a9341b8b1a492f46e1ca0b7)
+### 트러블 슈팅
+[https://www.notion.so/Troubleshooting-766a98995f554fe2b5c3bf67f23c1ea9](https://www.notion.so/Troubleshooting-766a98995f554fe2b5c3bf67f23c1ea9)
 
 
 
