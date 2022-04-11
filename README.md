@@ -1,1 +1,3 @@
-# one-page-resume-BE
+# POUG
+--- 
+## Github을 이용한 개발자 포트폴리오 제작 서비스입니다.
