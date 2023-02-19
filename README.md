@@ -11,7 +11,7 @@
 |------|---|---|---|
 |김현진|Spring|포트폴리오 API <br/> 프로젝트 관련 API <br/> 회원가입, 로그인(JWT) API <br/> API 호출 횟수 제한 기능 <br/> 쿼리 확인 및 최적화|[https://github.com/guswls159357](https://github.com/guswls159357)
 |고영빈|Spring|깃허브 API 및 병렬처리<br/> 북마크 API <br/> 이메일 인증 API <br/> 프로젝트 관련 API|[https://github.com/skekq123](https://github.com/skekq123)
-|김종훈|Spring|로그인(카카오) API <br/> 북마크 API <br/> 무중단 배포(Github action & Nginx) <br/> https 적용(Nginx)|[https://github.com/kjhbbjoker](https://github.com/kjhbbjoker)
+|김종훈|Spring|로그인(카카오) API <br/> 북마크 API <br/> 무중단 배포(Github action & Nginx) <br/> https 적용(Nginx)<br/> 프로젝트 관련 API|[https://github.com/kjhbbjoker](https://github.com/kjhbbjoker)
 |백제열|React|포트폴리오 작성 API <br/> 프로젝트 작성 API <br/> 커밋 데이터 수신 <br/> 포트폴리오 디자인, 템플릿 구현 <br/> 프로젝트 패치코드 UI 구현|[https://github.com/gwangbaekun](https://github.com/gwangbaekun)
 |한우진|React|로그인(JWT,카카오) API <br/> 포트폴리오 디자인, 템플릿 구현 <br/> 프로그래스바 구현 <br/> 자동 배포(aws amplify)|[https://github.com/han-woo-jin](https://github.com/han-woo-jin)
 |김연수|UI&UX|서비스 와이어 프레임 설계 <br/> 서비스 UIUX 디자인 <br/> 마케팅|
